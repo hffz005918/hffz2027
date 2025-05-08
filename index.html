@@ -1,9 +1,16 @@
-<!-- index.html 主界面 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 微信专属优化标签 -->
+    <meta http-equiv="x-dns-prefetch-control" content="on">
+    <link rel="dns-prefetch" href="//your-domain.com">
+    <link rel="preload" href="bg.jpg" as="image">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta name="x5-page-mode" content="app">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="renderer" content="webkit">
     <title>员工服务系统</title>
     <style>
         * {
@@ -16,6 +23,8 @@
             font-family: "Microsoft YaHei", sans-serif;
             height: 100vh;
             position: relative;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
         }
 
         .background {
@@ -23,7 +32,9 @@
             width: 100%;
             height: 100%;
             background: url('bg.jpg') no-repeat center/cover;
+            background-color: #6a8bad; /* 备用背景色 */
             filter: brightness(0.8);
+            z-index: -1;
         }
 
         .content {
@@ -33,6 +44,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         .title {
@@ -58,6 +70,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            -webkit-tap-highlight-color: transparent;
         }
 
         .nav-card:hover {
@@ -86,9 +99,30 @@
                 padding: 20px;
             }
         }
+
+        /* 加载状态指示器 */
+        .wechat-loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
+    <!-- 微信加载状态提示 -->
+    <div class="wechat-loader" id="wechatLoader">
+        加载中，请稍候...
+    </div>
+
     <div class="background"></div>
     <div class="content">
         <div class="title">
@@ -97,16 +131,114 @@
         </div>
         
         <div class="nav-cards">
-            <div class="nav-card" onclick="window.location.href='dorm-rules.html'">
+            <div class="nav-card" data-href="dorm-rules.html">
                 <h2>宿舍管理</h2>
                 <p>住宿规定和注意事项</p>
             </div>
             
-            <div class="nav-card" onclick="window.location.href='fee-query.html'">
+            <div class="nav-card" data-href="fee-query.html">
                 <h2>费用查询</h2>
-                <p>水电费查询服务</p>
+                <p>电费查询服务</p>
             </div>
         </div>
     </div>
+
+    <script>
+        // 微信环境检测与优化
+        (function() {
+            // 显示加载状态
+            const loader = document.getElementById('wechatLoader');
+            const isWeChat = /micromessenger/i.test(navigator.userAgent);
+            
+            if (isWeChat) {
+                loader.style.display = 'flex';
+                
+                // 1. 预加载关键资源
+                const preloadResources = [
+                    { type: 'image', src: 'bg.jpg' },
+                    { type: 'html', src: 'dorm-rules.html' },
+                    { type: 'html', src: 'fee-query.html' }
+                ];
+                
+                preloadResources.forEach(resource => {
+                    if (resource.type === 'image') {
+                        const img = new Image();
+                        img.src = resource.src;
+                    } else {
+                        const link = document.createElement('link');
+                        link.rel = 'prefetch';
+                        link.href = resource.src;
+                        document.head.appendChild(link);
+                    }
+                });
+                
+                // 2. 微信JSBridge优化
+                function setupWeixinBridge() {
+                    try {
+                        if (typeof WeixinJSBridge !== 'undefined') {
+                            WeixinJSBridge.invoke('setFontSizeCallback', { 'fontSize': 0 });
+                            WeixinJSBridge.on('menu:setfont', function() {
+                                WeixinJSBridge.invoke('setFontSizeCallback', { 'fontSize': 0 });
+                            });
+                        }
+                    } catch (e) {
+                        console.warn('微信JSBridge调用失败:', e);
+                    }
+                }
+                
+                if (document.readyState === 'complete') {
+                    setupWeixinBridge();
+                } else {
+                    document.addEventListener('DOMContentLoaded', setupWeixinBridge);
+                    document.addEventListener('WeixinJSBridgeReady', setupWeixinBridge);
+                }
+                
+                // 3. 启用GPU加速
+                document.documentElement.style.cssText += 
+                    '-webkit-backface-visibility:hidden;-webkit-transform-style:preserve-3d;';
+                
+                // 4. 提前建立连接
+                const preconnect = document.createElement('link');
+                preconnect.rel = 'preconnect';
+                preconnect.href = window.location.origin;
+                document.head.appendChild(preconnect);
+            }
+            
+            // 页面加载完成后隐藏加载提示
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    loader.style.display = 'none';
+                }, 300);
+            });
+            
+            // 卡片点击事件（兼容微信）
+            document.querySelectorAll('.nav-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const url = this.getAttribute('data-href');
+                    if (isWeChat) {
+                        loader.style.display = 'flex';
+                        setTimeout(() => {
+                            window.location.href = url;
+                        }, 100);
+                    } else {
+                        window.location.href = url;
+                    }
+                });
+            });
+            
+            // 背景图加载失败处理
+            document.querySelector('.background').addEventListener('error', function() {
+                this.style.backgroundImage = 'none';
+                console.log('背景图加载失败，使用备用背景色');
+            });
+            
+            // 5秒超时处理
+            setTimeout(() => {
+                if (loader.style.display === 'flex') {
+                    loader.textContent = '加载时间较长，请检查网络...';
+                }
+            }, 5000);
+        })();
+    </script>
 </body>
 </html>
