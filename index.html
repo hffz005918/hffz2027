@@ -1,1 +1,113 @@
 
+<!-- index.html 主界面 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宏方纺织员工服务系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            height: 100vh;
+            position: relative;
+        }
+
+        .background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('bg.jpg') no-repeat center/cover;
+            filter: brightness(0.8);
+        }
+
+        .content {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .title {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 50px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .nav-cards {
+            display: grid;
+            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            width: 80%;
+            max-width: 800px;
+        }
+
+        .nav-card {
+            background: rgba(255,255,255,0.9);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .nav-card h2 {
+            color: #1890ff;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .nav-card p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .nav-cards {
+                width: 90%;
+                gap: 20px;
+            }
+            
+            .nav-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="content">
+        <div class="title">
+            <h1 style="font-size: 2.5em; margin-bottom: 15px;">宏方纺织员工服务系统</h1>
+            <p style="font-size: 1.2em;">欢迎使用企业数字化服务平台</p>
+        </div>
+        
+        <div class="nav-cards">
+            <div class="nav-card" onclick="window.location.href='dorm-rules.html'">
+                <h2>宿舍管理规范</h2>
+                <p>查看住宿规定、管理条例和注意事项</p>
+            </div>
+            
+            <div class="nav-card" onclick="window.location.href='fee-query.html'">
+                <h2>费用查询系统</h2>
+                <p>水电费、房租查询与缴纳服务</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
