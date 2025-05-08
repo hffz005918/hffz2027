@@ -113,15 +113,14 @@
             CACHE_KEY: 'hf_cache_v6', // 版本号更新
             CACHE_TIME: 86400000,
             RETRY_LIMIT: 3,
-            RETRY_DELAY: 2000,
-            FIXED_UPLOAD_TIME: null // 新增固定上传时间配置
+            RETRY_DELAY: 2000
         };
 
         // 状态管理
         let appState = {
             cacheData: null,
-            fixedUploadTime: null, // 固定上传时间（只设置一次）
-            isOnline: navigator.onLine
+            isOnline: navigator.onLine,
+            isInitialLoad: true
         };
 
         // 初始化加载
@@ -129,25 +128,28 @@
             try {
                 const cache = localStorage.getItem(CONFIG.CACHE_KEY);
                 if (cache) {
-                    const { data, fixedUploadTime } = JSON.parse(cache);
-                    if (Date.now() - (fixedUploadTime || 0) < CONFIG.CACHE_TIME) {
+                    const { data } = JSON.parse(cache);
+                    if (Date.now() - (data.timestamp || 0) < CONFIG.CACHE_TIME) {
                         appState.cacheData = data;
-                        appState.fixedUploadTime = fixedUploadTime;
                     }
                 }
             } catch (e) {
                 console.warn('缓存加载失败:', e);
             }
 
-            if (appState.isOnline) {
-                try {
-                    await fetchData();
-                } catch (error) {
-                    console.warn('数据预加载失败:', error);
-                }
-            }
-
             setupEventListeners();
+            
+            // 延迟加载数据（仅在首次加载且在线时）
+            if (appState.isOnline && appState.isInitialLoad) {
+                setTimeout(async () => {
+                    try {
+                        await fetchData();
+                    } catch (error) {
+                        console.warn('数据延迟加载失败:', error);
+                    }
+                    appState.isInitialLoad = false;
+                }, 1000);
+            }
         })();
 
         // 主查询函数
@@ -208,58 +210,34 @@
         // 改进的数据获取方法
         async function fetchData() {
             try {
-                const response = await fetch(`${CONFIG.DATA_URL}?_=${Date.now()}`);
+                // 创建主请求和克隆请求
+                const mainRequest = fetch(`${CONFIG.DATA_URL}?_=${Date.now()}`);
+                const cloneRequest = mainRequest.then(res => res.clone());
+                
+                const [response, cloneResponse] = await Promise.all([mainRequest, cloneRequest]);
+                
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
-                // 获取并锁定上传时间（只设置一次）
-                const uploadTime = await getFileUploadTime(response);
-                if (!appState.fixedUploadTime) {
-                    appState.fixedUploadTime = uploadTime;
-                    console.log('锁定上传时间:', new Date(uploadTime).toLocaleString());
-                }
+                // 并行处理响应
+                const [text, jsonData] = await Promise.all([
+                    response.text(),
+                    cloneResponse.json().catch(() => null)
+                ]);
 
-                const text = await response.text();
-                const newData = JSON.parse(text.replace(/^\uFEFF/, ''));
+                const newData = jsonData || JSON.parse(text.replace(/^\uFEFF/, ''));
 
                 // 只有当数据变化时才更新缓存
                 if (JSON.stringify(newData) !== JSON.stringify(appState.cacheData)) {
                     appState.cacheData = newData;
                     localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify({
                         data: newData,
-                        fixedUploadTime: appState.fixedUploadTime
+                        timestamp: Date.now()
                     }));
                 }
 
             } catch (error) {
                 if (!appState.cacheData) throw error;
                 console.log('网络请求失败，使用缓存数据');
-            }
-        }
-
-        // 获取文件上传时间（改进版）
-        async function getFileUploadTime(response) {
-            // 如果已有固定时间，直接返回
-            if (appState.fixedUploadTime) return appState.fixedUploadTime;
-
-            try {
-                // 方法1：从自定义header获取
-                const headerTime = response.headers.get('X-Upload-Timestamp');
-                if (headerTime) return parseInt(headerTime);
-
-                // 方法2：从JSON内容获取
-                const cloneRes = response.clone();
-                const data = await cloneRes.json();
-                if (data.uploadTime) return parseInt(data.uploadTime);
-
-                // 方法3：从文件名获取
-                const filename = response.url.split('/').pop();
-                const timestamp = filename.match(/_(\d+).json/)?.[1];
-                if (timestamp) return parseInt(timestamp);
-
-                // 保底方案：使用当前日期（但不会存入fixedUploadTime）
-                return Date.now();
-            } catch {
-                return Date.now();
             }
         }
 
@@ -273,11 +251,6 @@
                 <p>姓名：${escapeHtml(record.name)}</p>
                 <p>房间号：${escapeHtml(record.id)}</p>
                 <p><strong>应缴费用：${total.toFixed(2)} 元</strong></p>
-                <div class="update-time">
-                    数据上传时间：${appState.fixedUploadTime ? 
-                        new Date(appState.fixedUploadTime).toLocaleString('zh-CN') : 
-                        '未知'}
-                </div>
             `;
         }
 
@@ -315,17 +288,22 @@
                 if (e.key === 'Enter') handleQuery();
             });
 
-            window.addEventListener('online', async () => {
-                appState.isOnline = true;
-                try {
-                    await fetchData();
-                } catch (error) {
-                    console.warn('网络恢复后更新失败:', error);
+            // 优化的网络状态监听
+            const handleNetworkChange = async () => {
+                const wasOnline = appState.isOnline;
+                appState.isOnline = navigator.onLine;
+                
+                if (appState.isOnline && !wasOnline) {
+                    try {
+                        await fetchData();
+                    } catch (error) {
+                        console.warn('网络恢复后更新失败:', error);
+                    }
                 }
-            });
-            window.addEventListener('offline', () => {
-                appState.isOnline = false;
-            });
+            };
+
+            window.addEventListener('online', handleNetworkChange);
+            window.addEventListener('offline', handleNetworkChange);
         }
     </script>
 </body>
