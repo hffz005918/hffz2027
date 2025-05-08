@@ -1,142 +1,94 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>费用查询系统 - 宏方纺织</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-family: "Microsoft YaHei", sans-serif;
         }
-
         body {
-            background: #f0f2f5;
+            background: #f5f5f5;
             padding: 60px 15px 15px;
         }
-
         .back-btn {
             position: fixed;
             left: 15px;
             top: 15px;
-            padding: 8px 20px;
+            padding: 8px 15px;
             background: #1890ff;
             color: white;
             border: none;
-            border-radius: 18px;
+            border-radius: 4px;
             cursor: pointer;
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(24,144,255,0.4);
+            font-size: 14px;
         }
-
         .container {
             max-width: 500px;
             margin: 0 auto;
             background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
         h1 {
             text-align: center;
             color: #1890ff;
-            font-size: 1.8em;
-            margin-bottom: 25px;
-            font-weight: 500;
-        }
-
-        .input-group {
             margin-bottom: 20px;
+            font-size: 1.5em;
         }
-
+        .input-group {
+            margin-bottom: 15px;
+        }
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             color: #666;
-            font-size: 0.95em;
+            font-size: 14px;
         }
-
         input {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #d9d9d9;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
         }
-
-        input:focus {
-            border-color: #1890ff;
-            outline: none;
-        }
-
-        button#queryBtn {
+        button {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             background: #1890ff;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: opacity 0.3s;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-top: 10px;
         }
-
-        button#queryBtn:disabled {
-            background: #8c8c8c;
-            cursor: not-allowed;
-        }
-
         #result {
-            margin-top: 25px;
-            padding: 20px;
-            background: #fafafa;
-            border-radius: 8px;
-            border-left: 4px solid #1890ff;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
             display: none;
         }
-
-        .result-item {
-            margin-bottom: 12px;
+        .result-row {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
             border-bottom: 1px solid #eee;
         }
-
         .total {
-            font-weight: 600;
-            color: #1890ff;
-            font-size: 1.2em;
+            font-weight: bold;
+            color: #ff5722;
         }
-
         .error {
-            color: #ff4d4f;
-            padding: 15px;
-            background: #fff1f0;
-            border-radius: 8px;
-            border: 1px solid #ffccc7;
-        }
-
-        .update-time {
-            color: #8c8c8c;
-            font-size: 0.9em;
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .notice {
-            color: #666;
-            font-size: 0.9em;
-            margin: 20px 0;
-            padding: 12px;
-            background: #e6f7ff;
-            border-radius: 8px;
-            border: 1px solid #91d5ff;
+            color: #f44336;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -145,185 +97,129 @@
     
     <div class="container">
         <h1>员工费用查询系统</h1>
-        <div class="notice">
-            ※ 请准确输入查询信息，身份证号区分大小写
-            ※ 数据每日凌晨2点更新
-        </div>
-
+        
         <div class="input-group">
-            <label>查询年份</label>
-            <input type="number" id="year" 
-                   placeholder="请输入2025-2030之间的年份" 
-                   min="2025" max="2030" value="2025">
+            <label>年份</label>
+            <input type="number" id="year" placeholder="请输入年份" min="2025" max="2030" value="2025">
         </div>
-
+        
         <div class="input-group">
-            <label>查询月份</label>
-            <input type="number" id="month" 
-                   placeholder="请输入1-12之间的月份" 
-                   min="1" max="12" value="4">
+            <label>月份</label>
+            <input type="number" id="month" placeholder="请输入月份" min="1" max="12" value="3">
         </div>
-
+        
         <div class="input-group">
             <label>身份证后六位</label>
-            <input type="text" id="authCode" 
-                   placeholder="请输入身份证号码后六位"
-                   maxlength="6">
+            <input type="text" id="authCode" placeholder="请输入身份证后六位" maxlength="6">
         </div>
-
-        <button id="queryBtn">立即查询</button>
+        
+        <button id="queryBtn">查询费用</button>
+        
         <div id="result"></div>
-        <div class="update-time" id="updateTime"></div>
     </div>
 
     <script>
         // 系统配置
         const CONFIG = {
             DATA_URL: 'data/data.json',
-            CACHE_KEY: 'hf_cache_v3',
-            CACHE_TIME: 3600000 // 1小时
+            CACHE_KEY: 'hf_cache_v4'
         };
 
-        // 初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            initCache();
-            setupEventListeners();
-            showLastUpdate();
-        });
-
-        // 缓存管理
-        async function initCache() {
-            try {
-                const cache = localStorage.getItem(CONFIG.CACHE_KEY);
-                if (cache) {
-                    const { data, timestamp } = JSON.parse(cache);
-                    if (Date.now() - timestamp < CONFIG.CACHE_TIME) {
-                        return data;
-                    }
-                }
-                return await refreshData();
-            } catch (error) {
-                console.error('缓存初始化失败:', error);
-                return [];
-            }
-        }
-
-        // 数据刷新
-        async function refreshData() {
-            try {
-                const response = await fetch(CONFIG.DATA_URL);
-                const data = await response.json();
-                const cacheData = {
-                    data: data,
-                    timestamp: Date.now()
-                };
-                localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(cacheData));
-                return data;
-            } catch (error) {
-                console.error('数据刷新失败:', error);
-                return [];
-            }
-        }
-
-        // 查询处理
-        async function handleQuery() {
-            const btn = document.getElementById('queryBtn');
+        // 初始化查询功能
+        document.getElementById('queryBtn').addEventListener('click', async function() {
+            const year = document.getElementById('year').value;
+            const month = document.getElementById('month').value;
+            const authCode = document.getElementById('authCode').value;
             const resultDiv = document.getElementById('result');
             
+            // 验证输入
+            if (!/^20[2-9][0-9]$/.test(year)) {
+                showError('请输入2025-2030之间的有效年份');
+                return;
+            }
+            
+            if (!/^(1[0-2]|[1-9])$/.test(month)) {
+                showError('请输入1-12之间的有效月份');
+                return;
+            }
+            
+            if (!/^\d{6}$/.test(authCode)) {
+                showError('请输入6位数字身份证号');
+                return;
+            }
+            
+            // 执行查询
             try {
-                // 验证输入
-                const auth = document.getElementById('authCode').value.trim();
-                const year = parseInt(document.getElementById('year').value);
-                const month = parseInt(document.getElementById('month').value);
-
-                if (!/^\d{5}[\dXx]$/i.test(auth)) throw new Error('身份证格式不正确');
-                if (year < 2025 || year > 2030) throw new Error('年份超出范围');
-                if (month < 1 || month > 12) throw new Error('月份无效');
-
-                btn.disabled = true;
-                resultDiv.innerHTML = '<div class="loading">查询中...</div>';
+                this.disabled = true;
+                resultDiv.innerHTML = '查询中...';
                 resultDiv.style.display = 'block';
-
-                // 获取数据
-                const data = await initCache();
+                
+                const data = await loadData();
                 const record = data.find(item => 
-                    item.auth.toLowerCase() === auth.toLowerCase() &&
-                    parseInt(item.year) === year &&
-                    parseInt(item.month) === month
+                    item.year == year && 
+                    item.month == month && 
+                    item.auth === authCode
                 );
-
-                // 显示结果
+                
                 if (record) {
-                    const total = calculateTotal(record);
                     resultDiv.innerHTML = `
-                        <div class="result-item">
+                        <div class="result-row">
                             <span>姓名：</span>
                             <span>${escapeHtml(record.name)}</span>
                         </div>
-                        <div class="result-item">
-                            <span>房间号：</span>
-                            <span>${escapeHtml(record.room)}</span>
+                        <div class="result-row">
+                            <span>工号：</span>
+                            <span>${record.id}</span>
                         </div>
-                        <div class="result-item">
-                            <span>水费：</span>
-                            <span>¥${parseFloat(record.water).toFixed(2)}</span>
-                        </div>
-                        <div class="result-item">
-                            <span>电费：</span>
-                            <span>¥${parseFloat(record.electricity).toFixed(2)}</span>
-                        </div>
-                        <div class="result-item">
-                            <span>房租：</span>
-                            <span>¥${parseFloat(record.rent).toFixed(2)}</span>
-                        </div>
-                        <div class="result-item total">
-                            <span>合计金额：</span>
-                            <span>¥${total.toFixed(2)}</span>
+                        <div class="result-row total">
+                            <span>应缴费用：</span>
+                            <span>¥${record.rent.toFixed(2)}</span>
                         </div>
                     `;
                 } else {
-                    resultDiv.innerHTML = '<div class="error">未找到相关费用记录</div>';
+                    showError('未找到匹配的费用记录');
                 }
-
             } catch (error) {
-                resultDiv.innerHTML = `<div class="error">${error.message}</div>`;
+                showError('系统繁忙，请稍后再试');
+                console.error('查询错误:', error);
             } finally {
-                btn.disabled = false;
-                showLastUpdate();
+                this.disabled = false;
+            }
+        });
+
+        // 数据加载函数
+        async function loadData() {
+            // 尝试从缓存读取
+            const cache = localStorage.getItem(CONFIG.CACHE_KEY);
+            if (cache) {
+                return JSON.parse(cache);
+            }
+            
+            // 从服务器加载
+            try {
+                const response = await fetch(CONFIG.DATA_URL);
+                const data = await response.json();
+                localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(data));
+                return data;
+            } catch (error) {
+                console.error('数据加载失败:', error);
+                return [];
             }
         }
 
-        // 工具函数
-        function calculateTotal(record) {
-            return ['water', 'electricity', 'rent']
-                .reduce((sum, key) => sum + (parseFloat(record[key]) || 0), 0);
+        // 显示错误
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="error">${message}</div>`;
+            resultDiv.style.display = 'block';
         }
 
+        // HTML转义
         function escapeHtml(text) {
             return text.toString()
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
-        }
-
-        function showLastUpdate() {
-            const cache = localStorage.getItem(CONFIG.CACHE_KEY);
-            if (cache) {
-                const { timestamp } = JSON.parse(cache);
-                document.getElementById('updateTime').textContent = 
-                    `最后更新：${new Date(timestamp).toLocaleString()}`;
-            }
-        }
-
-        // 事件监听
-        function setupEventListeners() {
-            document.getElementById('queryBtn').addEventListener('click', handleQuery);
-            document.getElementById('authCode').addEventListener('input', function(e) {
-                this.value = this.value.toUpperCase();
-            });
-            document.addEventListener('keypress', e => {
-                if (e.key === 'Enter') handleQuery();
-            });
         }
     </script>
 </body>
