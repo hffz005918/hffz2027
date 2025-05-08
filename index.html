@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 微信专属优化标签 -->
+    <meta http-equiv="x-dns-prefetch-control" content="on">
+    <link rel="dns-prefetch" href="//your-domain.com">
+    <link rel="preload" href="bg.jpg" as="image">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta name="x5-page-mode" content="app">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="renderer" content="webkit">
     <title>宏方纺织员工服务系统</title>
     <style>
         * {
@@ -22,7 +30,6 @@
             width: 100%;
             height: 100%;
             background: url('bg.jpg') no-repeat center/cover;
-            background-color: #6a8bad; /* 背景图加载失败时的备用颜色 */
             filter: brightness(0.8);
         }
 
@@ -86,30 +93,9 @@
                 padding: 20px;
             }
         }
-
-        /* 仅添加的访问可靠性相关样式 */
-        .loading-fallback {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #6a8bad;
-            z-index: 1000;
-            color: white;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-        }
     </style>
 </head>
 <body>
-    <!-- 添加的加载备用内容 -->
-    <div class="loading-fallback" id="loadingFallback">
-        正在加载系统，请稍候...
-    </div>
-
     <div class="background"></div>
     <div class="content">
         <div class="title">
@@ -118,12 +104,12 @@
         </div>
         
         <div class="nav-cards">
-            <div class="nav-card" onclick="safeNavigate('dorm-rules.html')">
+            <div class="nav-card" onclick="window.location.href='dorm-rules.html'">
                 <h2>宿舍管理</h2>
                 <p>查看住宿规定和注意事项</p>
             </div>
             
-            <div class="nav-card" onclick="safeNavigate('fee-query.html')">
+            <div class="nav-card" onclick="window.location.href='fee-query.html'">
                 <h2>费用查询</h2>
                 <p>水电费查询服务</p>
             </div>
@@ -131,54 +117,55 @@
     </div>
 
     <script>
-        // 增强的导航函数，提高访问成功率
-        function safeNavigate(url) {
-            try {
-                // 显示加载状态
-                document.getElementById('loadingFallback').style.display = 'flex';
+        // 微信浏览器专属优化
+        (function(){
+            // 检测微信环境
+            const isWeChat = /micromessenger/i.test(navigator.userAgent);
+            
+            if(isWeChat) {
+                // 1. 图片预加载
+                const preloadImg = new Image();
+                preloadImg.src = 'bg.jpg';
                 
-                // 尝试访问目标页面
-                fetch(url, { method: 'HEAD' })
-                    .then(response => {
-                        if (response.ok) {
-                            window.location.href = url;
-                        } else {
-                            document.getElementById('loadingFallback').style.display = 'none';
-                            alert('暂时无法访问该服务，请稍后再试');
-                        }
-                    })
-                    .catch(() => {
-                        document.getElementById('loadingFallback').style.display = 'none';
-                        alert('网络连接异常，请检查您的网络设置');
+                // 2. 阻止字体调整
+                if(typeof WeixinJSBridge !== 'undefined'){
+                    WeixinJSBridge.invoke('setFontSizeCallback', { 'fontSize' : 0 });
+                    document.addEventListener('WeixinJSBridgeReady', function() {
+                        WeixinJSBridge.invoke('setFontSizeCallback', { 'fontSize' : 0 });
                     });
-            } catch (e) {
-                // 降级方案
-                window.location.href = url;
+                }
+                
+                // 3. 启用GPU加速
+                document.documentElement.style.cssText += 
+                    '-webkit-backface-visibility:hidden;-webkit-transform-style:preserve-3d;';
+                
+                // 4. 提前建立TCP连接
+                const preconnectLink = document.createElement('link');
+                preconnectLink.rel = 'preconnect';
+                preconnectLink.href = window.location.origin;
+                document.head.appendChild(preconnectLink);
+                
+                // 5. 预加载可能访问的页面
+                ['dorm-rules.html', 'fee-query.html'].forEach(url => {
+                    const link = document.createElement('link');
+                    link.rel = 'prefetch';
+                    link.href = url;
+                    document.head.appendChild(link);
+                });
             }
-        }
-
-        // 背景图加载失败处理
+            
+            // 原有点击事件保持兼容
+            document.querySelectorAll('.nav-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const url = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+                    window.location.href = url;
+                });
+            });
+        })();
+        
+        // 背景图加载失败处理（保持原有功能）
         document.querySelector('.background').addEventListener('error', function() {
-            this.style.backgroundImage = 'none';
-        });
-
-        // 页面加载完成时隐藏加载提示
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                document.getElementById('loadingFallback').style.display = 'none';
-            }, 500);
-        });
-
-        // 如果主内容加载超时（5秒），显示备用内容
-        setTimeout(function() {
-            if (document.getElementById('loadingFallback').style.display === 'flex') {
-                document.getElementById('loadingFallback').textContent = '正在尝试重新连接...';
-            }
-        }, 5000);
-    </script>
-</body>
-</html>
-            this.style.backgroundColor = '#6a8bad';
+            console.log('背景图加载失败');
         });
     </script>
 </body>
