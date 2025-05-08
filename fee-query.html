@@ -96,25 +96,13 @@
     <button class="back-btn" onclick="window.location.href='index.html'">返回首页</button>
     
     <div class="container">
-        <h1>员工费用查询系统</h1>
-        
-        <div class="input-group">
-            <label>年份</label>
-            <input type="number" id="year" placeholder="请输入年份" min="2025" max="2030" value="2025">
+        <h1>宏方纺织费用查询系统</h1>
+        <div class="date-inputs">
+            <input type="number" id="year" placeholder="年份（如2023）" min="2025" max="2030" value="2025">
+            <input type="number" id="month" placeholder="月份（1-12）" min="1" max="12" value="4">
         </div>
-        
-        <div class="input-group">
-            <label>月份</label>
-            <input type="number" id="month" placeholder="请输入月份" min="1" max="12" value="3">
-        </div>
-        
-        <div class="input-group">
-            <label>身份证后六位</label>
-            <input type="text" id="authCode" placeholder="请输入身份证后六位" maxlength="6" oninput="this.value = this.value.toUpperCase()">
-        </div>
-        
-        <button id="queryBtn">查询费用</button>
-        
+        <input type="text" id="authCode" placeholder="身份证后六位" maxlength="6">
+        <button id="queryBtn">立即查询</button>
         <div id="result"></div>
     </div>
 
@@ -122,105 +110,226 @@
         // 系统配置
         const CONFIG = {
             DATA_URL: 'data/data.json',
-            CACHE_KEY: 'hf_cache_v4'
+            CACHE_KEY: 'hf_cache_v6', // 版本号更新
+            CACHE_TIME: 86400000,
+            RETRY_LIMIT: 3,
+            RETRY_DELAY: 2000,
+            FIXED_UPLOAD_TIME: null // 新增固定上传时间配置
         };
 
-        // 初始化查询功能
-        document.getElementById('queryBtn').addEventListener('click', async function() {
-            const year = document.getElementById('year').value;
-            const month = document.getElementById('month').value;
-            const authCode = document.getElementById('authCode').value.toUpperCase(); // 转为大写
+        // 状态管理
+        let appState = {
+            cacheData: null,
+            fixedUploadTime: null, // 固定上传时间（只设置一次）
+            isOnline: navigator.onLine
+        };
+
+        // 初始化加载
+        (async () => {
+            try {
+                const cache = localStorage.getItem(CONFIG.CACHE_KEY);
+                if (cache) {
+                    const { data, fixedUploadTime } = JSON.parse(cache);
+                    if (Date.now() - (fixedUploadTime || 0) < CONFIG.CACHE_TIME) {
+                        appState.cacheData = data;
+                        appState.fixedUploadTime = fixedUploadTime;
+                    }
+                }
+            } catch (e) {
+                console.warn('缓存加载失败:', e);
+            }
+
+            if (appState.isOnline) {
+                try {
+                    await fetchData();
+                } catch (error) {
+                    console.warn('数据预加载失败:', error);
+                }
+            }
+
+            setupEventListeners();
+        })();
+
+        // 主查询函数
+        async function handleQuery() {
+            const btn = document.getElementById('queryBtn');
             const resultDiv = document.getElementById('result');
             
-            // 验证输入
-            if (!/^20[2-9][0-9]$/.test(year)) {
-                showError('请输入2025-2030之间的有效年份');
-                return;
-            }
-            
-            if (!/^(1[0-2]|[1-9])$/.test(month)) {
-                showError('请输入1-12之间的有效月份');
-                return;
-            }
-            
-            // 修改身份证验证：前5位数字 + 最后1位数字或X
-            if (!/^\d{5}[\dX]$/.test(authCode)) {
-                showError('请输入正确的身份证后六位（前5位数字+最后1位数字或X）');
-                return;
-            }
-            
-            // 执行查询
             try {
-                this.disabled = true;
-                resultDiv.innerHTML = '查询中...';
-                resultDiv.style.display = 'block';
-                
-                const data = await loadData();
-                const record = data.find(item => 
-                    item.year == year && 
-                    item.month == month && 
-                    item.auth.toUpperCase() === authCode // 不区分大小写比较
-                );
-                
-                if (record) {
-                    resultDiv.innerHTML = `
-                        <div class="result-row">
-                            <span>姓名：</span>
-                            <span>${escapeHtml(record.name)}</span>
-                        </div>
-                        <div class="result-row">
-                            <span>房间号：</span>
-                            <span>${record.id}</span>
-                        </div>
-                        <div class="result-row total">
-                            <span>应缴费用：</span>
-                            <span>¥${record.rent.toFixed(2)}</span>
-                        </div>
-                    `;
-                } else {
-                    showError('未找到匹配的费用记录');
-                }
-            } catch (error) {
-                showError('系统繁忙，请稍后再试');
-                console.error('查询错误:', error);
-            } finally {
-                this.disabled = false;
-            }
-        });
+                const auth = document.getElementById('authCode').value.trim().toUpperCase();
+                const year = parseInt(document.getElementById('year').value);
+                const month = parseInt(document.getElementById('month').value);
 
-        // 数据加载函数
-        async function loadData() {
-            // 尝试从缓存读取
-            const cache = localStorage.getItem(CONFIG.CACHE_KEY);
-            if (cache) {
-                return JSON.parse(cache);
-            }
-            
-            // 从服务器加载
-            try {
-                const response = await fetch(CONFIG.DATA_URL);
-                const data = await response.json();
-                localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(data));
-                return data;
+                if (!/^\d{5}[\dA-Z]$/.test(auth)) throw new Error('E1');
+                if (isNaN(year) || year < 2025 || year > 2030) throw new Error('E2');
+                if (isNaN(month) || month < 1 || month > 12) throw new Error('E3');
+
+                btn.disabled = true;
+                resultDiv.innerHTML = '<div class="loading">查询中...</div>';
+                resultDiv.style.display = 'block';
+
+                const data = await getData();
+                const record = data.find(item => 
+                    String(item.auth).toUpperCase() === auth &&
+                    parseInt(item.year) === year &&
+                    parseInt(item.month) === month
+                );
+
+                resultDiv.innerHTML = record ? buildResultHTML(record) : 
+                    '<div class="error">未找到匹配记录</div>';
+
             } catch (error) {
-                console.error('数据加载失败:', error);
-                return [];
+                handleError(error.message, resultDiv);
+            } finally {
+                btn.disabled = false;
             }
         }
 
-        // 显示错误
-        function showError(message) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `<div class="error">${message}</div>`;
-            resultDiv.style.display = 'block';
+        // 数据获取核心逻辑
+        async function getData() {
+            if (appState.cacheData) return appState.cacheData;
+            return new Promise((resolve, reject) => {
+                const retryFetch = async (attempt = 0) => {
+                    try {
+                        await fetchData();
+                        resolve(appState.cacheData);
+                    } catch (error) {
+                        if (attempt < CONFIG.RETRY_LIMIT) {
+                            setTimeout(() => retryFetch(attempt + 1), CONFIG.RETRY_DELAY);
+                        } else {
+                            reject(error);
+                        }
+                    }
+                };
+                retryFetch();
+            });
+        }
+
+        // 改进的数据获取方法
+        async function fetchData() {
+            try {
+                const response = await fetch(`${CONFIG.DATA_URL}?_=${Date.now()}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                // 获取并锁定上传时间（只设置一次）
+                const uploadTime = await getFileUploadTime(response);
+                if (!appState.fixedUploadTime) {
+                    appState.fixedUploadTime = uploadTime;
+                    console.log('锁定上传时间:', new Date(uploadTime).toLocaleString());
+                }
+
+                const text = await response.text();
+                const newData = JSON.parse(text.replace(/^\uFEFF/, ''));
+
+                // 只有当数据变化时才更新缓存
+                if (JSON.stringify(newData) !== JSON.stringify(appState.cacheData)) {
+                    appState.cacheData = newData;
+                    localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify({
+                        data: newData,
+                        fixedUploadTime: appState.fixedUploadTime
+                    }));
+                }
+
+            } catch (error) {
+                if (!appState.cacheData) throw error;
+                console.log('网络请求失败，使用缓存数据');
+            }
+        }
+
+        // 获取文件上传时间（改进版）
+        async function getFileUploadTime(response) {
+            // 如果已有固定时间，直接返回
+            if (appState.fixedUploadTime) return appState.fixedUploadTime;
+
+            try {
+                // 方法1：从自定义header获取
+                const headerTime = response.headers.get('X-Upload-Timestamp');
+                if (headerTime) return parseInt(headerTime);
+
+                // 方法2：从JSON内容获取
+                const cloneRes = response.clone();
+                const data = await cloneRes.json();
+                if (data.uploadTime) return parseInt(data.uploadTime);
+
+                // 方法3：从文件名获取
+                const filename = response.url.split('/').pop();
+                const timestamp = filename.match(/_(\d+).json/)?.[1];
+                if (timestamp) return parseInt(timestamp);
+
+                // 保底方案：使用当前日期（但不会存入fixedUploadTime）
+                return Date.now();
+            } catch {
+                return Date.now();
+            }
+        }
+
+        // 构建结果HTML
+        function buildResultHTML(record) {
+            const total = [record.water, record.electricity, record.rent]
+                .reduce((sum, val) => sum + (Number(val) || 0), 0);
+            
+            return `
+                <h3>${record.year}年${record.month}月费用</h3>
+                <p>姓名：${escapeHtml(record.name)}</p>
+                <p>房间号：${escapeHtml(record.id)}</p>
+                <p><strong>应缴费用：${total.toFixed(2)} 元</strong></p>
+                <div class="update-time">
+                    数据上传时间：${appState.fixedUploadTime ? 
+                        new Date(appState.fixedUploadTime).toLocaleString('zh-CN') : 
+                        '未知'}
+                </div>
+                <div class="safety-alert">
+                    ※ 严 守 规 范 保 平 安※
+                    ※安 全 用 电 记 心 间 ※
+                </div>
+            `;
+        }
+
+        // 错误处理
+        function handleError(code, container) {
+            const errorMap = {
+                'E1': '身份证格式错误（5位数字+1位数字/字母）',
+                'E2': '请输入2025-2030之间的年份',
+                'E3': '请输入1-12之间的月份',
+                'HTTP 404': '数据文件不存在',
+                'HTTP 500': '服务器错误'
+            };
+            
+            container.innerHTML = `
+                <div class="error">${errorMap[code] || '系统错误'}</div>
+                <button onclick="handleQuery()" style="margin-top:15px;width:100%">
+                    重试查询
+                </button>
+            `;
         }
 
         // HTML转义
         function escapeHtml(text) {
-            return text.toString()
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
+            const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // 事件监听
+        function setupEventListeners() {
+            document.getElementById('queryBtn').addEventListener('click', handleQuery);
+            document.getElementById('authCode').addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+            document.getElementById('authCode').addEventListener('keypress', e => {
+                if (e.key === 'Enter') handleQuery();
+            });
+
+            window.addEventListener('online', async () => {
+                appState.isOnline = true;
+                try {
+                    await fetchData();
+                } catch (error) {
+                    console.warn('网络恢复后更新失败:', error);
+                }
+            });
+            window.addEventListener('offline', () => {
+                appState.isOnline = false;
+            });
         }
     </script>
 </body>
