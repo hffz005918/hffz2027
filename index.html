@@ -1,16 +1,9 @@
+<!-- index.html 主界面 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 微信专属优化标签 -->
-    <meta http-equiv="x-dns-prefetch-control" content="on">
-    <link rel="dns-prefetch" href="//your-domain.com">
-    <link rel="preload" href="bg.jpg" as="image">
-    <meta http-equiv="Cache-Control" content="no-siteapp">
-    <meta name="x5-page-mode" content="app">
-    <meta name="x5-orientation" content="portrait">
-    <meta name="renderer" content="webkit">
     <title>员工服务系统</title>
     <style>
         * {
@@ -115,58 +108,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // 微信浏览器专属优化
-        (function(){
-            // 检测微信环境
-            const isWeChat = /micromessenger/i.test(navigator.userAgent);
-            
-            if(isWeChat) {
-                // 1. 图片预加载
-                const preloadImg = new Image();
-                preloadImg.src = 'bg.jpg';
-                
-                // 2. 阻止字体调整
-                if(typeof WeixinJSBridge !== 'undefined'){
-                    WeixinJSBridge.invoke('setFontSizeCallback', { 'fontSize' : 0 });
-                    document.addEventListener('WeixinJSBridgeReady', function() {
-                        WeixinJSBridge.invoke('setFontSizeCallback', { 'fontSize' : 0 });
-                    });
-                }
-                
-                // 3. 启用GPU加速
-                document.documentElement.style.cssText += 
-                    '-webkit-backface-visibility:hidden;-webkit-transform-style:preserve-3d;';
-                
-                // 4. 提前建立TCP连接
-                const preconnectLink = document.createElement('link');
-                preconnectLink.rel = 'preconnect';
-                preconnectLink.href = window.location.origin;
-                document.head.appendChild(preconnectLink);
-                
-                // 5. 预加载可能访问的页面
-                ['dorm-rules.html', 'fee-query.html'].forEach(url => {
-                    const link = document.createElement('link');
-                    link.rel = 'prefetch';
-                    link.href = url;
-                    document.head.appendChild(link);
-                });
-            }
-            
-            // 原有点击事件保持兼容
-            document.querySelectorAll('.nav-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    const url = this.getAttribute('onclick').match(/'([^']+)'/)[1];
-                    window.location.href = url;
-                });
-            });
-        })();
-        
-        // 背景图加载失败处理（保持原有功能）
-        document.querySelector('.background').addEventListener('error', function() {
-            console.log('背景图加载失败');
-        });
-    </script>
 </body>
 </html>
