@@ -1,1 +1,97 @@
+<!-- dorm-rules.html 宿舍管理页面 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宿舍管理规定</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
 
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            padding: 10px 20px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .rules-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #1890ff;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        li::before {
+            content: "•";
+            color: #1890ff;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.history.back()">返回首页</button>
+    <div class="container">
+        <h1>员工宿舍管理规定</h1>
+        
+        <div class="rules-section">
+            <h2>住宿基本要求</h2>
+            <ul>
+                <li>遵守作息时间：晚23:00前返回宿舍</li>
+                <li>保持宿舍卫生：每日轮值打扫制度</li>
+                <li>禁止使用大功率电器：单个电器功率不得超过800W</li>
+                <li>物品摆放规范：个人物品需整齐收纳</li>
+            </ul>
+        </div>
+
+        <div class="rules-section">
+            <h2>安全管理规定</h2>
+            <ul>
+                <li>严禁私拉乱接电线</li>
+                <li>禁止留宿外来人员</li>
+                <li>贵重物品自行妥善保管</li>
+                <li>发现安全隐患立即报告</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
