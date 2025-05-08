@@ -1,12 +1,10 @@
 [
   {
-    "year": "2025",
-    "month": "4",
-    "auth": "12345X",
-    "name": "李四",
-    "room": "B-205",
-    "water": 35.50,
-    "electricity": 89.20,
-    "rent": 600.00
+    "year": 2025,
+    "month": 3,
+    "id": 201,
+    "name": "刘凤群",
+    "rent": 9,
+    "auth": "024826"
   }
 ]
