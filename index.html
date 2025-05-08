@@ -1,3 +1,4 @@
+<!-- index.html 主界面 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -5,57 +6,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>宏方纺织员工服务系统</title>
     <style>
-        /* 新增加载动画样式 */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            height: 100vh;
+            position: relative;
+        }
+
+        .background {
+            position: absolute;
             width: 100%;
             height: 100%;
-            background: rgba(255,255,255,0.9);
+            background: url('bg.jpg') no-repeat center/cover;
+            filter: brightness(0.8);
+        }
+
+        .content {
+            position: relative;
+            height: 100%;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            z-index: 1000;
-            transition: opacity 0.3s ease;
+            justify-content: center;
         }
 
-        .loader.hidden {
-            opacity: 0;
-            pointer-events: none;
+        .title {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 50px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #1890ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .nav-cards {
+            display: grid;
+            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            width: 80%;
+            max-width: 800px;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .nav-card {
+            background: rgba(255,255,255,0.9);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        /* 原有样式保持不变 */
-        * { /* ... */ }
-        body { /* ... */ }
-        .background { /* ... */ }
-        .content { /* ... */ }
-        .title { /* ... */ }
-        .nav-cards { /* ... */ }
-        .nav-card { /* ... */ }
-        /* ...其他原有样式... */
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .nav-card h2 {
+            color: #1890ff;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .nav-card p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .nav-cards {
+                width: 90%;
+                gap: 20px;
+            }
+            
+            .nav-card {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- 新增加载动画 -->
-    <div class="loader" id="loader">
-        <div class="spinner"></div>
-    </div>
-
     <div class="background"></div>
     <div class="content">
         <div class="title">
@@ -64,38 +97,16 @@
         </div>
         
         <div class="nav-cards">
-            <div class="nav-card" onclick="navigateTo('dorm-rules.html')">
+            <div class="nav-card" onclick="window.location.href='dorm-rules.html'">
                 <h2>宿舍管理</h2>
                 <p>查看住宿规定和注意事项</p>
             </div>
             
-            <div class="nav-card" onclick="navigateTo('fee-query.html')">
+            <div class="nav-card" onclick="window.location.href='fee-query.html'">
                 <h2>费用查询</h2>
                 <p>水电费查询服务</p>
             </div>
         </div>
     </div>
-
-    <script>
-        // 页面加载完成后隐藏加载动画
-        window.onload = function() {
-            const loader = document.getElementById('loader');
-            loader.classList.add('hidden');
-            
-            // 设置最小加载时间（可选）
-            setTimeout(() => {
-                loader.style.display = 'none';
-            }, 500);
-        };
-
-        // 统一导航处理函数
-        function navigateTo(url) {
-            const loader = document.getElementById('loader');
-            loader.classList.remove('hidden');
-            setTimeout(() => {
-                window.location.href = url;
-            }, 300); // 延迟跳转确保动画可见
-        }
-    </script>
 </body>
 </html>
