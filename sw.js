@@ -1,85 +1,40 @@
-// 缓存名称和版本控制
-const CACHE_NAME = 'employee-portal-v2';
-const OFFLINE_URL = '/offline.html';
-const PRECACHE_URLS = [
+const CACHE_NAME = 'mobile-v3';
+const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css',
-  '/js/lite.js',
-  '/bg-low.webp',
-  '/bg.jpg',
-  OFFLINE_URL
+  '/js/mobile.js',
+  '/img/bg-low.webp',
+  '/fonts/inter.woff2'
 ];
 
-// 安装阶段：预缓存关键资源
-self.addEventListener('install', event => {
-  event.waitUntil(
+// 安装阶段
+self.addEventListener('install', (e) => {
+  e.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(PRECACHE_URLS))
+      .then(cache => cache.addAll(CORE_ASSETS))
       .then(() => self.skipWaiting())
   );
 });
 
-// 激活阶段：清理旧缓存
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(name => {
-          if (name !== CACHE_NAME) {
-            return caches.delete(name);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
-});
-
-// 网络请求拦截
-self.addEventListener('fetch', event => {
-  // 跳过非GET请求和跨域请求
-  if (event.request.method !== 'GET' || 
-      !event.request.url.startsWith(self.location.origin)) {
-    return;
+// 缓存优先策略
+self.addEventListener('fetch', (e) => {
+  if(e.request.mode === 'navigate' || 
+     e.request.destination === 'image') {
+    e.respondWith(
+      caches.match(e.request)
+        .then(cached => cached || fetchAndCache(e.request))
+    );
   }
-
-  event.respondWith(
-    caches.match(event.request)
-      .then(cachedResponse => {
-        // 返回缓存或网络请求
-        return cachedResponse || fetch(event.request)
-          .then(response => {
-            // 动态缓存可缓存资源
-            if (isCacheable(event.request)) {
-              const responseToCache = response.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => cache.put(event.request, responseToCache));
-            }
-            return response;
-          })
-          .catch(() => {
-            // 网络失败时返回离线页面
-            if (event.request.mode === 'navigate') {
-              return caches.match(OFFLINE_URL);
-            }
-          });
-      })
-  );
 });
 
-// 可缓存资源判断
-function isCacheable(request) {
-  return request.method === 'GET' &&
-         !request.url.includes('/api/') &&
-         (request.url.endsWith('.html') || 
-          request.url.endsWith('.css') || 
-          request.url.endsWith('.js') || 
-          /\.(webp|avif|jpg)$/.test(request.url));
+async function fetchAndCache(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const fresh = await fetch(request);
+    await cache.put(request, fresh.clone());
+    return fresh;
+  } catch (e) {
+    const cached = await cache.match(request);
+    return cached || caches.match('/offline.html');
+  }
 }
-
-// 监听消息（用于触发更新等）
-self.addEventListener('message', event => {
-  if (event.data === 'skipWaiting') {
-    self.skipWaiting();
-  }
-});
