@@ -28,19 +28,7 @@
             min-height: 100vh;
             -webkit-touch-callout: none;
             touch-action: manipulation;
-        }
-
-        .background {
-            position: fixed;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-        }
-
-        .background img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            background-color: #f5f7fa;
         }
 
         .content {
@@ -106,14 +94,6 @@
     <div id="updateNotice" class="update-notice" hidden>
         新版本可用，<button onclick="location.reload()">点击刷新</button>
     </div>
-
-    <div class="background">
-        <picture>
-            <source srcset="bg.avif" type="image/avif">
-            <source srcset="bg.webp" type="image/webp">
-            <img src="bg.jpg" alt="背景图" loading="lazy">
-        </picture>
-    </div>
     
     <main class="content">
         <h1 class="title">员工服务系统</h1>
@@ -145,17 +125,6 @@
 
             // 动态资源加载
             function loadAssets() {
-                // 预加载适配图片
-                const imgSrc = slowNetworks.includes(effectiveType) 
-                    ? 'bg-low.webp' 
-                    : 'bg.avif';
-                
-                const preloadLink = document.createElement('link');
-                preloadLink.rel = 'preload';
-                preloadLink.as = 'image';
-                preloadLink.href = imgSrc;
-                document.head.appendChild(preloadLink);
-
                 // 按需加载JS
                 return slowNetworks.includes(effectiveType)
                     ? import('./lite.js')
