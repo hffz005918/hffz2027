@@ -1,23 +1,31 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-platform="desktop">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 多级DNS预解析 -->
+    <link rel="dns-prefetch" href="//your-domain.com">
+    <link rel="dns-prefetch" href="//static.your-domain.com">
+    <link rel="dns-prefetch" href="//cdn.your-domain.com">
     
-    <!-- 预加载关键资源 -->
-    <link rel="preconnect" href="//static.example.com">
-    <link rel="preload" as="image" href="/img/bg-mobile.webp" media="(max-width: 600px)">
-    <link rel="preload" as="image" href="/img/bg.avif" media="(min-width: 601px)">
-
-    <!-- 内联核心CSS -->
+    <!-- 资源预加载 -->
+    <link rel="preload" href="bg.webp" as="image" type="image/webp">
+    <link rel="preload" href="bg.jpg" as="image" type="image/jpeg">
+    <link rel="preload" href="dorm-rules.html" as="document">
+    <link rel="preload" href="fee-query.html" as="document">
+    
+    <!-- 缓存控制 -->
+    <meta http-equiv="Cache-Control" content="max-age=604800, must-revalidate">
+    <meta http-equiv="x-dns-prefetch-control" content="on">
+    
+    <!-- 微信专属优化标签 -->
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta name="x5-page-mode" content="app">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="renderer" content="webkit">
+    
+    <title>员工服务系统</title>
     <style>
-        /*! core.css */
-        :root {
-            --color-primary: #2c5e8f;
-            --color-surface: #fff;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -26,97 +34,317 @@
         }
 
         body {
-            font-family: system-ui, -apple-system;
-            line-height: 1.5;
-            background: var(--color-primary);
+            font-family: "Microsoft YaHei", sans-serif;
+            height: 100vh;
+            position: relative;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            text-size-adjust: 100%;
         }
 
-        .app-shell {
-            min-height: 100vh;
+        .background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('bg.jpg') no-repeat center/cover;
+            background-color: #6a8bad;
+            filter: brightness(0.8);
+            z-index: -1;
+            backface-visibility: hidden;
+            image-rendering: -webkit-optimize-contrast;
+        }
+
+        .content {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transform: translateZ(0);
+        }
+
+        .title {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 50px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .nav-cards {
             display: grid;
-            grid-template-rows: auto 1fr;
+            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            width: 80%;
+            max-width: 800px;
         }
 
         .nav-card {
-            background: var(--color-surface);
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 0.75rem;
-            box-shadow: var(--shadow-sm);
+            background: rgba(255,255,255,0.9);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            will-change: transform;
+            backface-visibility: hidden;
         }
 
-        @media (max-width: 600px) {
-            :root {
-                --shadow-sm: none;
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .nav-card:active {
+            transform: scale(0.98) translateY(-2px);
+            transition: transform 0.1s;
+        }
+
+        .nav-card h2 {
+            color: #1890ff;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .nav-card p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        /* 移动端优化样式 */
+        @media (max-width: 768px) {
+            .nav-cards {
+                width: 95%;
+                gap: 15px;
+                grid-template-columns: 1fr;
             }
             
             .nav-card {
-                padding: 0.75rem;
-                margin: 0.5rem;
+                padding: 20px;
+            }
+            
+            .background {
+                background-attachment: fixed;
+            }
+            
+            .title {
+                margin-bottom: 30px;
             }
         }
+
+        /* 加载状态指示器 */
+        .wechat-loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.2rem;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* 移动端加载提示 */
+        .mobile-loading {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: none;
+            z-index: 1001;
+        }
     </style>
-
-    <!-- 异步加载增强CSS -->
-    <link rel="stylesheet" href="/css/enhance.css" media="(min-width: 601px)" async>
-    
-    <title>员工服务系统</title>
 </head>
-
 <body>
-    <div class="app-shell">
-        <main>
-            <div class="nav-cards">
-                <div class="nav-card" data-route="/dorm">
-                    <h2>宿舍管理</h2>
-                    <p>管理制度查询</p>
-                </div>
-                <div class="nav-card" data-route="/fee">
-                    <h2>费用查询</h2>
-                    <p>电费查询服务</p>
-                </div>
-            </div>
-        </main>
+    <!-- 微信加载状态提示 -->
+    <div class="wechat-loader" id="wechatLoader">
+        加载中，请稍候...
+    </div>
+    
+    <!-- 移动端加载提示 -->
+    <div class="mobile-loading" id="mobileLoading">
+        正在努力加载...
     </div>
 
-    <!-- 智能背景加载 -->
-    <picture class="bg-layer">
-        <source srcset="/img/bg.avif" type="image/avif" media="(min-width: 601px)">
-        <source srcset="/img/bg-mobile.webp" type="image/webp">
-        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz4=" 
-             alt="背景" 
-             loading="lazy"
-             decoding="async">
-    </picture>
+    <div class="background"></div>
+    <div class="content">
+        <div class="title">
+            <h1 style="font-size: 2.5em; margin-bottom: 15px;">员工服务系统</h1>
+            <p style="font-size: 1.2em;">欢迎使用宏方纺织服务平台</p>
+        </div>
+        
+        <div class="nav-cards">
+            <div class="nav-card" data-href="dorm-rules.html">
+                <h2>宿舍管理</h2>
+                <p>员工宿舍管理制度</p>
+            </div>
+            
+            <div class="nav-card" data-href="fee-query.html">
+                <h2>费用查询</h2>
+                <p>电费查询服务</p>
+            </div>
+        </div>
+    </div>
 
-    <!-- 核心JS -->
     <script>
-        // 设备检测
-        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-        document.documentElement.dataset.platform = isMobile ? 'mobile' : 'desktop';
-
-        // 即时交互
-        document.addEventListener('DOMContentLoaded', () => {
-            // 基础路由
-            document.querySelectorAll('.nav-card').forEach(card => {
-                card.onclick = () => {
-                    window.location.href = card.dataset.route;
-                };
-            });
-
-            // 按需加载
+        // 性能监控开始
+        performance.mark('start-load');
+        
+        // 移动端检测
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isWeChat = /micromessenger/i.test(navigator.userAgent);
+        const loader = document.getElementById('wechatLoader');
+        const mobileLoader = document.getElementById('mobileLoading');
+        
+        // 移动端显示专用加载提示
+        if(isMobile && !isWeChat) {
+            mobileLoader.style.display = 'block';
+        }
+        
+        // 图片优化加载
+        (function() {
+            const bg = document.querySelector('.background');
+            
+            // WebP支持检测
+            const supportsWebP = (function() {
+                const elem = document.createElement('canvas');
+                if(elem.getContext && elem.getContext('2d')) {
+                    return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+                }
+                return false;
+            })();
+            
+            // 移动端使用优化图片
             if(isMobile) {
-                import('/js/core.js').catch(() => {});
+                const img = new Image();
+                img.src = supportsWebP ? 'bg.webp' : 'bg-mobile.jpg';
+                img.onload = function() {
+                    bg.style.backgroundImage = `url('${this.src}')`;
+                };
+                img.onerror = function() {
+                    bg.style.backgroundImage = 'none';
+                    bg.style.backgroundColor = '#6a8bad';
+                };
+            }
+        })();
+        
+        // 微信环境优化
+        if(isWeChat) {
+            loader.style.display = 'flex';
+            
+            // 微信JSBridge优化
+            function setupWeixinBridge() {
+                try {
+                    if(typeof WeixinJSBridge !== 'undefined') {
+                        WeixinJSBridge.invoke('setFontSizeCallback', { 'fontSize': 0 });
+                        WeixinJSBridge.on('menu:setfont', function() {
+                            WeixinJSBridge.invoke('setFontSizeCallback', { 'fontSize': 0 });
+                        });
+                    }
+                } catch(e) {
+                    console.warn('微信JSBridge调用失败:', e);
+                }
+            }
+            
+            if(document.readyState === 'complete') {
+                setupWeixinBridge();
             } else {
-                import('/js/enhance.js');
+                document.addEventListener('DOMContentLoaded', setupWeixinBridge);
+                document.addEventListener('WeixinJSBridgeReady', setupWeixinBridge);
+            }
+        }
+        
+        // 页面加载完成处理
+        window.addEventListener('load', function() {
+            performance.mark('end-load');
+            performance.measure('pageLoad', 'start-load', 'end-load');
+            
+            // 隐藏加载提示
+            setTimeout(function() {
+                loader.style.display = 'none';
+                mobileLoader.style.display = 'none';
+            }, 300);
+            
+            // 上报性能数据
+            const measures = performance.getEntriesByName('pageLoad');
+            const loadTime = measures[0].duration.toFixed(2);
+            if(navigator.sendBeacon) {
+                const data = new FormData();
+                data.append('loadTime', loadTime);
+                data.append('platform', isMobile ? 'mobile' : 'desktop');
+                data.append('network', navigator.connection ? navigator.connection.effectiveType : 'unknown');
+                navigator.sendBeacon('/perf-log', data);
             }
         });
-
-        // 智能Service Worker
-        if('serviceWorker' in navigator && location.protocol === 'https:') {
-            navigator.serviceWorker.register('/sw.js', {
-                scope: '/',
-                updateViaCache: 'none'
+        
+        // 卡片点击事件
+        document.querySelectorAll('.nav-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const url = this.getAttribute('data-href');
+                
+                // 移动端显示加载提示
+                if(isMobile) {
+                    if(isWeChat) {
+                        loader.style.display = 'flex';
+                    } else {
+                        mobileLoader.style.display = 'block';
+                        mobileLoader.textContent = '正在跳转...';
+                    }
+                }
+                
+                // 延迟跳转确保提示可见
+                setTimeout(() => {
+                    window.location.href = url;
+                }, isMobile ? 200 : 50);
+            });
+        });
+        
+        // 资源加载失败处理
+        document.addEventListener('error', function(e) {
+            const target = e.target;
+            if(target.tagName.toLowerCase() === 'img') {
+                const retries = parseInt(target.dataset.retries) || 0;
+                if(retries < 2) {
+                    target.src = target.src.split('?')[0] + '?retry=' + retries + '&t=' + Date.now();
+                    target.dataset.retries = retries + 1;
+                }
+            }
+        }, true);
+        
+        // 5秒超时处理
+        setTimeout(() => {
+            if(loader.style.display === 'flex' || mobileLoader.style.display === 'block') {
+                const msg = isMobile ? '网络较慢，请稍候...' : '加载时间较长，请检查网络...';
+                if(isWeChat) {
+                    loader.textContent = msg;
+                } else if(isMobile) {
+                    mobileLoader.textContent = msg;
+                }
+            }
+        }, 5000);
+        
+        // 注册Service Worker
+        if('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', {
+                    scope: '/'
+                }).then(registration => {
+                    console.log('ServiceWorker 注册成功:', registration.scope);
+                }).catch(err => {
+                    console.log('ServiceWorker 注册失败:', err);
+                });
             });
         }
     </script>
