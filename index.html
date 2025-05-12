@@ -166,8 +166,74 @@
             margin-bottom: 1rem;
         }
 
+        /* 首页弹窗样式 */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: min(90%, 500px);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow-hover);
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-body {
+            color: var(--text-dark);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            text-align: right;
+        }
+
+        .close-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--secondary-color);
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* 响应式调整 */
@@ -184,11 +250,19 @@
             .title {
                 margin-bottom: 2.5rem;
             }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
         }
 
         @media (max-width: 480px) {
             .nav-cards {
                 grid-template-columns: 1fr;
+            }
+
+            .modal-header h2 {
+                font-size: 1.3rem;
             }
         }
 
@@ -201,6 +275,10 @@
             .wechat-loader {
                 background: rgba(0, 0, 0, 0.85);
             }
+
+            .welcome-modal {
+                background: rgba(0, 0, 0, 0.85);
+            }
         }
     </style>
 </head>
@@ -209,6 +287,29 @@
     <div class="wechat-loader" id="wechatLoader" aria-live="polite">
         <div class="loader-spinner"></div>
         <div>加载中，请稍候...</div>
+    </div>
+
+    <!-- 首页欢迎弹窗 -->
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>欢迎使用员工服务系统</h2>
+            </div>
+            <div class="modal-body">
+                <p>尊敬的宏方纺织员工：</p>
+                <p>欢迎使用员工服务系统，本系统为您提供宿舍管理、费用查询等服务。</p>
+                <p>系统近期更新内容：</p>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>优化了费用查询的显示方式</li>
+                    <li>新增宿舍报修在线申请功能</li>
+                    <li>提升了系统响应速度</li>
+                </ul>
+                <p style="margin-top: 1rem;">如有任何问题，请联系人力资源部。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" id="closeModalBtn">我知道了</button>
+            </div>
+        </div>
     </div>
 
     <!-- 渐进式背景加载 -->
@@ -238,7 +339,7 @@
                  aria-labelledby="fee-title"
                  aria-describedby="fee-desc">
                 <h2 id="fee-title">费用查询</h2>
-                <p id="fee-desc">电费用查询服务</p>
+                <p id="fee-desc">水电费用查询服务</p>
             </div>
         </div>
     </div>
@@ -253,9 +354,10 @@
                 // 初始化应用
                 init() {
                     this.setupEnv();
-                    this.loadCriticalResources();
+                    this.loadBackground();
                     this.bindEvents();
                     this.setupWechat();
+                    this.setupModal();
                     this.logPerformance();
                 },
                 
@@ -272,32 +374,18 @@
                         '-webkit-transform-style:preserve-3d;';
                 },
                 
-                // 加载关键资源（优化版）
-                loadCriticalResources() {
-                    // 1. 内联关键CSS（已内联）
-                    // 2. 异步加载非关键资源
-                    this.loadBackground();
-                    
-                    // 3. 预加载关键页面
-                    if (navigator.connection && !navigator.connection.saveData) {
-                        this.preloadPage('dorm-rules.html');
-                        this.preloadPage('fee-query.html');
-                    }
-                },
-                
-                // 加载背景图片（优化版）
+                // 加载背景图片
                 loadBackground() {
                     const bg = document.getElementById('background');
-                    
-                    // 移动端使用更小的背景图
-                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                    const bgUrl = isMobile ? 'bg-mobile.webp' : 'bg.webp';
-                    
-                    // 使用低质量图像占位符(LQIP)技术
-                    const lqip = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiM2YThiYWQiLz48L3N2Zz4=';
-                    bg.style.backgroundImage = `url('${lqip}')`;
-                    
                     const img = new Image();
+                    
+                    // 使用WebP格式优先，JPEG作为回退
+                    const supportsWebP = document.createElement('canvas')
+                        .toDataURL('image/webp')
+                        .indexOf('data:image/webp') === 0;
+                    
+                    const bgUrl = supportsWebP ? 'bg.webp' : 'bg.jpg';
+                    
                     img.src = bgUrl;
                     img.onload = () => {
                         bg.style.backgroundImage = `url('${img.src}')`;
@@ -310,40 +398,73 @@
                     };
                 },
                 
-                // 事件绑定（优化版）
-                bindEvents() {
-                    // 使用事件委托减少监听器数量
-                    document.addEventListener('click', (e) => {
-                        const card = e.target.closest('.nav-card');
-                        if (card) {
-                            this.handleCardClick(card);
+                // 弹窗设置
+                setupModal() {
+                    const modal = document.getElementById('welcomeModal');
+                    const closeBtn = document.getElementById('closeModalBtn');
+                    
+                    // 检查是否已经显示过弹窗
+                    const hasShownModal = localStorage.getItem('hasShownWelcomeModal');
+                    
+                    if (!hasShownModal) {
+                        // 延迟显示以确保页面加载完成
+                        setTimeout(() => {
+                            modal.style.display = 'flex';
+                            localStorage.setItem('hasShownWelcomeModal', 'true');
+                        }, 800);
+                    }
+                    
+                    // 关闭按钮事件
+                    closeBtn.addEventListener('click', () => {
+                        modal.style.display = 'none';
+                    });
+                    
+                    // 点击模态框外部关闭
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.style.display = 'none';
                         }
                     });
                     
+                    // ESC键关闭
                     document.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            const card = e.target.closest('.nav-card');
-                            if (card) {
-                                e.preventDefault();
-                                this.handleCardClick(card);
-                            }
+                        if (e.key === 'Escape' && modal.style.display === 'flex') {
+                            modal.style.display = 'none';
                         }
+                    });
+                },
+                
+                // 事件绑定
+                bindEvents() {
+                    // 卡片交互处理
+                    document.querySelectorAll('.nav-card').forEach(card => {
+                        // 点击/触摸事件
+                        const handleAction = () => {
+                            const url = card.dataset.href;
+                            this.showLoader();
+                            this.preloadPage(url);
+                            
+                            // 延迟跳转确保动画完成
+                            setTimeout(() => {
+                                window.location.href = url;
+                            }, 150);
+                        };
+                        
+                        card.addEventListener('click', handleAction);
+                        card.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleAction();
+                            }
+                        });
                     });
                     
                     // 页面加载完成
-                    const onLoad = () => {
+                    window.addEventListener('load', () => {
                         setTimeout(() => {
                             this.hideLoader();
-                            // 延迟加载非关键资源
-                            this.loadNonCriticalResources();
                         }, 300);
-                    };
-                    
-                    if (document.readyState === 'complete') {
-                        onLoad();
-                    } else {
-                        window.addEventListener('load', onLoad);
-                    }
+                    });
                     
                     // 5秒超时处理
                     setTimeout(() => {
@@ -353,22 +474,6 @@
                                 '加载时间较长，请检查网络连接...';
                         }
                     }, 5000);
-                },
-                
-                // 卡片点击处理
-                handleCardClick(card) {
-                    const url = card.dataset.href;
-                    this.showLoader();
-                    
-                    // 使用beacon API发送点击数据（如果支持）
-                    if (navigator.sendBeacon) {
-                        const data = new FormData();
-                        data.append('click', url);
-                        navigator.sendBeacon('/log', data);
-                    }
-                    
-                    // 立即跳转，取消预加载以节省带宽
-                    window.location.href = url;
                 },
                 
                 // 微信环境优化
@@ -384,20 +489,31 @@
                             WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
                         });
                     });
+                    
+                    // 预加载关键资源
+                    this.preloadResources();
                 },
                 
-                // 加载非关键资源
-                loadNonCriticalResources() {
-                    // 延迟加载可能不需要立即使用的资源
-                    if (window.requestIdleCallback) {
-                        requestIdleCallback(() => {
-                            // 可以在这里加载分析脚本等非关键资源
-                        });
-                    }
+                // 资源预加载
+                preloadResources() {
+                    const resources = [
+                        'dorm-rules.html',
+                        'fee-query.html',
+                        'styles/common.css'
+                    ];
+                    
+                    resources.forEach(resource => {
+                        const link = document.createElement('link');
+                        link.rel = 'prefetch';
+                        link.href = resource;
+                        document.head.appendChild(link);
+                    });
                 },
                 
                 // 页面预加载
                 preloadPage(url) {
+                    if (navigator.connection && navigator.connection.saveData) return;
+                    
                     const xhr = new XMLHttpRequest();
                     xhr.open('GET', url, true);
                     xhr.send();
@@ -428,12 +544,8 @@
                 }
             };
             
-            // 启动应用（优化加载顺序）
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => App.init());
-            } else {
-                setTimeout(() => App.init(), 0);
-            }
+            // 启动应用
+            document.addEventListener('DOMContentLoaded', () => App.init());
         })();
     </script>
 </body>
