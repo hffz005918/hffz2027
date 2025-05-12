@@ -253,7 +253,7 @@
                 // 初始化应用
                 init() {
                     this.setupEnv();
-                    this.loadBackground();
+                    this.loadCriticalResources();
                     this.bindEvents();
                     this.setupWechat();
                     this.logPerformance();
@@ -272,18 +272,32 @@
                         '-webkit-transform-style:preserve-3d;';
                 },
                 
-                // 加载背景图片
+                // 加载关键资源（优化版）
+                loadCriticalResources() {
+                    // 1. 内联关键CSS（已内联）
+                    // 2. 异步加载非关键资源
+                    this.loadBackground();
+                    
+                    // 3. 预加载关键页面
+                    if (navigator.connection && !navigator.connection.saveData) {
+                        this.preloadPage('dorm-rules.html');
+                        this.preloadPage('fee-query.html');
+                    }
+                },
+                
+                // 加载背景图片（优化版）
                 loadBackground() {
                     const bg = document.getElementById('background');
+                    
+                    // 移动端使用更小的背景图
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    const bgUrl = isMobile ? 'bg-mobile.webp' : 'bg.webp';
+                    
+                    // 使用低质量图像占位符(LQIP)技术
+                    const lqip = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiM2YThiYWQiLz48L3N2Zz4=';
+                    bg.style.backgroundImage = `url('${lqip}')`;
+                    
                     const img = new Image();
-                    
-                    // 使用WebP格式优先，JPEG作为回退
-                    const supportsWebP = document.createElement('canvas')
-                        .toDataURL('image/webp')
-                        .indexOf('data:image/webp') === 0;
-                    
-                    const bgUrl = supportsWebP ? 'bg.webp' : 'bg.jpg';
-                    
                     img.src = bgUrl;
                     img.onload = () => {
                         bg.style.backgroundImage = `url('${img.src}')`;
@@ -296,37 +310,40 @@
                     };
                 },
                 
-                // 事件绑定
+                // 事件绑定（优化版）
                 bindEvents() {
-                    // 卡片交互处理
-                    document.querySelectorAll('.nav-card').forEach(card => {
-                        // 点击/触摸事件
-                        const handleAction = () => {
-                            const url = card.dataset.href;
-                            this.showLoader();
-                            this.preloadPage(url);
-                            
-                            // 延迟跳转确保动画完成
-                            setTimeout(() => {
-                                window.location.href = url;
-                            }, 150);
-                        };
-                        
-                        card.addEventListener('click', handleAction);
-                        card.addEventListener('keydown', (e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
+                    // 使用事件委托减少监听器数量
+                    document.addEventListener('click', (e) => {
+                        const card = e.target.closest('.nav-card');
+                        if (card) {
+                            this.handleCardClick(card);
+                        }
+                    });
+                    
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            const card = e.target.closest('.nav-card');
+                            if (card) {
                                 e.preventDefault();
-                                handleAction();
+                                this.handleCardClick(card);
                             }
-                        });
+                        }
                     });
                     
                     // 页面加载完成
-                    window.addEventListener('load', () => {
+                    const onLoad = () => {
                         setTimeout(() => {
                             this.hideLoader();
+                            // 延迟加载非关键资源
+                            this.loadNonCriticalResources();
                         }, 300);
-                    });
+                    };
+                    
+                    if (document.readyState === 'complete') {
+                        onLoad();
+                    } else {
+                        window.addEventListener('load', onLoad);
+                    }
                     
                     // 5秒超时处理
                     setTimeout(() => {
@@ -336,6 +353,22 @@
                                 '加载时间较长，请检查网络连接...';
                         }
                     }, 5000);
+                },
+                
+                // 卡片点击处理
+                handleCardClick(card) {
+                    const url = card.dataset.href;
+                    this.showLoader();
+                    
+                    // 使用beacon API发送点击数据（如果支持）
+                    if (navigator.sendBeacon) {
+                        const data = new FormData();
+                        data.append('click', url);
+                        navigator.sendBeacon('/log', data);
+                    }
+                    
+                    // 立即跳转，取消预加载以节省带宽
+                    window.location.href = url;
                 },
                 
                 // 微信环境优化
@@ -351,31 +384,20 @@
                             WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
                         });
                     });
-                    
-                    // 预加载关键资源
-                    this.preloadResources();
                 },
                 
-                // 资源预加载
-                preloadResources() {
-                    const resources = [
-                        'dorm-rules.html',
-                        'fee-query.html',
-                        'styles/common.css'
-                    ];
-                    
-                    resources.forEach(resource => {
-                        const link = document.createElement('link');
-                        link.rel = 'prefetch';
-                        link.href = resource;
-                        document.head.appendChild(link);
-                    });
+                // 加载非关键资源
+                loadNonCriticalResources() {
+                    // 延迟加载可能不需要立即使用的资源
+                    if (window.requestIdleCallback) {
+                        requestIdleCallback(() => {
+                            // 可以在这里加载分析脚本等非关键资源
+                        });
+                    }
                 },
                 
                 // 页面预加载
                 preloadPage(url) {
-                    if (navigator.connection && navigator.connection.saveData) return;
-                    
                     const xhr = new XMLHttpRequest();
                     xhr.open('GET', url, true);
                     xhr.send();
@@ -406,8 +428,12 @@
                 }
             };
             
-            // 启动应用
-            document.addEventListener('DOMContentLoaded', () => App.init());
+            // 启动应用（优化加载顺序）
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => App.init());
+            } else {
+                setTimeout(() => App.init(), 0);
+            }
         })();
     </script>
 </body>
