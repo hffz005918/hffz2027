@@ -166,74 +166,8 @@
             margin-bottom: 1rem;
         }
 
-        /* 首页弹窗样式 */
-        .welcome-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1001;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            width: min(90%, 500px);
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow-hover);
-            position: relative;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .modal-header {
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-header h2 {
-            color: var(--primary-color);
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .modal-body {
-            color: var(--text-dark);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-
-        .modal-footer {
-            text-align: right;
-        }
-
-        .close-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.2s ease;
-        }
-
-        .close-btn:hover {
-            background: var(--secondary-color);
-        }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         /* 响应式调整 */
@@ -250,19 +184,11 @@
             .title {
                 margin-bottom: 2.5rem;
             }
-
-            .modal-content {
-                padding: 1.5rem;
-            }
         }
 
         @media (max-width: 480px) {
             .nav-cards {
                 grid-template-columns: 1fr;
-            }
-
-            .modal-header h2 {
-                font-size: 1.3rem;
             }
         }
 
@@ -275,10 +201,6 @@
             .wechat-loader {
                 background: rgba(0, 0, 0, 0.85);
             }
-
-            .welcome-modal {
-                background: rgba(0, 0, 0, 0.85);
-            }
         }
     </style>
 </head>
@@ -287,29 +209,6 @@
     <div class="wechat-loader" id="wechatLoader" aria-live="polite">
         <div class="loader-spinner"></div>
         <div>加载中，请稍候...</div>
-    </div>
-
-    <!-- 首页欢迎弹窗 -->
-    <div class="welcome-modal" id="welcomeModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>欢迎使用员工服务系统</h2>
-            </div>
-            <div class="modal-body">
-                <p>尊敬的宏方纺织员工：</p>
-                <p>欢迎使用员工服务系统，本系统为您提供宿舍管理、费用查询等服务。</p>
-                <p>系统近期更新内容：</p>
-                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                    <li>优化了费用查询的显示方式</li>
-                    <li>新增宿舍报修在线申请功能</li>
-                    <li>提升了系统响应速度</li>
-                </ul>
-                <p style="margin-top: 1rem;">如有任何问题，请联系人力资源部。</p>
-            </div>
-            <div class="modal-footer">
-                <button class="close-btn" id="closeModalBtn">我知道了</button>
-            </div>
-        </div>
     </div>
 
     <!-- 渐进式背景加载 -->
@@ -329,7 +228,7 @@
                  aria-labelledby="dorm-title"
                  aria-describedby="dorm-desc">
                 <h2 id="dorm-title">宿舍管理</h2>
-                <p id="dorm-desc">员工宿舍管理制度</p>
+                <p id="dorm-desc">员工宿舍管理制度与入住指南</p>
             </div>
             
             <div class="nav-card" 
@@ -339,7 +238,7 @@
                  aria-labelledby="fee-title"
                  aria-describedby="fee-desc">
                 <h2 id="fee-title">费用查询</h2>
-                <p id="fee-desc">水电费用查询服务</p>
+                <p id="fee-desc">水电费用查询与缴纳服务</p>
             </div>
         </div>
     </div>
@@ -357,7 +256,6 @@
                     this.loadBackground();
                     this.bindEvents();
                     this.setupWechat();
-                    this.setupModal();
                     this.logPerformance();
                 },
                 
@@ -396,42 +294,6 @@
                         console.log('背景图加载失败，使用渐变背景');
                         bg.style.display = 'none';
                     };
-                },
-                
-                // 弹窗设置
-                setupModal() {
-                    const modal = document.getElementById('welcomeModal');
-                    const closeBtn = document.getElementById('closeModalBtn');
-                    
-                    // 检查是否已经显示过弹窗
-                    const hasShownModal = localStorage.getItem('hasShownWelcomeModal');
-                    
-                    if (!hasShownModal) {
-                        // 延迟显示以确保页面加载完成
-                        setTimeout(() => {
-                            modal.style.display = 'flex';
-                            localStorage.setItem('hasShownWelcomeModal', 'true');
-                        }, 800);
-                    }
-                    
-                    // 关闭按钮事件
-                    closeBtn.addEventListener('click', () => {
-                        modal.style.display = 'none';
-                    });
-                    
-                    // 点击模态框外部关闭
-                    modal.addEventListener('click', (e) => {
-                        if (e.target === modal) {
-                            modal.style.display = 'none';
-                        }
-                    });
-                    
-                    // ESC键关闭
-                    document.addEventListener('keydown', (e) => {
-                        if (e.key === 'Escape' && modal.style.display === 'flex') {
-                            modal.style.display = 'none';
-                        }
-                    });
                 },
                 
                 // 事件绑定
