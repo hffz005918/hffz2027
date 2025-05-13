@@ -171,26 +171,6 @@
             margin-bottom: 1rem;
         }
 
-        .loader-retry {
-            margin-top: 1rem;
-            display: none;
-        }
-
-        .retry-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background-color 0.2s ease;
-        }
-
-        .retry-btn:hover {
-            background: var(--secondary-color);
-        }
-
         /* 首页弹窗样式 */
         .welcome-modal {
             display: none;
@@ -313,10 +293,6 @@
         <div class="loader-spinner"></div>
         <div class="loader-content">
             <div id="loaderText">正在连接服务器，请稍候...</div>
-            <div class="loader-retry" id="loaderRetry">
-                <p>连接失败，正在尝试重新连接 (<span id="retryCount">0</span>/5)</p>
-                <button class="retry-btn" id="manualRetryBtn">立即重试</button>
-            </div>
         </div>
     </div>
 
@@ -360,7 +336,7 @@
                  aria-labelledby="dorm-title"
                  aria-describedby="dorm-desc">
                 <h2 id="dorm-title">宿舍管理</h2>
-                <p id="dorm-desc">员工宿舍管理制度</p>
+                <p id="dorm-desc">员工宿舍管理制度与入住指南</p>
             </div>
             
             <div class="nav-card" 
@@ -370,7 +346,7 @@
                  aria-labelledby="fee-title"
                  aria-describedby="fee-desc">
                 <h2 id="fee-title">费用查询</h2>
-                <p id="fee-desc">水电费用查询服务</p>
+                <p id="fee-desc">水电费用查询与缴纳服务</p>
             </div>
         </div>
     </div>
@@ -382,10 +358,6 @@
             
             // 核心应用模块
             const App = {
-                maxRetries: 5, // 最大重试次数
-                retryInterval: 3000, // 重试间隔(毫秒)
-                currentRetry: 0, // 当前重试次数
-                
                 // 初始化应用
                 init() {
                     this.setupEnv();
@@ -433,21 +405,15 @@
                     };
                 },
                 
-                // 弹窗设置
+                // 弹窗设置 - 修改为每次都会显示
                 setupModal() {
                     const modal = document.getElementById('welcomeModal');
                     const closeBtn = document.getElementById('closeModalBtn');
                     
-                    // 检查是否已经显示过弹窗
-                    const hasShownModal = localStorage.getItem('hasShownWelcomeModal');
-                    
-                    if (!hasShownModal) {
-                        // 延迟显示以确保页面加载完成
-                        setTimeout(() => {
-                            modal.style.display = 'flex';
-                            localStorage.setItem('hasShownWelcomeModal', 'true');
-                        }, 800);
-                    }
+                    // 延迟显示以确保页面加载完成
+                    setTimeout(() => {
+                        modal.style.display = 'flex';
+                    }, 800);
                     
                     // 关闭按钮事件
                     closeBtn.addEventListener('click', () => {
@@ -469,75 +435,18 @@
                     });
                 },
                 
-                // 显示增强的加载指示器
+                // 显示加载指示器
                 showLoader(message = '正在连接服务器，请稍候...') {
                     const loader = document.getElementById('wechatLoader');
                     const loaderText = document.getElementById('loaderText');
-                    const loaderRetry = document.getElementById('loaderRetry');
                     
                     loaderText.textContent = message;
-                    loaderRetry.style.display = 'none';
                     loader.style.display = 'flex';
                 },
                 
                 // 隐藏加载指示器
                 hideLoader() {
                     document.getElementById('wechatLoader').style.display = 'none';
-                },
-                
-                // 显示重试UI
-                showRetryUI() {
-                    const loaderRetry = document.getElementById('loaderRetry');
-                    const retryCount = document.getElementById('retryCount');
-                    
-                    retryCount.textContent = this.currentRetry;
-                    loaderRetry.style.display = 'block';
-                },
-                
-                // 连接重试逻辑
-                connectWithRetry(url, successCallback, errorCallback) {
-                    this.currentRetry = 0;
-                    this.showLoader();
-                    
-                    const attemptConnection = () => {
-                        fetch(url, { 
-                            method: 'GET',
-                            cache: 'no-cache',
-                            headers: {
-                                'Content-Type': 'text/html'
-                            }
-                        })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
-                            return response.text();
-                        })
-                        .then(data => {
-                            this.hideLoader();
-                            if (successCallback) successCallback(data);
-                        })
-                        .catch(error => {
-                            this.currentRetry++;
-                            
-                            if (this.currentRetry <= this.maxRetries) {
-                                this.showLoader(`连接失败，正在尝试重新连接 (${this.currentRetry}/${this.maxRetries})`);
-                                this.showRetryUI();
-                                setTimeout(attemptConnection, this.retryInterval);
-                            } else {
-                                this.showLoader('无法连接到服务器，请检查网络连接');
-                                this.showRetryUI();
-                                if (errorCallback) errorCallback(error);
-                            }
-                        });
-                    };
-                    
-                    attemptConnection();
-                    
-                    // 绑定手动重试按钮
-                    document.getElementById('manualRetryBtn').addEventListener('click', () => {
-                        if (this.currentRetry <= this.maxRetries) {
-                            attemptConnection();
-                        }
-                    }, { once: true });
                 },
                 
                 // 事件绑定
@@ -547,21 +456,13 @@
                         // 点击/触摸事件
                         const handleAction = () => {
                             const url = card.dataset.href;
-                            this.showLoader('正在加载页面内容...');
+                            this.showLoader();
                             
-                            this.connectWithRetry(
-                                url,
-                                () => {
-                                    // 预加载成功后再跳转
-                                    setTimeout(() => {
-                                        window.location.href = url;
-                                    }, 150);
-                                },
-                                (error) => {
-                                    console.error('页面加载失败:', error);
-                                    // 可以在这里显示更友好的错误提示
-                                }
-                            );
+                            // 模拟连接检查
+                            this.checkConnection(url, () => {
+                                // 连接成功后跳转
+                                window.location.href = url;
+                            });
                         };
                         
                         card.addEventListener('click', handleAction);
@@ -588,6 +489,29 @@
                                 '加载时间较长，请检查网络连接...';
                         }
                     }, 5000);
+                },
+                
+                // 检查连接状态
+                checkConnection(url, successCallback) {
+                    const startTime = Date.now();
+                    const checkInterval = setInterval(() => {
+                        fetch(url, {
+                            method: 'HEAD',
+                            cache: 'no-cache',
+                            mode: 'no-cors'
+                        })
+                        .then(() => {
+                            // 连接成功
+                            clearInterval(checkInterval);
+                            successCallback();
+                        })
+                        .catch(() => {
+                            // 连接失败，继续检查
+                            const elapsed = (Date.now() - startTime) / 1000;
+                            document.getElementById('loaderText').textContent = 
+                                `正在连接服务器... (${elapsed.toFixed(1)}秒)`;
+                        });
+                    }, 1000);
                 },
                 
                 // 微信环境优化
@@ -628,11 +552,9 @@
                 preloadPage(url) {
                     if (navigator.connection && navigator.connection.saveData) return;
                     
-                    this.connectWithRetry(
-                        url,
-                        () => console.log(`预加载成功: ${url}`),
-                        (error) => console.error(`预加载失败: ${url}`, error)
-                    );
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', url, true);
+                    xhr.send();
                 },
                 
                 // 性能日志
