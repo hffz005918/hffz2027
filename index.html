@@ -18,6 +18,34 @@
     
     <title>员工服务系统 - 宏方纺织</title>
 
+    <!-- 主备站点自动检测 -->
+    <script>
+        // 主备站点配置
+        const PRIMARY_SITE = 'https://hffz005918.github.io/hffz2027/';
+        const FALLBACK_SITE = 'https://hffz2027.pages.dev/';
+        
+        // 静默检测主站可用性
+        function checkPrimarySite() {
+            // 如果当前已经是备用站则不再检测
+            if (window.location.href.startsWith(FALLBACK_SITE)) return;
+            
+            fetch(PRIMARY_SITE + '?t=' + Date.now(), {
+                mode: 'no-cors',
+                cache: 'no-store',
+                redirect: 'error'
+            }).catch(() => {
+                // 主站不可用时跳转（保留路径参数）
+                const targetUrl = FALLBACK_SITE + window.location.pathname + window.location.search;
+                window.location.replace(targetUrl);
+            });
+        }
+        
+        // 页面加载完成后启动检测（避免影响初始渲染）
+        window.addEventListener('load', () => {
+            setTimeout(checkPrimarySite, 1000); // 延迟1秒检测
+        });
+    </script>
+
     <style>
         :root {
             --primary-color: #1890ff;
