@@ -232,74 +232,20 @@
             background: var(--secondary-color);
         }
 
-        /* 微信浏览器错误提示样式 */
-        .wechat-fallback {
+        /* 备用URL提示样式 */
+        .backup-notice {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1002;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .wechat-fallback-content {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            max-width: 90%;
-            width: 400px;
-            text-align: center;
-        }
-
-        .wechat-fallback h3 {
-            color: #e74c3c;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .wechat-fallback p {
-            margin-bottom: 15px;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        .wechat-fallback-url {
-            background: #f5f5f5;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            word-break: break-all;
-            font-size: 14px;
-            text-align: left;
-        }
-
-        .wechat-fallback-btn {
-            background: #1890ff;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
             color: white;
-            border: none;
             padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-right: 10px;
-        }
-
-        .wechat-fallback-btn.copy {
-            background: #1890ff;
-        }
-
-        .wechat-fallback-btn.copy.copied {
-            background: #52c41a;
-        }
-
-        .wechat-fallback-btn.close {
-            background: #f5222d;
+            border-radius: var(--border-radius);
+            z-index: 1002;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: slideDown 0.5s ease-out;
         }
 
         @keyframes spin {
@@ -309,6 +255,11 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translate(-50%, -30px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
         }
 
         /* 响应式调整 */
@@ -330,8 +281,9 @@
                 padding: 1.5rem;
             }
 
-            .wechat-fallback-content {
-                width: 100%;
+            .backup-notice {
+                width: 90%;
+                text-align: center;
             }
         }
 
@@ -342,13 +294,6 @@
 
             .modal-header h2 {
                 font-size: 1.3rem;
-            }
-
-            .wechat-fallback-btn {
-                display: block;
-                width: 100%;
-                margin-bottom: 10px;
-                margin-right: 0;
             }
         }
 
@@ -377,15 +322,9 @@
         </div>
     </div>
 
-    <!-- 微信浏览器错误提示 -->
-    <div class="wechat-fallback" id="wechatFallback">
-        <div class="wechat-fallback-content">
-            <h3>网络连接异常</h3>
-            <p>微信内置浏览器可能无法正常访问，请复制下方链接到手机浏览器打开：</p>
-            <div class="wechat-fallback-url" id="fallbackUrl"></div>
-            <button class="wechat-fallback-btn copy" id="copyUrlBtn">复制链接</button>
-            <button class="wechat-fallback-btn close" id="closeFallbackBtn">我知道了</button>
-        </div>
+    <!-- 备用URL提示 -->
+    <div class="backup-notice" id="backupNotice">
+        正在使用备用服务器为您提供服务
     </div>
 
     <!-- 首页欢迎弹窗 -->
@@ -459,66 +398,9 @@
                     this.setupWechat();
                     this.setupModal();
                     this.checkPrimaryUrl();
-                    this.setupWechatFallback(); // 新增微信浏览器错误处理
                     this.logPerformance();
                 },
                 
-                // 新增微信浏览器错误处理
-                setupWechatFallback() {
-                    // 仅微信浏览器生效
-                    if (!/micromessenger/i.test(navigator.userAgent)) return;
-                    
-                    // 设置当前URL显示
-                    document.getElementById('fallbackUrl').textContent = window.location.href;
-                    
-                    // 复制按钮事件
-                    document.getElementById('copyUrlBtn').addEventListener('click', () => {
-                        const input = document.createElement('textarea');
-                        input.value = window.location.href;
-                        document.body.appendChild(input);
-                        input.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(input);
-                        
-                        const btn = document.getElementById('copyUrlBtn');
-                        btn.textContent = '已复制';
-                        btn.classList.add('copied');
-                        
-                        setTimeout(() => {
-                            btn.textContent = '复制链接';
-                            btn.classList.remove('copied');
-                        }, 2000);
-                    });
-                    
-                    // 关闭按钮事件
-                    document.getElementById('closeFallbackBtn').addEventListener('click', () => {
-                        document.getElementById('wechatFallback').style.display = 'none';
-                    });
-                    
-                    // 监听错误事件
-                    window.addEventListener('error', () => {
-                        this.showWechatFallback();
-                    }, true);
-                    
-                    // 监听离线事件
-                    window.addEventListener('offline', () => {
-                        this.showWechatFallback();
-                    });
-                    
-                    // 5秒后检查页面是否完全加载
-                    setTimeout(() => {
-                        if (document.readyState !== 'complete') {
-                            this.showWechatFallback();
-                        }
-                    }, 5000);
-                },
-                
-                // 显示微信浏览器错误提示
-                showWechatFallback() {
-                    document.getElementById('wechatFallback').style.display = 'flex';
-                },
-
-                // [其余原有方法保持不变...]
                 // 环境设置
                 setupEnv() {
                     // 防止微信字体缩放
@@ -548,7 +430,10 @@
                         cache: 'no-store'
                     }).catch(() => {
                         // 主URL不可用，显示通知并跳转到备用URL
-                        window.location.href = backupUrl;
+                        document.getElementById('backupNotice').style.display = 'block';
+                        setTimeout(() => {
+                            window.location.href = backupUrl;
+                        }, 3000);
                     });
                 },
                 
