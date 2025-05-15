@@ -248,6 +248,14 @@
             animation: slideDown 0.5s ease-out;
         }
 
+        /* 微信专用修复样式 */
+        .wechat-fix {
+            position: absolute;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -354,6 +362,9 @@
     <!-- 渐进式背景加载 -->
     <div class="background" id="background"></div>
     
+    <!-- 微信专用修复节点 -->
+    <div class="wechat-fix" id="wechatFixNode"></div>
+    
     <div class="content">
         <div class="title">
             <h1>员工服务系统</h1>
@@ -385,8 +396,100 @@
 
     <script>
         (function() {
-            // 性能监控开始标记
-            const performanceStart = performance.now();
+            // 微信环境检测增强
+            const isWeChat = /micromessenger/i.test(navigator.userAgent);
+            
+            // 微信专用修复方法
+            const wechatFix = {
+                // 初始化微信修复
+                init() {
+                    if (!isWeChat) return;
+                    
+                    // 添加微信专用样式节点
+                    this.addFixNode();
+                    
+                    // 绑定页面可见性变化事件
+                    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+                    
+                    // 初始化微信JSBridge
+                    this.setupWeixinBridge();
+                    
+                    // 启动心跳检测
+                    this.startHeartbeat();
+                },
+                
+                // 添加修复用DOM节点
+                addFixNode() {
+                    const fixNode = document.getElementById('wechatFixNode');
+                    fixNode.innerHTML = '<style>body{overflow-x:hidden;}</style>';
+                },
+                
+                // 处理页面可见性变化
+                handleVisibilityChange() {
+                    if (document.visibilityState === 'visible') {
+                        // 页面重新显示时强制重绘
+                        this.forceRepaint();
+                    }
+                },
+                
+                // 强制页面重绘
+                forceRepaint() {
+                    const body = document.body;
+                    body.style.display = 'none';
+                    body.offsetHeight; // 触发重排
+                    body.style.display = '';
+                },
+                
+                // 微信JSBridge设置
+                setupWeixinBridge() {
+                    if (typeof WeixinJSBridge === 'undefined') {
+                        document.addEventListener('WeixinJSBridgeReady', this.initWeixinBridge);
+                    } else {
+                        this.initWeixinBridge();
+                    }
+                },
+                
+                // 初始化微信桥接
+                initWeixinBridge() {
+                    WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
+                    WeixinJSBridge.on('menu:setfont', () => {
+                        WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
+                    });
+                },
+                
+                // 心跳检测
+                startHeartbeat() {
+                    setInterval(() => {
+                        if (document.hidden) return;
+                        this.checkPageState();
+                    }, 3000);
+                },
+                
+                // 检查页面状态
+                checkPageState() {
+                    try {
+                        // 检测DOM是否可交互
+                        if (!document.body || document.readyState !== 'complete') {
+                            this.recoverPage();
+                            return;
+                        }
+                        
+                        // 检测关键元素是否存在
+                        const mainContent = document.querySelector('.content');
+                        if (!mainContent || mainContent.offsetParent === null) {
+                            this.recoverPage();
+                        }
+                    } catch (e) {
+                        console.error('微信环境检测异常:', e);
+                    }
+                },
+                
+                // 页面恢复机制
+                recoverPage() {
+                    console.log('检测到页面异常，尝试恢复...');
+                    location.reload();
+                }
+            };
             
             // 核心应用模块
             const App = {
@@ -395,23 +498,25 @@
                     this.setupEnv();
                     this.loadBackground();
                     this.bindEvents();
-                    this.setupWechat();
                     this.setupModal();
                     this.checkPrimaryUrl();
-                    this.logPerformance();
+                    
+                    // 微信环境下启动专用修复
+                    if (isWeChat) {
+                        wechatFix.init();
+                        this.setupWechat();
+                    }
                 },
                 
                 // 环境设置
                 setupEnv() {
-                    // 防止微信字体缩放
-                    if (typeof WeixinJSBridge !== 'undefined') {
-                        WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
+                    // 微信环境下禁用缓存
+                    if (isWeChat) {
+                        const noCache = '?_=' + Date.now();
+                        document.querySelectorAll('[data-href]').forEach(el => {
+                            el.dataset.href += noCache;
+                        });
                     }
-                    
-                    // 启用GPU加速
-                    document.documentElement.style.cssText += 
-                        '-webkit-backface-visibility:hidden;' +
-                        '-webkit-transform-style:preserve-3d;';
                 },
                 
                 // 检查主URL是否可用
@@ -432,7 +537,7 @@
                         // 主URL不可用，显示通知并跳转到备用URL
                         document.getElementById('backupNotice').style.display = 'block';
                         setTimeout(() => {
-                            window.location.href = backupUrl;
+                            window.location.href = backupUrl + '?from=primary_fail';
                         }, 3000);
                     });
                 },
@@ -449,7 +554,9 @@
                     
                     const bgUrl = supportsWebP ? 'bg.webp' : 'bg.jpg';
                     
-                    img.src = bgUrl;
+                    // 微信环境下添加时间戳避免缓存
+                    img.src = isWeChat ? `${bgUrl}?t=${Date.now()}` : bgUrl;
+                    
                     img.onload = () => {
                         bg.style.backgroundImage = `url('${img.src}')`;
                         bg.classList.add('loaded');
@@ -461,7 +568,7 @@
                     };
                 },
                 
-                // 弹窗设置 - 修改为每次都会显示
+                // 弹窗设置
                 setupModal() {
                     const modal = document.getElementById('welcomeModal');
                     const closeBtn = document.getElementById('closeModalBtn');
@@ -514,10 +621,13 @@
                             const url = card.dataset.href;
                             this.showLoader();
                             
+                            // 微信环境下添加时间戳
+                            const finalUrl = isWeChat ? `${url}?t=${Date.now()}` : url;
+                            
                             // 模拟连接检查
-                            this.checkConnection(url, () => {
+                            this.checkConnection(finalUrl, () => {
                                 // 连接成功后跳转
-                                window.location.href = url;
+                                window.location.href = finalUrl;
                             });
                         };
                         
@@ -572,20 +682,16 @@
                 
                 // 微信环境优化
                 setupWechat() {
-                    if (!/micromessenger/i.test(navigator.userAgent)) return;
-                    
-                    this.showLoader();
-                    
-                    // 微信JSBridge设置
-                    document.addEventListener('WeixinJSBridgeReady', () => {
-                        WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                        WeixinJSBridge.on('menu:setfont', () => {
-                            WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                        });
-                    });
+                    this.showLoader('正在初始化微信环境...');
                     
                     // 预加载关键资源
                     this.preloadResources();
+                    
+                    // 添加微信专用meta
+                    const meta = document.createElement('meta');
+                    meta.name = 'referrer';
+                    meta.content = 'never';
+                    document.head.appendChild(meta);
                 },
                 
                 // 资源预加载
@@ -599,35 +705,19 @@
                     resources.forEach(resource => {
                         const link = document.createElement('link');
                         link.rel = 'prefetch';
-                        link.href = resource;
+                        link.href = isWeChat ? `${resource}?t=${Date.now()}` : resource;
                         document.head.appendChild(link);
-                    });
-                },
-                
-                // 页面预加载
-                preloadPage(url) {
-                    if (navigator.connection && navigator.connection.saveData) return;
-                    
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('GET', url, true);
-                    xhr.send();
-                },
-                
-                // 性能日志
-                logPerformance() {
-                    window.addEventListener('load', () => {
-                        const loadTime = performance.now() - performanceStart;
-                        console.log(`页面加载完成，耗时: ${loadTime.toFixed(2)}ms`);
-                        
-                        if (window.ga) {
-                            ga('send', 'timing', 'Page Load', 'load', Math.round(loadTime));
-                        }
                     });
                 }
             };
             
             // 启动应用
-            document.addEventListener('DOMContentLoaded', () => App.init());
+            if (isWeChat) {
+                // 微信环境下延迟初始化以避免白屏
+                setTimeout(() => App.init(), 100);
+            } else {
+                document.addEventListener('DOMContentLoaded', () => App.init());
+            }
         })();
     </script>
 </body>
