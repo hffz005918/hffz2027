@@ -365,36 +365,91 @@
             // 微信环境检测
             const isWeChat = /micromessenger/i.test(navigator.userAgent);
             
+            // 微信初始化控制器
+            const WeChatController = {
+                initialized: false,
+                maxWaitTime: 3000, // 最大等待时间3秒
+                
+                init: function() {
+                    if (!isWeChat || this.initialized) return Promise.resolve();
+                    
+                    return new Promise((resolve) => {
+                        // 方案1：直接检测现有Bridge
+                        if (typeof WeixinJSBridge !== 'undefined') {
+                            this.setupWeChatBridge();
+                            this.initialized = true;
+                            return resolve();
+                        }
+                        
+                        // 方案2：监听WeixinJSBridgeReady事件
+                        const readyHandler = () => {
+                            document.removeEventListener('WeixinJSBridgeReady', readyHandler);
+                            clearTimeout(timeoutId);
+                            this.setupWeChatBridge();
+                            this.initialized = true;
+                            resolve();
+                        };
+                        document.addEventListener('WeixinJSBridgeReady', readyHandler);
+                        
+                        // 方案3：超时后强制继续
+                        const timeoutId = setTimeout(() => {
+                            document.removeEventListener('WeixinJSBridgeReady', readyHandler);
+                            console.warn('微信JSBridge初始化超时，继续执行');
+                            this.initialized = true;
+                            resolve();
+                        }, this.maxWaitTime);
+                    });
+                },
+                
+                setupWeChatBridge: function() {
+                    try {
+                        WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
+                        WeixinJSBridge.on('menu:setfont', () => {
+                            WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
+                        });
+                    } catch (e) {
+                        console.error('微信JSBridge设置失败:', e);
+                    }
+                }
+            };
+            
             // 核心应用模块
             const App = {
                 // 初始化应用
-                init() {
+                init: function() {
+                    // 先启动微信初始化（不阻塞）
+                    const wechatInit = isWeChat ? WeChatController.init() : Promise.resolve();
+                    
+                    // 执行基本初始化
                     this.setupEnv();
                     this.loadBackground();
                     this.bindEvents();
                     this.setupModal();
                     
-                    // 微信环境下特殊处理
+                    // 微信环境下显示加载提示
                     if (isWeChat) {
-                        this.setupWechat();
+                        this.showLoader('正在初始化微信环境...');
+                        
+                        // 微信初始化完成后执行特定逻辑
+                        wechatInit.then(() => {
+                            this.setupWechatSpecific();
+                            setTimeout(() => this.hideLoader(), 300);
+                        }).catch(() => {
+                            setTimeout(() => this.hideLoader(), 300);
+                        });
                     }
                 },
                 
                 // 环境设置
-                setupEnv() {
-                    // 防止微信字体缩放
-                    if (typeof WeixinJSBridge !== 'undefined') {
-                        WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                    }
-                    
+                setupEnv: function() {
                     // 启用GPU加速
                     document.documentElement.style.cssText += 
                         '-webkit-backface-visibility:hidden;' +
                         '-webkit-transform-style:preserve-3d;';
                 },
                 
-                // 加载背景图片（优化电脑端显示）
-                loadBackground() {
+                // 加载背景图片
+                loadBackground: function() {
                     const bg = document.getElementById('background');
                     const img = new Image();
                     
@@ -409,7 +464,9 @@
                         (isMobile ? 'bg-mobile.webp' : 'bg-desktop.webp') : 
                         (isMobile ? 'bg-mobile.jpg' : 'bg-desktop.jpg');
                     
-                    img.src = bgUrl;
+                    // 微信环境下添加时间戳避免缓存
+                    img.src = isWeChat ? `${bgUrl}?t=${Date.now()}` : bgUrl;
+                    
                     img.onload = () => {
                         bg.style.backgroundImage = `url('${img.src}')`;
                         bg.classList.add('loaded');
@@ -422,7 +479,7 @@
                 },
                 
                 // 弹窗设置
-                setupModal() {
+                setupModal: function() {
                     const modal = document.getElementById('welcomeModal');
                     const closeBtn = document.getElementById('closeModalBtn');
                     
@@ -452,7 +509,7 @@
                 },
                 
                 // 显示加载指示器
-                showLoader(message = '正在连接服务器，请稍候...') {
+                showLoader: function(message = '正在连接服务器，请稍候...') {
                     const loader = document.getElementById('wechatLoader');
                     const loaderText = document.getElementById('loaderText');
                     
@@ -461,12 +518,12 @@
                 },
                 
                 // 隐藏加载指示器
-                hideLoader() {
+                hideLoader: function() {
                     document.getElementById('wechatLoader').style.display = 'none';
                 },
                 
                 // 事件绑定
-                bindEvents() {
+                bindEvents: function() {
                     // 卡片交互处理
                     document.querySelectorAll('.nav-card').forEach(card => {
                         // 点击/触摸事件
@@ -495,15 +552,15 @@
                     
                     // 页面加载完成
                     window.addEventListener('load', () => {
-                        setTimeout(() => {
-                            this.hideLoader();
-                        }, 300);
+                        if (!isWeChat) {
+                            setTimeout(() => this.hideLoader(), 300);
+                        }
                     });
                     
                     // 5秒超时处理
                     setTimeout(() => {
                         const loader = document.getElementById('wechatLoader');
-                        if (loader.style.display === 'flex') {
+                        if (loader && loader.style.display === 'flex') {
                             document.getElementById('loaderText').textContent = 
                                 '加载时间较长，请检查网络连接...';
                         }
@@ -511,7 +568,7 @@
                 },
                 
                 // 检查连接状态
-                checkConnection(url, successCallback) {
+                checkConnection: function(url, successCallback) {
                     const startTime = Date.now();
                     const checkInterval = setInterval(() => {
                         fetch(url, {
@@ -527,30 +584,37 @@
                         .catch(() => {
                             // 连接失败，继续检查
                             const elapsed = (Date.now() - startTime) / 1000;
-                            document.getElementById('loaderText').textContent = 
-                                `正在连接服务器... (${elapsed.toFixed(1)}秒)`;
+                            const loaderText = document.getElementById('loaderText');
+                            if (loaderText) {
+                                loaderText.textContent = 
+                                    `正在连接服务器... (${elapsed.toFixed(1)}秒)`;
+                            }
                         });
                     }, 1000);
                 },
                 
-                // 微信环境优化
-                setupWechat() {
-                    this.showLoader();
-                    
-                    // 微信JSBridge设置
-                    document.addEventListener('WeixinJSBridgeReady', () => {
-                        WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                        WeixinJSBridge.on('menu:setfont', () => {
-                            WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                        });
-                    });
+                // 微信特定设置
+                setupWechatSpecific: function() {
+                    // 添加防止页面缩放的meta
+                    const meta = document.createElement('meta');
+                    meta.name = 'referrer';
+                    meta.content = 'never';
+                    document.head.appendChild(meta);
                     
                     // 预加载关键资源
                     this.preloadResources();
+                    
+                    // 强制重绘解决白屏问题
+                    setTimeout(() => {
+                        document.body.style.opacity = 0.99;
+                        setTimeout(() => document.body.style.opacity = 1, 50);
+                    }, 100);
                 },
                 
                 // 资源预加载
-                preloadResources() {
+                preloadResources: function() {
+                    if (!isWeChat) return;
+                    
                     const resources = [
                         'dorm-rules.html',
                         'fee-query.html',
@@ -560,14 +624,45 @@
                     resources.forEach(resource => {
                         const link = document.createElement('link');
                         link.rel = 'prefetch';
-                        link.href = isWeChat ? `${resource}?t=${Date.now()}` : resource;
+                        link.href = `${resource}?t=${Date.now()}`;
                         document.head.appendChild(link);
                     });
                 }
             };
             
+            // 安全启动机制
+            const safeStart = () => {
+                try {
+                    // 微信环境下尽早启动，不等待DOMContentLoaded
+                    if (isWeChat && document.readyState !== 'loading') {
+                        setTimeout(() => App.init(), 0);
+                    } else {
+                        document.addEventListener('DOMContentLoaded', () => App.init());
+                    }
+                } catch (e) {
+                    console.error('初始化失败:', e);
+                    const loader = document.getElementById('wechatLoader');
+                    if (loader) {
+                        loader.style.display = 'none';
+                    }
+                }
+            };
+            
             // 启动应用
-            document.addEventListener('DOMContentLoaded', () => App.init());
+            safeStart();
+            
+            // 微信环境下8秒超时提示
+            if (isWeChat) {
+                setTimeout(() => {
+                    const loader = document.getElementById('wechatLoader');
+                    if (loader && loader.style.display === 'flex') {
+                        const loaderText = document.getElementById('loaderText');
+                        if (loaderText) {
+                            loaderText.textContent = '如长时间无响应，请尝试刷新页面';
+                        }
+                    }
+                }, 8000);
+            }
         })();
     </script>
 </body>
