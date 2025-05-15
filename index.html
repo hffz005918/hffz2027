@@ -414,17 +414,6 @@
                     checkConnection();
                 },
                 
-                // 模拟服务器检查（实际项目中替换为真实API调用）
-                mockServerCheck() {
-                    return new Promise((resolve, reject) => {
-                        // 模拟90%的成功率，实际项目中移除这个随机逻辑
-                        const isSuccess = Math.random() > 0.1 || this.connectionAttempts > 3;
-                        
-                        setTimeout(() => {
-                            isSuccess ? resolve() : reject();
-                        }, 500);
-                    });
-                },
                 
                 // 2. 背景图加载系统（修复版）
                 initBackground() {
