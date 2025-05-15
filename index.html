@@ -232,30 +232,6 @@
             background: var(--secondary-color);
         }
 
-        /* 备用URL提示样式 */
-        .backup-notice {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px 20px;
-            border-radius: var(--border-radius);
-            z-index: 1002;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            animation: slideDown 0.5s ease-out;
-        }
-
-        /* 微信专用修复样式 */
-        .wechat-fix {
-            position: absolute;
-            width: 0;
-            height: 0;
-            overflow: hidden;
-        }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -263,11 +239,6 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translate(-50%, -30px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
         }
 
         /* 响应式调整 */
@@ -287,11 +258,6 @@
 
             .modal-content {
                 padding: 1.5rem;
-            }
-
-            .backup-notice {
-                width: 90%;
-                text-align: center;
             }
         }
 
@@ -319,6 +285,14 @@
                 background: rgba(0, 0, 0, 0.85);
             }
         }
+
+        /* 电脑端背景图优化 */
+        @media (min-width: 1024px) {
+            .background {
+                background-size: cover;
+                background-attachment: fixed;
+            }
+        }
     </style>
 </head>
 <body>
@@ -328,11 +302,6 @@
         <div class="loader-content">
             <div id="loaderText">正在连接服务器，请稍候...</div>
         </div>
-    </div>
-
-    <!-- 备用URL提示 -->
-    <div class="backup-notice" id="backupNotice">
-        正在使用备用服务器为您提供服务
     </div>
 
     <!-- 首页欢迎弹窗 -->
@@ -361,9 +330,6 @@
 
     <!-- 渐进式背景加载 -->
     <div class="background" id="background"></div>
-    
-    <!-- 微信专用修复节点 -->
-    <div class="wechat-fix" id="wechatFixNode"></div>
     
     <div class="content">
         <div class="title">
@@ -396,100 +362,8 @@
 
     <script>
         (function() {
-            // 微信环境检测增强
+            // 微信环境检测
             const isWeChat = /micromessenger/i.test(navigator.userAgent);
-            
-            // 微信专用修复方法
-            const wechatFix = {
-                // 初始化微信修复
-                init() {
-                    if (!isWeChat) return;
-                    
-                    // 添加微信专用样式节点
-                    this.addFixNode();
-                    
-                    // 绑定页面可见性变化事件
-                    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-                    
-                    // 初始化微信JSBridge
-                    this.setupWeixinBridge();
-                    
-                    // 启动心跳检测
-                    this.startHeartbeat();
-                },
-                
-                // 添加修复用DOM节点
-                addFixNode() {
-                    const fixNode = document.getElementById('wechatFixNode');
-                    fixNode.innerHTML = '<style>body{overflow-x:hidden;}</style>';
-                },
-                
-                // 处理页面可见性变化
-                handleVisibilityChange() {
-                    if (document.visibilityState === 'visible') {
-                        // 页面重新显示时强制重绘
-                        this.forceRepaint();
-                    }
-                },
-                
-                // 强制页面重绘
-                forceRepaint() {
-                    const body = document.body;
-                    body.style.display = 'none';
-                    body.offsetHeight; // 触发重排
-                    body.style.display = '';
-                },
-                
-                // 微信JSBridge设置
-                setupWeixinBridge() {
-                    if (typeof WeixinJSBridge === 'undefined') {
-                        document.addEventListener('WeixinJSBridgeReady', this.initWeixinBridge);
-                    } else {
-                        this.initWeixinBridge();
-                    }
-                },
-                
-                // 初始化微信桥接
-                initWeixinBridge() {
-                    WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                    WeixinJSBridge.on('menu:setfont', () => {
-                        WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                    });
-                },
-                
-                // 心跳检测
-                startHeartbeat() {
-                    setInterval(() => {
-                        if (document.hidden) return;
-                        this.checkPageState();
-                    }, 3000);
-                },
-                
-                // 检查页面状态
-                checkPageState() {
-                    try {
-                        // 检测DOM是否可交互
-                        if (!document.body || document.readyState !== 'complete') {
-                            this.recoverPage();
-                            return;
-                        }
-                        
-                        // 检测关键元素是否存在
-                        const mainContent = document.querySelector('.content');
-                        if (!mainContent || mainContent.offsetParent === null) {
-                            this.recoverPage();
-                        }
-                    } catch (e) {
-                        console.error('微信环境检测异常:', e);
-                    }
-                },
-                
-                // 页面恢复机制
-                recoverPage() {
-                    console.log('检测到页面异常，尝试恢复...');
-                    location.reload();
-                }
-            };
             
             // 核心应用模块
             const App = {
@@ -499,50 +373,27 @@
                     this.loadBackground();
                     this.bindEvents();
                     this.setupModal();
-                    this.checkPrimaryUrl();
                     
-                    // 微信环境下启动专用修复
+                    // 微信环境下特殊处理
                     if (isWeChat) {
-                        wechatFix.init();
                         this.setupWechat();
                     }
                 },
                 
                 // 环境设置
                 setupEnv() {
-                    // 微信环境下禁用缓存
-                    if (isWeChat) {
-                        const noCache = '?_=' + Date.now();
-                        document.querySelectorAll('[data-href]').forEach(el => {
-                            el.dataset.href += noCache;
-                        });
-                    }
-                },
-                
-                // 检查主URL是否可用
-                checkPrimaryUrl() {
-                    const primaryUrl = 'https://hffz005918.github.io/hffz2027/';
-                    const backupUrl = 'https://pujiang-hffz2025.maozi.io/';
-                    
-                    // 如果当前已经是备用URL，则不检查
-                    if (window.location.href.startsWith(backupUrl)) {
-                        return;
+                    // 防止微信字体缩放
+                    if (typeof WeixinJSBridge !== 'undefined') {
+                        WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
                     }
                     
-                    fetch(primaryUrl, {
-                        method: 'HEAD',
-                        mode: 'no-cors',
-                        cache: 'no-store'
-                    }).catch(() => {
-                        // 主URL不可用，显示通知并跳转到备用URL
-                        document.getElementById('backupNotice').style.display = 'block';
-                        setTimeout(() => {
-                            window.location.href = backupUrl + '?from=primary_fail';
-                        }, 3000);
-                    });
+                    // 启用GPU加速
+                    document.documentElement.style.cssText += 
+                        '-webkit-backface-visibility:hidden;' +
+                        '-webkit-transform-style:preserve-3d;';
                 },
                 
-                // 加载背景图片
+                // 加载背景图片（优化电脑端显示）
                 loadBackground() {
                     const bg = document.getElementById('background');
                     const img = new Image();
@@ -552,11 +403,13 @@
                         .toDataURL('image/webp')
                         .indexOf('data:image/webp') === 0;
                     
-                    const bgUrl = supportsWebP ? 'bg.webp' : 'bg.jpg';
+                    // 根据设备类型选择不同尺寸的背景图
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    const bgUrl = supportsWebP ? 
+                        (isMobile ? 'bg-mobile.webp' : 'bg-desktop.webp') : 
+                        (isMobile ? 'bg-mobile.jpg' : 'bg-desktop.jpg');
                     
-                    // 微信环境下添加时间戳避免缓存
-                    img.src = isWeChat ? `${bgUrl}?t=${Date.now()}` : bgUrl;
-                    
+                    img.src = bgUrl;
                     img.onload = () => {
                         bg.style.backgroundImage = `url('${img.src}')`;
                         bg.classList.add('loaded');
@@ -621,7 +474,7 @@
                             const url = card.dataset.href;
                             this.showLoader();
                             
-                            // 微信环境下添加时间戳
+                            // 微信环境下添加时间戳避免缓存
                             const finalUrl = isWeChat ? `${url}?t=${Date.now()}` : url;
                             
                             // 模拟连接检查
@@ -682,16 +535,18 @@
                 
                 // 微信环境优化
                 setupWechat() {
-                    this.showLoader('正在初始化微信环境...');
+                    this.showLoader();
+                    
+                    // 微信JSBridge设置
+                    document.addEventListener('WeixinJSBridgeReady', () => {
+                        WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
+                        WeixinJSBridge.on('menu:setfont', () => {
+                            WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
+                        });
+                    });
                     
                     // 预加载关键资源
                     this.preloadResources();
-                    
-                    // 添加微信专用meta
-                    const meta = document.createElement('meta');
-                    meta.name = 'referrer';
-                    meta.content = 'never';
-                    document.head.appendChild(meta);
                 },
                 
                 // 资源预加载
@@ -712,12 +567,7 @@
             };
             
             // 启动应用
-            if (isWeChat) {
-                // 微信环境下延迟初始化以避免白屏
-                setTimeout(() => App.init(), 100);
-            } else {
-                document.addEventListener('DOMContentLoaded', () => App.init());
-            }
+            document.addEventListener('DOMContentLoaded', () => App.init());
         })();
     </script>
 </body>
