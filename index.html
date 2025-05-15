@@ -301,6 +301,7 @@
 <p>违反上述规定，将没收违规物品，首次违规通报批评，多次违规取消评优资格，违规行为影响年终评定，情节严重给予纪律处分。欢迎大家互相监督举报。</p>
                 <br>
                 <p>请严格遵守，共同维护宿舍安全！</p>      
+                </ul>
                 <p style="margin-top: 1rem;">如有任何问题，请与办公室联系。</p>
             </div>
             <div class="modal-footer">
@@ -320,12 +321,12 @@
         </div>
         
         <div class="nav-cards">
-            <div class="nav-card" id="dormCard">
+            <div class="nav-card" data-href="dorm-rules.html">
                 <h2>宿舍管理</h2>
                 <p>员工宿舍管理制度</p>
             </div>
             
-            <div class="nav-card" id="feeCard">
+            <div class="nav-card" data-href="fee-query.html">
                 <h2>费用查询</h2>
                 <p>水电费用查询服务</p>
             </div>
@@ -336,17 +337,17 @@
         (function() {
             // ==================== 配置部分 ====================
             const CONFIG = {
-                // 背景图配置
+                // 背景图配置（替换为实际图片URL）
                 backgroundImages: {
                     mobile: {
-                        webp: 'images/background-mobile.webp',
-                        jpg: 'images/background-mobile.jpg'
+                        webp: 'Images/bg-mobile.webp',
+                        jpg: 'https://placekitten.com/750/1334.jpg'
                     },
                     desktop: {
-                        webp: 'images/background-desktop.webp',
-                        jpg: 'images/background-desktop.jpg'
+                        webp: 'https://github.com/hffz005918/hffz2027/blob/main/Images/bg-mobile.webp',
+                        jpg: 'Ihttps://github.com/hffz005918/hffz2027/blob/main/Images/bg-default.jpg'
                     },
-                    fallback: 'images/background-fallback.jpg'
+                    fallback: 'https://github.com/hffz005918/hffz2027/blob/main/Images/bg-default.jpg'
                 },
                 
                 // 微信初始化超时时间（毫秒）
@@ -362,20 +363,13 @@
                 serverCheckInterval: 1000,
                 
                 // 最大连接尝试次数
-                maxConnectionAttempts: 10,
-                
-                // 页面路由配置
-                routes: {
-                    dorm: 'dormitory-management.html',
-                    fee: 'fee-query.html'
-                }
+                maxConnectionAttempts: 10
             };
 
             // ==================== 核心功能 ====================
             const App = {
                 isWeChat: /micromessenger/i.test(navigator.userAgent),
                 connectionAttempts: 0,
-                isConnected: false,
                 
                 init() {
                     this.initBackground();
@@ -395,7 +389,6 @@
                         this.mockServerCheck()
                             .then(() => {
                                 // 连接成功
-                                this.isConnected = true;
                                 this.hideLoader();
                                 this.showWelcomeModal();
                             })
@@ -414,8 +407,19 @@
                     checkConnection();
                 },
                 
+                // 模拟服务器检查（实际项目中替换为真实API调用）
+                mockServerCheck() {
+                    return new Promise((resolve, reject) => {
+                        // 模拟90%的成功率，实际项目中移除这个随机逻辑
+                        const isSuccess = Math.random() > 0.1 || this.connectionAttempts > 3;
+                        
+                        setTimeout(() => {
+                            isSuccess ? resolve() : reject();
+                        }, 500);
+                    });
+                },
                 
-                // 2. 背景图加载系统（修复版）
+                // 2. 背景图加载系统
                 initBackground() {
                     const bgElement = document.getElementById('background');
                     if (!bgElement) return;
@@ -431,8 +435,7 @@
                                 bgElement.style.backgroundImage = `url('${url}')`;
                                 bgElement.classList.add('loaded');
                             })
-                            .catch(error => {
-                                console.error('背景图加载失败:', error);
+                            .catch(() => {
                                 bgElement.style.display = 'none';
                             });
                     });
@@ -471,40 +474,27 @@
                     }
                 },
                 
-                // 4. 事件绑定（修复版）
+                // 4. 事件绑定
                 bindEvents() {
                     // 弹窗关闭按钮
                     document.getElementById('closeModalBtn')?.addEventListener('click', () => {
                         document.getElementById('welcomeModal').style.display = 'none';
                     });
                     
-                    // 宿舍管理卡片点击
-                    document.getElementById('dormCard')?.addEventListener('click', () => {
-                        if (!this.isConnected) {
-                            alert('服务器连接未建立，请稍后再试');
-                            return;
-                        }
-                        this.navigateTo(CONFIG.routes.dorm);
+                    // 导航卡片点击
+                    document.querySelectorAll('.nav-card').forEach(card => {
+                        card.addEventListener('click', () => {
+                            const url = card.getAttribute('data-href');
+                            if (url) {
+                                this.showLoader('正在跳转...');
+                                setTimeout(() => {
+                                    window.location.href = this.isWeChat 
+                                        ? `${url}?t=${Date.now()}` 
+                                        : url;
+                                }, 300);
+                            }
+                        });
                     });
-                    
-                    // 费用查询卡片点击
-                    document.getElementById('feeCard')?.addEventListener('click', () => {
-                        if (!this.isConnected) {
-                            alert('服务器连接未建立，请稍后再试');
-                            return;
-                        }
-                        this.navigateTo(CONFIG.routes.fee);
-                    });
-                },
-                
-                // 页面导航方法
-                navigateTo(url) {
-                    this.showLoader('正在跳转...');
-                    setTimeout(() => {
-                        window.location.href = this.isWeChat 
-                            ? `${url}?t=${Date.now()}` 
-                            : url;
-                    }, 300);
                 },
                 
                 // 5. 欢迎弹窗
@@ -530,13 +520,13 @@
                 loadImageWithFallback(mainUrl, fallbackUrl) {
                     return new Promise((resolve, reject) => {
                         const img = new Image();
-                        img.src = mainUrl;
+                        img.src = `${mainUrl}?t=${Date.now()}`;
                         
                         img.onload = () => resolve(img.src);
                         img.onerror = () => {
                             console.warn(`主背景图加载失败，尝试备用图: ${mainUrl}`);
                             const fallbackImg = new Image();
-                            fallbackImg.src = fallbackUrl;
+                            fallbackImg.src = `${fallbackUrl}?t=${Date.now()}`;
                             
                             fallbackImg.onload = () => resolve(fallbackImg.src);
                             fallbackImg.onerror = () => reject(new Error('所有背景图加载失败'));
@@ -565,8 +555,8 @@
             setTimeout(() => {
                 const bg = document.getElementById('background');
                 if (bg && !bg.classList.contains('loaded')) {
-                    console.warn('背景图加载超时，强制显示备用图');
-                    bg.style.backgroundImage = `url('${CONFIG.backgroundImages.fallback}')`;
+                    console.warn('背景图加载超时，强制显示');
+                    bg.style.backgroundImage = `url('${CONFIG.backgroundImages.fallback}?t=${Date.now()}')`;
                     bg.classList.add('loaded');
                 }
             }, CONFIG.bgLoadTimeout);
