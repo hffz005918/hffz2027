@@ -232,6 +232,22 @@
             background: var(--secondary-color);
         }
 
+        /* 备用URL提示样式 */
+        .backup-notice {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            z-index: 1002;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: slideDown 0.5s ease-out;
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -239,6 +255,11 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translate(-50%, -30px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
         }
 
         /* 响应式调整 */
@@ -258,6 +279,11 @@
 
             .modal-content {
                 padding: 1.5rem;
+            }
+
+            .backup-notice {
+                width: 90%;
+                text-align: center;
             }
         }
 
@@ -294,6 +320,11 @@
         <div class="loader-content">
             <div id="loaderText">正在连接服务器，请稍候...</div>
         </div>
+    </div>
+
+    <!-- 备用URL提示 -->
+    <div class="backup-notice" id="backupNotice">
+        正在使用备用服务器为您提供服务
     </div>
 
     <!-- 首页欢迎弹窗 -->
@@ -366,6 +397,7 @@
                     this.bindEvents();
                     this.setupWechat();
                     this.setupModal();
+                    this.checkPrimaryUrl();
                     this.logPerformance();
                 },
                 
@@ -380,6 +412,29 @@
                     document.documentElement.style.cssText += 
                         '-webkit-backface-visibility:hidden;' +
                         '-webkit-transform-style:preserve-3d;';
+                },
+                
+                // 检查主URL是否可用
+                checkPrimaryUrl() {
+                    const primaryUrl = 'https://hffz005918.github.io/hffz2027/';
+                    const backupUrl = 'https://pujiang-hffz2025.maozi.io/';
+                    
+                    // 如果当前已经是备用URL，则不检查
+                    if (window.location.href.startsWith(backupUrl)) {
+                        return;
+                    }
+                    
+                    fetch(primaryUrl, {
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                        cache: 'no-store'
+                    }).catch(() => {
+                        // 主URL不可用，显示通知并跳转到备用URL
+                        document.getElementById('backupNotice').style.display = 'block';
+                        setTimeout(() => {
+                            window.location.href = backupUrl;
+                        }, 3000);
+                    });
                 },
                 
                 // 加载背景图片
