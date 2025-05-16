@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="x-dns-prefetch-control" content="on">
-    <link rel="dns-prefetch" href="//your-cdn-domain.com">
-    <link rel="preconnect" href="https://your-cdn-domain.com">
+    <link rel="dns-prefetch" href="//static.example.com">
     
     <!-- 微信优化标签 -->
     <meta http-equiv="Cache-Control" content="no-siteapp">
@@ -42,6 +41,7 @@
             -webkit-tap-highlight-color: transparent;
             background: linear-gradient(135deg, #6a8bad 0%, #4a6b8f 100%);
             line-height: 1.5;
+            -webkit-overflow-scrolling: touch;
         }
 
         .background {
@@ -53,6 +53,7 @@
             z-index: -1;
             opacity: 0;
             transition: opacity 0.8s ease;
+            transform: translateZ(0);
         }
 
         .background.loaded {
@@ -107,6 +108,8 @@
             -webkit-backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             outline: none;
+            transform: translateZ(0);
+            will-change: transform;
         }
 
         .nav-card:focus-visible {
@@ -136,7 +139,7 @@
 
         /* 加载指示器 */
         .wechat-loader {
-            display: flex;
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -153,11 +156,6 @@
             -webkit-backdrop-filter: blur(3px);
         }
 
-        .loader-content {
-            text-align: center;
-            max-width: 80%;
-        }
-
         .loader-spinner {
             width: 40px;
             height: 40px;
@@ -168,7 +166,7 @@
             margin-bottom: 1rem;
         }
 
-        /* 首页弹窗样式 */
+        /* 弹窗样式 */
         .welcome-modal {
             display: none;
             position: fixed;
@@ -190,39 +188,29 @@
             padding: 2rem;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow-hover);
-            position: relative;
             animation: fadeIn 0.3s ease-out;
         }
 
-        .modal-header {
+        .modal-content h2 {
+            color: var(--primary-color);
             margin-bottom: 1.5rem;
         }
 
-        .modal-header h2 {
-            color: var(--primary-color);
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .modal-body {
-            color: var(--text-dark);
-            margin-bottom: 2rem;
+        .modal-content p {
+            margin-bottom: 1rem;
             line-height: 1.6;
-        }
-
-        .modal-footer {
-            text-align: right;
         }
 
         .close-btn {
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 0.6rem 1.2rem;
+            padding: 0.8rem 1.5rem;
             border-radius: var(--border-radius);
+            margin-top: 1.5rem;
             cursor: pointer;
             font-size: 1rem;
-            transition: background-color 0.2s ease;
+            transition: background 0.2s ease;
         }
 
         .close-btn:hover {
@@ -238,329 +226,261 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 响应式调整 */
         @media (max-width: 768px) {
-            .nav-cards {
-                gap: 1.2rem;
-                width: 95%;
-            }
-            
             .nav-card {
                 padding: 1.5rem;
             }
             
-            .title {
-                margin-bottom: 2.5rem;
-            }
-
             .modal-content {
                 padding: 1.5rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .nav-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-header h2 {
-                font-size: 1.3rem;
-            }
-        }
-
-        /* 电脑端背景图优化 */
-        @media (min-width: 1024px) {
-            .background {
-                background-size: cover;
-                background-attachment: fixed;
             }
         }
     </style>
 </head>
 <body>
-    <!-- 微信加载提示 -->
-    <div class="wechat-loader" id="wechatLoader">
+    <!-- 加载提示 -->
+    <div class="wechat-loader" id="loader">
         <div class="loader-spinner"></div>
-        <div class="loader-content">
-            <div id="loaderText">正在连接服务器，请稍候...</div>
-        </div>
+        <div id="loaderText">系统初始化中...</div>
     </div>
 
-    <!-- 首页欢迎弹窗 -->
+    <!-- 欢迎弹窗 -->
     <div class="welcome-modal" id="welcomeModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>欢迎使用员工服务系统</h2>
-            </div>
+            <h2>欢迎使用员工服务系统</h2>
             <div class="modal-body">
-                <p>尊敬的宏方纺织员工：</p>
-                <p>夏季用电高峰来临，为保障安全，现就宿舍用电及烹饪规定通知如下：</p>
-                <p>1.用电安全：严禁使用热得快、电炒锅等大功率违规电器；人走断电，勿私拉电线；发现用电设施故障及时报修。</p>
-                <p>2.禁止烹饪：宿舍内不得使用电饭煲、电磁炉等任何炊具烧菜做饭，存在火灾等严重安全隐患。</p>
-               <br>
-<p>违反上述规定，将没收违规物品，首次违规通报批评，多次违规取消评优资格，违规行为影响年终评定，情节严重给予纪律处分。欢迎大家互相监督举报。</p>
-                <br>
-                <p>请严格遵守，共同维护宿舍安全！</p>      
-                </ul>
-                <p style="margin-top: 1rem;">如有任何问题，请与办公室联系。</p>
+                <p>请遵守以下规定：</p>
+                <p>1. 禁止使用违规电器</p>
+                <p>2. 保持宿舍整洁</p>
+                <p>3. 节约用水用电</p>
             </div>
-            <div class="modal-footer">
-                <button class="close-btn" id="closeModalBtn">我知道了</button>
-            </div>
+            <button class="close-btn" id="closeBtn">我知道了</button>
         </div>
     </div>
 
-    <!-- 背景图容器 -->
+    <!-- 背景图 -->
     <div class="background" id="background"></div>
     
     <!-- 主内容 -->
     <div class="content">
         <div class="title">
             <h1>员工服务系统</h1>
-            <p>欢迎使用宏方纺织服务平台</p>
+            <p>宏方纺织内部平台</p>
         </div>
         
         <div class="nav-cards">
-            <div class="nav-card" data-href="dorm-rules.html">
+            <div class="nav-card" data-href="dorm.html">
                 <h2>宿舍管理</h2>
-                <p>员工宿舍管理制度</p>
+                <p>规章制度查询</p>
             </div>
             
-            <div class="nav-card" data-href="fee-query.html">
+            <div class="nav-card" data-href="fee.html">
                 <h2>费用查询</h2>
-                <p>水电费用查询服务</p>
+                <p>水电费用缴纳</p>
             </div>
         </div>
     </div>
 
     <script>
-        (function() {
-            // ==================== 配置部分 ====================
-            const CONFIG = {
-                // 背景图配置（替换为实际图片URL）
-                backgroundImages: {
-                    mobile: {
-                        webp: 'Images/bg-mobile.webp',
-                        jpg: 'https://placekitten.com/750/1334.jpg'
-                    },
-                    desktop: {
-                        webp: 'https://github.com/hffz005918/hffz2027/blob/main/Images/bg-mobile.webp',
-                        jpg: 'Ihttps://github.com/hffz005918/hffz2027/blob/main/Images/bg-default.jpg'
-                    },
-                    fallback: 'https://github.com/hffz005918/hffz2027/blob/main/Images/bg-default.jpg'
-                },
-                
-                // 微信初始化超时时间（毫秒）
-                wechatInitTimeout: 3000,
-                
-                // 背景图加载超时时间（毫秒）
-                bgLoadTimeout: 5000,
-                
-                // 服务器连接检查URL
-                serverCheckUrl: '/api/health-check',
-                
-                // 服务器连接检查间隔（毫秒）
-                serverCheckInterval: 1000,
-                
-                // 最大连接尝试次数
-                maxConnectionAttempts: 10
-            };
+        // 配置参数
+        const CONFIG = {
+            BACKGROUND_WEBP: 'https://static.example.com/bg.webp',
+            BACKGROUND_JPG: 'https://static.example.com/bg.jpg',
+            FALLBACK_IMAGE: 'https://static.example.com/fallback.webp'
+        };
 
-            // ==================== 核心功能 ====================
-            const App = {
-                isWeChat: /micromessenger/i.test(navigator.userAgent),
-                connectionAttempts: 0,
+        // 系统检测
+        const System = {
+            isWeChat: /micromessenger/i.test(navigator.userAgent),
+            isX5: /TBS|QQBrowser/i.test(navigator.userAgent)
+        };
+
+        // WebP支持检测
+        const checkWebPSupport = () => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img.width === 1);
+                img.onerror = () => resolve(false);
+                img.src = 'data:image/webp;base64,UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAwA0JaQAA3AA/vuUAAA=';
+            });
+        };
+
+        // 微信初始化
+        const initWeChat = () => {
+            return new Promise((resolve) => {
+                if (!System.isWeChat) return resolve();
+
+                const timeout = setTimeout(resolve, 2000);
                 
-                init() {
-                    this.initBackground();
-                    this.initWeChat();
-                    this.bindEvents();
-                    this.checkServerConnection();
-                },
+                const initBridge = () => {
+                    if (typeof WeixinJSBridge !== 'undefined') {
+                        try {
+                            WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
+                            clearTimeout(timeout);
+                            resolve();
+                        } catch (e) {
+                            console.error('微信初始化失败:', e);
+                        }
+                    }
+                };
+
+                if (document.readyState === 'complete') {
+                    initBridge();
+                } else {
+                    document.addEventListener('WeixinJSBridgeReady', initBridge);
+                }
+            });
+        };
+
+        // 加载优化背景图
+        const loadOptimizedBackground = async () => {
+            const bg = document.getElementById('background');
+            try {
+                const isWebP = await checkWebPSupport();
+                const bgUrl = isWebP ? CONFIG.BACKGROUND_WEBP : CONFIG.BACKGROUND_JPG;
                 
-                // 1. 服务器连接检查
-                checkServerConnection() {
-                    this.showLoader('正在连接服务器，请稍候...');
-                    
-                    const checkConnection = () => {
-                        this.connectionAttempts++;
+                const img = new Image();
+                img.onload = () => {
+                    bg.style.backgroundImage = `url('${bgUrl}')`;
+                    bg.classList.add('loaded');
+                };
+                img.onerror = () => {
+                    bg.style.backgroundImage = `url('${CONFIG.FALLBACK_IMAGE}')`;
+                    bg.classList.add('loaded');
+                };
+                img.src = bgUrl;
+            } catch (e) {
+                bg.style.backgroundImage = `url('${CONFIG.FALLBACK_IMAGE}')`;
+                bg.classList.add('loaded');
+            }
+        };
+
+        // 性能监控
+        const monitorPerformance = () => {
+            if (!window.performance || !performance.timing) return;
+            
+            setTimeout(() => {
+                const timing = performance.timing;
+                const perfData = {
+                    dns: timing.domainLookupEnd - timing.domainLookupStart,
+                    tcp: timing.connectEnd - timing.connectStart,
+                    ttfb: timing.responseStart - timing.requestStart,
+                    domReady: timing.domContentLoadedEventEnd - timing.navigationStart,
+                    loadTime: timing.loadEventEnd - timing.navigationStart,
+                    userAgent: navigator.userAgent
+                };
+                
+                // 使用navigator.sendBeacon上报数据
+                navigator.sendBeacon('/perf-log', JSON.stringify(perfData));
+            }, 1000);
+        };
+
+        // 注册Service Worker
+        const registerServiceWorker = () => {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').then(registration => {
+                        console.log('ServiceWorker 注册成功:', registration.scope);
+                    }).catch(err => {
+                        console.log('ServiceWorker 注册失败:', err);
+                    });
+                });
+            }
+        };
+
+        // X5内核优化
+        const initX5Optimization = () => {
+            if (!System.isX5) return;
+            
+            document.addEventListener('x5request', () => {
+                window.XMLHttpRequest.prototype.x5request = true;
+            });
+            
+            // 预加载页面
+            if (typeof WeixinJSBridge !== 'undefined') {
+                ['dorm.html', 'fee.html'].forEach(url => {
+                    WeixinJSBridge.invoke('preloadWebview', { url }, () => {});
+                });
+            }
+        };
+
+        // 主应用逻辑
+        const App = {
+            async init() {
+                this.showLoader();
+                
+                // 并行执行初始化任务
+                await Promise.all([
+                    initWeChat(),
+                    loadOptimizedBackground(),
+                    this.initEvents()
+                ]);
+                
+                initX5Optimization();
+                registerServiceWorker();
+                monitorPerformance();
+                
+                this.hideLoader();
+                this.showWelcomeModal();
+            },
+
+            showLoader() {
+                document.getElementById('loader').style.display = 'flex';
+            },
+
+            hideLoader() {
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                }, 300);
+            },
+
+            initEvents() {
+                // 关闭弹窗
+                document.getElementById('closeBtn').addEventListener('click', () => {
+                    document.getElementById('welcomeModal').style.display = 'none';
+                });
+
+                // 卡片点击（带防抖）
+                let isNavigating = false;
+                document.querySelectorAll('.nav-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        if (isNavigating) return;
+                        isNavigating = true;
                         
-                        // 模拟服务器连接检查（实际项目中替换为真实API调用）
-                        this.mockServerCheck()
-                            .then(() => {
-                                // 连接成功
-                                this.hideLoader();
-                                this.showWelcomeModal();
-                            })
-                            .catch(() => {
-                                // 连接失败
-                                if (this.connectionAttempts >= CONFIG.maxConnectionAttempts) {
-                                    this.showLoader('无法连接服务器，请稍后重试');
-                                    return;
-                                }
-                                
-                                // 继续尝试
-                                setTimeout(checkConnection, CONFIG.serverCheckInterval);
-                            });
-                    };
-                    
-                    checkConnection();
-                },
-                
-                // 模拟服务器检查（实际项目中替换为真实API调用）
-                mockServerCheck() {
-                    return new Promise((resolve, reject) => {
-                        // 模拟90%的成功率，实际项目中移除这个随机逻辑
-                        const isSuccess = Math.random() > 0.1 || this.connectionAttempts > 3;
+                        const url = card.dataset.href;
+                        if (!url) return;
+                        
+                        this.showLoader();
+                        
+                        // 预加载目标页面
+                        const link = document.createElement('link');
+                        link.rel = 'prefetch';
+                        link.href = url;
+                        document.head.appendChild(link);
                         
                         setTimeout(() => {
-                            isSuccess ? resolve() : reject();
-                        }, 500);
+                            window.location.href = System.isWeChat 
+                                ? `${url}?t=${Date.now()}` 
+                                : url;
+                        }, 300);
                     });
-                },
-                
-                // 2. 背景图加载系统
-                initBackground() {
-                    const bgElement = document.getElementById('background');
-                    if (!bgElement) return;
-                    
-                    const isMobile = this.isMobileDevice();
-                    
-                    this.checkWebPSupport().then(webpSupported => {
-                        const imgConfig = CONFIG.backgroundImages[isMobile ? 'mobile' : 'desktop'];
-                        const imgUrl = webpSupported ? imgConfig.webp : imgConfig.jpg;
-                        
-                        this.loadImageWithFallback(imgUrl, CONFIG.backgroundImages.fallback)
-                            .then(url => {
-                                bgElement.style.backgroundImage = `url('${url}')`;
-                                bgElement.classList.add('loaded');
-                            })
-                            .catch(() => {
-                                bgElement.style.display = 'none';
-                            });
-                    });
-                },
-                
-                // 3. 微信初始化优化
-                initWeChat() {
-                    if (!this.isWeChat) return;
-                    
-                    // 微信初始化超时处理
-                    const wechatTimeout = setTimeout(() => {
-                        console.warn('微信初始化超时，继续执行');
-                    }, CONFIG.wechatInitTimeout);
-                    
-                    // 尝试初始化微信Bridge
-                    const initWeixinBridge = () => {
-                        if (typeof WeixinJSBridge !== 'undefined') {
-                            try {
-                                WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                                WeixinJSBridge.on('menu:setfont', () => {
-                                    WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                                });
-                                clearTimeout(wechatTimeout);
-                            } catch (e) {
-                                console.error('微信JSBridge初始化失败:', e);
-                            }
-                        }
-                    };
-                    
-                    // 直接尝试或监听事件
-                    if (document.readyState === 'complete') {
-                        initWeixinBridge();
-                    } else {
-                        document.addEventListener('WeixinJSBridgeReady', initWeixinBridge);
-                        document.addEventListener('DOMContentLoaded', initWeixinBridge);
-                    }
-                },
-                
-                // 4. 事件绑定
-                bindEvents() {
-                    // 弹窗关闭按钮
-                    document.getElementById('closeModalBtn')?.addEventListener('click', () => {
-                        document.getElementById('welcomeModal').style.display = 'none';
-                    });
-                    
-                    // 导航卡片点击
-                    document.querySelectorAll('.nav-card').forEach(card => {
-                        card.addEventListener('click', () => {
-                            const url = card.getAttribute('data-href');
-                            if (url) {
-                                this.showLoader('正在跳转...');
-                                setTimeout(() => {
-                                    window.location.href = this.isWeChat 
-                                        ? `${url}?t=${Date.now()}` 
-                                        : url;
-                                }, 300);
-                            }
-                        });
-                    });
-                },
-                
-                // 5. 欢迎弹窗
-                showWelcomeModal() {
-                    setTimeout(() => {
-                        document.getElementById('welcomeModal').style.display = 'flex';
-                    }, 500);
-                },
-                
-                // ================ 工具方法 ================
-                isMobileDevice() {
-                    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                },
-                
-                checkWebPSupport() {
-                    return new Promise(resolve => {
-                        const img = new Image();
-                        img.onload = img.onerror = () => resolve(img.width === 1);
-                        img.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
-                    });
-                },
-                
-                loadImageWithFallback(mainUrl, fallbackUrl) {
-                    return new Promise((resolve, reject) => {
-                        const img = new Image();
-                        img.src = `${mainUrl}?t=${Date.now()}`;
-                        
-                        img.onload = () => resolve(img.src);
-                        img.onerror = () => {
-                            console.warn(`主背景图加载失败，尝试备用图: ${mainUrl}`);
-                            const fallbackImg = new Image();
-                            fallbackImg.src = `${fallbackUrl}?t=${Date.now()}`;
-                            
-                            fallbackImg.onload = () => resolve(fallbackImg.src);
-                            fallbackImg.onerror = () => reject(new Error('所有背景图加载失败'));
-                        };
-                    });
-                },
-                
-                showLoader(message) {
-                    const loader = document.getElementById('wechatLoader');
-                    if (loader) {
-                        document.getElementById('loaderText').textContent = message;
-                        loader.style.display = 'flex';
-                    }
-                },
-                
-                hideLoader() {
-                    const loader = document.getElementById('wechatLoader');
-                    if (loader) loader.style.display = 'none';
-                }
-            };
+                });
+            },
 
-            // ==================== 启动应用 ====================
-            document.addEventListener('DOMContentLoaded', () => App.init());
-            
-            // 兜底检查 - 确保背景图最终能显示
-            setTimeout(() => {
-                const bg = document.getElementById('background');
-                if (bg && !bg.classList.contains('loaded')) {
-                    console.warn('背景图加载超时，强制显示');
-                    bg.style.backgroundImage = `url('${CONFIG.backgroundImages.fallback}?t=${Date.now()}')`;
-                    bg.classList.add('loaded');
-                }
-            }, CONFIG.bgLoadTimeout);
-        })();
+            showWelcomeModal() {
+                setTimeout(() => {
+                    document.getElementById('welcomeModal').style.display = 'flex';
+                }, 1000);
+            }
+        };
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', () => App.init());
+
+        // 离线检测
+        window.addEventListener('offline', () => {
+            window.location.href = '/offline.html';
+        });
     </script>
 </body>
 </html>
