@@ -461,8 +461,8 @@
                     // 根据设备类型选择不同尺寸的背景图
                     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                     const bgUrl = supportsWebP ? 
-                        (isMobile ? 'bg-mobile.webp' : 'bg-desktop.webp') : 
-                        (isMobile ? 'bg-mobile.jpg' : 'bg-desktop.jpg');
+                        (isMobile ? 'images/bg-mobile.webp' : 'images/bg-desktop.webp') : 
+                        (isMobile ? 'images/bg-mobile.jpg' : 'images/bg-desktop.jpg');
                     
                     // 微信环境下添加时间戳避免缓存
                     img.src = isWeChat ? `${bgUrl}?t=${Date.now()}` : bgUrl;
