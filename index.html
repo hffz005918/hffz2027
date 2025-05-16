@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="x-dns-prefetch-control" content="on">
-    <link rel="dns-prefetch" href="//static.example.com">
     
     <!-- 微信优化标签 -->
     <meta http-equiv="Cache-Control" content="no-siteapp">
@@ -41,7 +40,6 @@
             -webkit-tap-highlight-color: transparent;
             background: linear-gradient(135deg, #6a8bad 0%, #4a6b8f 100%);
             line-height: 1.5;
-            -webkit-overflow-scrolling: touch;
         }
 
         .background {
@@ -53,7 +51,6 @@
             z-index: -1;
             opacity: 0;
             transition: opacity 0.8s ease;
-            transform: translateZ(0);
         }
 
         .background.loaded {
@@ -108,8 +105,6 @@
             -webkit-backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             outline: none;
-            transform: translateZ(0);
-            will-change: transform;
         }
 
         .nav-card:focus-visible {
@@ -179,7 +174,6 @@
             justify-content: center;
             align-items: center;
             backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
         }
 
         .modal-content {
@@ -189,32 +183,6 @@
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow-hover);
             animation: fadeIn 0.3s ease-out;
-        }
-
-        .modal-content h2 {
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-content p {
-            margin-bottom: 1rem;
-            line-height: 1.6;
-        }
-
-        .close-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: var(--border-radius);
-            margin-top: 1.5rem;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.2s ease;
-        }
-
-        .close-btn:hover {
-            background: var(--secondary-color);
         }
 
         @keyframes spin {
@@ -228,10 +196,6 @@
 
         @media (max-width: 768px) {
             .nav-card {
-                padding: 1.5rem;
-            }
-            
-            .modal-content {
                 padding: 1.5rem;
             }
         }
@@ -282,205 +246,116 @@
     </div>
 
     <script>
-        // 配置参数
-        const CONFIG = {
-            BACKGROUND_WEBP: 'https://static.example.com/bg.webp',
-            BACKGROUND_JPG: 'https://static.example.com/bg.jpg',
-            FALLBACK_IMAGE: 'https://static.example.com/fallback.webp'
-        };
+        (function() {
+            // 配置参数
+            const CONFIG = {
+                BACKGROUND_URL: 'assets/images/background.jpg' // 背景图路径
+            };
 
-        // 系统检测
-        const System = {
-            isWeChat: /micromessenger/i.test(navigator.userAgent),
-            isX5: /TBS|QQBrowser/i.test(navigator.userAgent)
-        };
+            // 系统检测
+            const System = {
+                isWeChat: /micromessenger/i.test(navigator.userAgent)
+            };
 
-        // WebP支持检测
-        const checkWebPSupport = () => {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve(img.width === 1);
-                img.onerror = () => resolve(false);
-                img.src = 'data:image/webp;base64,UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAwA0JaQAA3AA/vuUAAA=';
-            });
-        };
+            // 微信初始化
+            const initWeChat = () => {
+                return new Promise(resolve => {
+                    if (!System.isWeChat) return resolve();
 
-        // 微信初始化
-        const initWeChat = () => {
-            return new Promise((resolve) => {
-                if (!System.isWeChat) return resolve();
-
-                const timeout = setTimeout(resolve, 2000);
-                
-                const initBridge = () => {
-                    if (typeof WeixinJSBridge !== 'undefined') {
-                        try {
-                            WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                            clearTimeout(timeout);
-                            resolve();
-                        } catch (e) {
-                            console.error('微信初始化失败:', e);
+                    const timeout = setTimeout(resolve, 3000);
+                    
+                    const initBridge = () => {
+                        if (typeof WeixinJSBridge !== 'undefined') {
+                            try {
+                                WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
+                                clearTimeout(timeout);
+                                resolve();
+                            } catch (e) {
+                                console.error('微信初始化失败:', e);
+                            }
                         }
+                    };
+
+                    if (document.readyState === 'complete') {
+                        initBridge();
+                    } else {
+                        document.addEventListener('WeixinJSBridgeReady', initBridge);
                     }
-                };
+                });
+            };
 
-                if (document.readyState === 'complete') {
-                    initBridge();
-                } else {
-                    document.addEventListener('WeixinJSBridgeReady', initBridge);
+            // 背景加载
+            const loadBackground = () => {
+                return new Promise((resolve) => {
+                    const bg = document.getElementById('background');
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        bg.style.backgroundImage = `url('${CONFIG.BACKGROUND_URL}')`;
+                        bg.classList.add('loaded');
+                        resolve();
+                    };
+                    
+                    img.onerror = () => {
+                        console.warn('背景图加载失败');
+                        bg.style.display = 'none';
+                        resolve();
+                    };
+
+                    img.src = CONFIG.BACKGROUND_URL;
+                });
+            };
+
+            // 主逻辑
+            const App = {
+                async init() {
+                    this.showLoader();
+                    await Promise.all([initWeChat(), loadBackground()]);
+                    this.initEvents();
+                    this.hideLoader();
+                    this.showWelcomeModal();
+                },
+
+                showLoader() {
+                    document.getElementById('loader').style.display = 'flex';
+                },
+
+                hideLoader() {
+                    setTimeout(() => {
+                        document.getElementById('loader').style.display = 'none';
+                    }, 300);
+                },
+
+                initEvents() {
+                    // 关闭弹窗
+                    document.getElementById('closeBtn').addEventListener('click', () => {
+                        document.getElementById('welcomeModal').style.display = 'none';
+                    });
+
+                    // 卡片点击
+                    document.querySelectorAll('.nav-card').forEach(card => {
+                        card.addEventListener('click', () => {
+                            const url = card.dataset.href;
+                            if (url) {
+                                this.showLoader();
+                                window.location.href = System.isWeChat 
+                                    ? `${url}?t=${Date.now()}`
+                                    : url;
+                            }
+                        });
+                    });
+                },
+
+                showWelcomeModal() {
+                    setTimeout(() => {
+                        document.getElementById('welcomeModal').style.display = 'flex';
+                    }, 1000);
                 }
-            });
-        };
+            };
 
-        // 加载优化背景图
-        const loadOptimizedBackground = async () => {
-            const bg = document.getElementById('background');
-            try {
-                const isWebP = await checkWebPSupport();
-                const bgUrl = isWebP ? CONFIG.BACKGROUND_WEBP : CONFIG.BACKGROUND_JPG;
-                
-                const img = new Image();
-                img.onload = () => {
-                    bg.style.backgroundImage = `url('${bgUrl}')`;
-                    bg.classList.add('loaded');
-                };
-                img.onerror = () => {
-                    bg.style.backgroundImage = `url('${CONFIG.FALLBACK_IMAGE}')`;
-                    bg.classList.add('loaded');
-                };
-                img.src = bgUrl;
-            } catch (e) {
-                bg.style.backgroundImage = `url('${CONFIG.FALLBACK_IMAGE}')`;
-                bg.classList.add('loaded');
-            }
-        };
-
-        // 性能监控
-        const monitorPerformance = () => {
-            if (!window.performance || !performance.timing) return;
-            
-            setTimeout(() => {
-                const timing = performance.timing;
-                const perfData = {
-                    dns: timing.domainLookupEnd - timing.domainLookupStart,
-                    tcp: timing.connectEnd - timing.connectStart,
-                    ttfb: timing.responseStart - timing.requestStart,
-                    domReady: timing.domContentLoadedEventEnd - timing.navigationStart,
-                    loadTime: timing.loadEventEnd - timing.navigationStart,
-                    userAgent: navigator.userAgent
-                };
-                
-                // 使用navigator.sendBeacon上报数据
-                navigator.sendBeacon('/perf-log', JSON.stringify(perfData));
-            }, 1000);
-        };
-
-        // 注册Service Worker
-        const registerServiceWorker = () => {
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js').then(registration => {
-                        console.log('ServiceWorker 注册成功:', registration.scope);
-                    }).catch(err => {
-                        console.log('ServiceWorker 注册失败:', err);
-                    });
-                });
-            }
-        };
-
-        // X5内核优化
-        const initX5Optimization = () => {
-            if (!System.isX5) return;
-            
-            document.addEventListener('x5request', () => {
-                window.XMLHttpRequest.prototype.x5request = true;
-            });
-            
-            // 预加载页面
-            if (typeof WeixinJSBridge !== 'undefined') {
-                ['dorm.html', 'fee.html'].forEach(url => {
-                    WeixinJSBridge.invoke('preloadWebview', { url }, () => {});
-                });
-            }
-        };
-
-        // 主应用逻辑
-        const App = {
-            async init() {
-                this.showLoader();
-                
-                // 并行执行初始化任务
-                await Promise.all([
-                    initWeChat(),
-                    loadOptimizedBackground(),
-                    this.initEvents()
-                ]);
-                
-                initX5Optimization();
-                registerServiceWorker();
-                monitorPerformance();
-                
-                this.hideLoader();
-                this.showWelcomeModal();
-            },
-
-            showLoader() {
-                document.getElementById('loader').style.display = 'flex';
-            },
-
-            hideLoader() {
-                setTimeout(() => {
-                    document.getElementById('loader').style.display = 'none';
-                }, 300);
-            },
-
-            initEvents() {
-                // 关闭弹窗
-                document.getElementById('closeBtn').addEventListener('click', () => {
-                    document.getElementById('welcomeModal').style.display = 'none';
-                });
-
-                // 卡片点击（带防抖）
-                let isNavigating = false;
-                document.querySelectorAll('.nav-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        if (isNavigating) return;
-                        isNavigating = true;
-                        
-                        const url = card.dataset.href;
-                        if (!url) return;
-                        
-                        this.showLoader();
-                        
-                        // 预加载目标页面
-                        const link = document.createElement('link');
-                        link.rel = 'prefetch';
-                        link.href = url;
-                        document.head.appendChild(link);
-                        
-                        setTimeout(() => {
-                            window.location.href = System.isWeChat 
-                                ? `${url}?t=${Date.now()}` 
-                                : url;
-                        }, 300);
-                    });
-                });
-            },
-
-            showWelcomeModal() {
-                setTimeout(() => {
-                    document.getElementById('welcomeModal').style.display = 'flex';
-                }, 1000);
-            }
-        };
-
-        // 启动应用
-        document.addEventListener('DOMContentLoaded', () => App.init());
-
-        // 离线检测
-        window.addEventListener('offline', () => {
-            window.location.href = '/offline.html';
-        });
+            // 启动应用
+            document.addEventListener('DOMContentLoaded', () => App.init());
+        })();
     </script>
 </body>
 </html>
