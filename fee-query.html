@@ -1,10 +1,20 @@
+<!-- fee-query.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>费用查询系统 - 宏方纺织</title>
+    <title>费用查询 - 宏方纺织</title>
     <style>
+        /* 精简后的CSS样式 */
+        :root {
+            --primary: #1890ff;
+            --error: #ff4d4f;
+            --success: #52c41a;
+            --text: #333;
+            --border: #d9d9d9;
+            --bg: #f0f2f5;
+        }
         * {
             box-sizing: border-box;
             margin: 0;
@@ -12,299 +22,128 @@
             font-family: "Microsoft YaHei", sans-serif;
         }
         body {
-            background: #f5f5f5;
-            padding: 60px 15px 15px;
-        }
-        .back-btn {
-            position: fixed;
-            left: 15px;
-            top: 15px;
-            padding: 8px 15px;
-            background: #1890ff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
+            background: var(--bg);
+            padding: 60px 15px;
         }
         .container {
             max-width: 500px;
             margin: 0 auto;
             background: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         h1 {
             text-align: center;
-            color: #1890ff;
-            margin-bottom: 20px;
-            font-size: 1.4em;
+            color: var(--primary);
+            margin-bottom: 25px;
         }
         .input-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #666;
-            font-size: 14px;
+            margin-bottom: 20px;
         }
         input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
+            padding: 12px;
+            border: 1px solid var(--border);
             border-radius: 4px;
             font-size: 16px;
         }
         button {
             width: 100%;
-            padding: 12px;
-            background: #1890ff;
+            padding: 14px;
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: 4px;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        #result {
             margin-top: 20px;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 4px;
-            display: none;
-        }
-        .result-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .total {
-            font-weight: bold;
-            color: #ff5722;
-        }
-        .error {
-            color: #f44336;
-            padding: 10px;
-            background: #ffebee;
-            border-radius: 4px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <button class="back-btn" onclick="window.location.href='index.html'">返回首页</button>
-    
     <div class="container">
-        <h1>宏方纺织电费查询服务</h1>
-        <div class="date-inputs">
-            <input type="number" id="year" placeholder="年份（如2023）" min="2025" max="2030" value="2025">
-            <input type="number" id="month" placeholder="月份（1-12）" min="1" max="12" value="4">
+        <h1>宏方纺织费用查询服务</h1>
+        
+        <div class="input-group">
+            <input type="number" id="year" min="2025" max="2030" value="2025" placeholder="查询年份">
         </div>
-        <input type="text" id="authCode" placeholder="身份证后六位" maxlength="6">
+
+        <div class="input-group">
+            <input type="text" id="authCode" maxlength="6" placeholder="身份证后6位（示例：12345X）">
+        </div>
+
         <button id="queryBtn">立即查询</button>
-        <div id="result"></div>
     </div>
 
     <script>
-        // 系统配置
-        const CONFIG = {
-            DATA_URL: 'data/data.json',
-            CACHE_KEY: 'hf_cache_v6', // 版本号更新
-            CACHE_TIME: 86400000,
-            RETRY_LIMIT: 3,
-            RETRY_DELAY: 2000
-        };
+        // 优化后的JavaScript代码
+        class QuerySystem {
+            constructor() {
+                this.yearInput = document.getElementById('year');
+                this.authInput = document.getElementById('authCode');
+                this.queryBtn = document.getElementById('queryBtn');
+                this.initEvents();
+            }
 
-        // 状态管理
-        let appState = {
-            cacheData: null,
-            isOnline: navigator.onLine,
-            isInitialLoad: true
-        };
+            initEvents() {
+                // 实时输入验证
+                this.authInput.addEventListener('input', () => this.formatAuthCode());
+                this.queryBtn.addEventListener('click', () => this.submitQuery());
+            }
 
-        // 初始化加载
-        (async () => {
-            try {
-                const cache = localStorage.getItem(CONFIG.CACHE_KEY);
-                if (cache) {
-                    const { data } = JSON.parse(cache);
-                    if (Date.now() - (data.timestamp || 0) < CONFIG.CACHE_TIME) {
-                        appState.cacheData = data;
-                    }
+            formatAuthCode() {
+                let value = this.authInput.value.toUpperCase();
+                // 允许输入6位（5位数字 + 1位数字/X）
+                value = value.replace(/[^0-9X]/g, '')
+                            .replace(/(\d{5}[0-9X]?).*/, '$1');  // 修复正则表达式
+                this.authInput.value = value.slice(0,6);  // 确保最多输入6位
+            }
+
+            validate() {
+                const year = parseInt(this.yearInput.value);
+                const auth = this.authInput.value;
+                let isValid = true;
+
+                // 验证年份
+                this.yearInput.style.borderColor = 
+                    (year >= 2023 && year <= 2030) ? 'var(--border)' : 'var(--error)';
+
+                // 验证身份证格式
+                this.authInput.style.borderColor = 
+                    /^\d{5}[0-9X]$/.test(auth) ? 'var(--border)' : 'var(--error)';
+
+                return year >= 2023 && year <= 2030 && /^\d{5}[0-9X]$/.test(auth);
+            }
+
+            async submitQuery() {
+                if (!this.validate()) return;
+
+                this.queryBtn.disabled = true;
+                this.queryBtn.textContent = '查询中...';
+
+                try {
+                    const auth = this.authInput.value;
+                    const year = this.yearInput.value;
+                    
+                    // 存储认证信息（优化sessionStorage使用）
+                    sessionStorage.setItem('authCode', auth);
+                    
+                    // 延迟跳转以展示加载状态
+                    setTimeout(() => {
+                        window.location.href = `results.html?year=${year}`;
+                    }, 300);
+                } catch (error) {
+                    console.error('查询失败:', error);
+                    alert('查询失败，请稍后重试');
+                } finally {
+                    this.queryBtn.disabled = false;
+                    this.queryBtn.textContent = '立即查询';
                 }
-            } catch (e) {
-                console.warn('缓存加载失败:', e);
-            }
-
-            setupEventListeners();
-            
-            // 延迟加载数据（仅在首次加载且在线时）
-            if (appState.isOnline && appState.isInitialLoad) {
-                setTimeout(async () => {
-                    try {
-                        await fetchData();
-                    } catch (error) {
-                        console.warn('数据延迟加载失败:', error);
-                    }
-                    appState.isInitialLoad = false;
-                }, 1000);
-            }
-        })();
-
-        // 主查询函数
-        async function handleQuery() {
-            const btn = document.getElementById('queryBtn');
-            const resultDiv = document.getElementById('result');
-            
-            try {
-                const auth = document.getElementById('authCode').value.trim().toUpperCase();
-                const year = parseInt(document.getElementById('year').value);
-                const month = parseInt(document.getElementById('month').value);
-
-                if (!/^\d{5}[\dA-Z]$/.test(auth)) throw new Error('E1');
-                if (isNaN(year) || year < 2025 || year > 2030) throw new Error('E2');
-                if (isNaN(month) || month < 1 || month > 12) throw new Error('E3');
-
-                btn.disabled = true;
-                resultDiv.innerHTML = '<div class="loading">查询中...</div>';
-                resultDiv.style.display = 'block';
-
-                const data = await getData();
-                const record = data.find(item => 
-                    String(item.auth).toUpperCase() === auth &&
-                    parseInt(item.year) === year &&
-                    parseInt(item.month) === month
-                );
-
-                resultDiv.innerHTML = record ? buildResultHTML(record) : 
-                    '<div class="error">未找到匹配记录</div>';
-
-            } catch (error) {
-                handleError(error.message, resultDiv);
-            } finally {
-                btn.disabled = false;
             }
         }
 
-        // 数据获取核心逻辑
-        async function getData() {
-            if (appState.cacheData) return appState.cacheData;
-            return new Promise((resolve, reject) => {
-                const retryFetch = async (attempt = 0) => {
-                    try {
-                        await fetchData();
-                        resolve(appState.cacheData);
-                    } catch (error) {
-                        if (attempt < CONFIG.RETRY_LIMIT) {
-                            setTimeout(() => retryFetch(attempt + 1), CONFIG.RETRY_DELAY);
-                        } else {
-                            reject(error);
-                        }
-                    }
-                };
-                retryFetch();
-            });
-        }
-
-        // 改进的数据获取方法
-        async function fetchData() {
-            try {
-                // 创建主请求和克隆请求
-                const mainRequest = fetch(`${CONFIG.DATA_URL}?_=${Date.now()}`);
-                const cloneRequest = mainRequest.then(res => res.clone());
-                
-                const [response, cloneResponse] = await Promise.all([mainRequest, cloneRequest]);
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                // 并行处理响应
-                const [text, jsonData] = await Promise.all([
-                    response.text(),
-                    cloneResponse.json().catch(() => null)
-                ]);
-
-                const newData = jsonData || JSON.parse(text.replace(/^\uFEFF/, ''));
-
-                // 只有当数据变化时才更新缓存
-                if (JSON.stringify(newData) !== JSON.stringify(appState.cacheData)) {
-                    appState.cacheData = newData;
-                    localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify({
-                        data: newData,
-                        timestamp: Date.now()
-                    }));
-                }
-
-            } catch (error) {
-                if (!appState.cacheData) throw error;
-                console.log('网络请求失败，使用缓存数据');
-            }
-        }
-
-        // 构建结果HTML
-        function buildResultHTML(record) {
-            const total = [record.water, record.electricity, record.rent]
-                .reduce((sum, val) => sum + (Number(val) || 0), 0);
-            
-            return `
-                <h3>${record.year}年${record.month}月费用</h3>
-                <p>姓名：${escapeHtml(record.name)}</p>
-                <p>房间号：${escapeHtml(record.id)}</p>
-                <p><strong>应缴费用：${total.toFixed(2)} 元</strong></p>
-            `;
-        }
-
-        // 错误处理
-        function handleError(code, container) {
-            const errorMap = {
-                'E1': '身份证格式错误（5位数字+1位数字/字母）',
-                'E2': '请输入2025-2030之间的年份',
-                'E3': '请输入1-12之间的月份',
-                'HTTP 404': '数据文件不存在',
-                'HTTP 500': '服务器错误'
-            };
-            
-            container.innerHTML = `
-                <div class="error">${errorMap[code] || '系统错误'}</div>
-                <button onclick="handleQuery()" style="margin-top:15px;width:100%">
-                    重试查询
-                </button>
-            `;
-        }
-
-        // HTML转义
-        function escapeHtml(text) {
-            const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
-            return String(text).replace(/[&<>"']/g, m => map[m]);
-        }
-
-        // 事件监听
-        function setupEventListeners() {
-            document.getElementById('queryBtn').addEventListener('click', handleQuery);
-            document.getElementById('authCode').addEventListener('input', function() {
-                this.value = this.value.toUpperCase();
-            });
-            document.getElementById('authCode').addEventListener('keypress', e => {
-                if (e.key === 'Enter') handleQuery();
-            });
-
-            // 优化的网络状态监听
-            const handleNetworkChange = async () => {
-                const wasOnline = appState.isOnline;
-                appState.isOnline = navigator.onLine;
-                
-                if (appState.isOnline && !wasOnline) {
-                    try {
-                        await fetchData();
-                    } catch (error) {
-                        console.warn('网络恢复后更新失败:', error);
-                    }
-                }
-            };
-
-            window.addEventListener('online', handleNetworkChange);
-            window.addEventListener('offline', handleNetworkChange);
-        }
+        // 延迟初始化避免阻塞
+        setTimeout(() => new QuerySystem(), 50);
     </script>
 </body>
 </html>
