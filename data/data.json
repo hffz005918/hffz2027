@@ -1,746 +1,900 @@
 [
   {
-    "year": 2025,
-    "month": 2,
-    "id": 201,
+    "id": "024826",
     "name": "刘凤群",
-    "rent": 5,
-    "auth": "024826"
+    "room": "201",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 9.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 202,
+    "id": "190918",
     "name": "花开红",
-    "rent": 4,
-    "auth": 190918
+    "room": "202",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 203,
+    "id": "245540",
     "name": "郑爱平",
-    "rent": 191,
-    "auth": 245540
+    "room": "203",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 191.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 65.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 49.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 204,
-    "name": "朱 涛",
-    "rent": 55,
-    "auth": 142713
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 204,
-    "name": "朱浪",
-    "rent": 0,
-    "auth": 112710
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 205,
+    "id": "093311",
     "name": "汪志勇",
-    "rent": 106,
-    "auth": "093311"
+    "room": "205",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 100.0
+          },
+          {
+            "month": 3,
+            "electricity": 26.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 31.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 206,
+    "id": "070636",
     "name": "卢兴武",
-    "rent": 153,
-    "auth": "070636"
+    "room": "206",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 53.0,
+            "water": 0.0,
+            "rent": 100.0
+          },
+          {
+            "month": 3,
+            "electricity": 51.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 71.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 207,
-    "name": "郑祖名",
-    "rent": 42,
-    "auth": "021917"
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 207,
-    "name": "周训普",
-    "rent": 42,
-    "auth": 252914
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 208,
+    "id": "150613",
     "name": "卢海金",
-    "rent": 3,
-    "auth": 150613
+    "room": "208",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 3.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 208,
-    "name": "卢小良 ",
-    "rent": 3,
-    "auth": 200613
+    "id": "200613",
+    "name": "卢小良",
+    "room": "208",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 3.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 208,
+    "id": "152735",
     "name": "朱江恒",
-    "rent": 68,
-    "auth": 152735
+    "room": "212",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 68.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 156.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 124.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 210,
-    "name": "王昌国",
-    "rent": 16,
-    "auth": 232971
+    "id": "112711",
+    "name": "王磊",
+    "room": "211",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 211,
-    "name": "王 磊",
-    "rent": 16,
-    "auth": 112711
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 211,
+    "id": "032713",
     "name": "王刚岭",
-    "rent": 16,
-    "auth": "032713"
+    "room": "211",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 212,
-    "name": "朱 凯",
-    "rent": 68,
-    "auth": 152751
+    "id": "152751",
+    "name": "朱凯",
+    "room": "212",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 68.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 156.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 124.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 215,
-    "name": "朱勇",
-    "rent": 0,
-    "auth": "082733"
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 216,
-    "name": "陆雪星 ",
-    "rent": 11,
-    "auth": 182719
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 303,
-    "name": "陇正海",
-    "rent": 108,
-    "auth": 183272
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 304,
-    "name": "单文华",
-    "rent": 100,
-    "auth": 182893
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 305,
-    "name": "李永美",
-    "rent": 0,
-    "auth": "04326X"
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 307,
-    "name": "张吉先",
-    "rent": 0,
-    "auth": 154177
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 307,
-    "name": "潘克平",
-    "rent": 3,
-    "auth": 111814
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 308,
-    "name": "王健丛",
-    "rent": 24,
-    "auth": "032935"
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 309,
-    "name": "田松江",
-    "rent": 16,
-    "auth": 123751
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 310,
+    "id": "022931",
     "name": "李德发",
-    "rent": 5,
-    "auth": "022931"
+    "room": "310",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 35.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 311,
-    "name": "陈小付",
-    "rent": 48,
-    "auth": "015234"
+    "id": "142713",
+    "name": "朱涛",
+    "room": "204",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 55.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 9.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 2,
-    "id": 311,
-    "name": "陈朝华",
-    "rent": 48,
-    "auth": 210013
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 312,
-    "name": "王建辉",
-    "rent": 161,
-    "auth": 312914
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 315,
-    "name": "农尚留 ",
-    "rent": 10,
-    "auth": "057212"
-  },
-  {
-    "year": 2025,
-    "month": 2,
-    "id": 316,
-    "name": "陈朝敏 ",
-    "rent": 55,
-    "auth": "055258"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 201,
-    "name": "刘凤群",
-    "rent": 9,
-    "auth": "024826"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 202,
-    "name": "花开红",
-    "rent": 4,
-    "auth": 190918
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 203,
-    "name": "郑爱平",
-    "rent": 65,
-    "auth": 245540
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 204,
-    "name": "朱 涛",
-    "rent": 6,
-    "auth": 142713
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 204,
+    "id": "112710",
     "name": "朱浪",
-    "rent": 6,
-    "auth": 112710
+    "room": "204",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 9.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 3,
-    "id": 205,
-    "name": "汪志勇",
-    "rent": 226,
-    "auth": "093311"
+    "id": "182719",
+    "name": "陆雪星",
+    "room": "216",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 11.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 19.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 22.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 3,
-    "id": 206,
-    "name": "卢兴武",
-    "rent": 251,
-    "auth": "070636"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 207,
-    "name": "郑祖名",
-    "rent": 0,
-    "auth": "021917"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 207,
-    "name": "周训普",
-    "rent": 0,
-    "auth": 252914
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 208,
-    "name": "卢海金",
-    "rent": 6,
-    "auth": 150613
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 208,
-    "name": "卢小良 ",
-    "rent": 6,
-    "auth": 200613
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 208,
-    "name": "朱江恒",
-    "rent": 156,
-    "auth": 152735
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 210,
-    "name": "王昌国",
-    "rent": 232,
-    "auth": 232971
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 211,
-    "name": "王 磊",
-    "rent": 29,
-    "auth": 112711
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 211,
-    "name": "王刚岭",
-    "rent": 29,
-    "auth": "032713"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 212,
-    "name": "朱 凯",
-    "rent": 156,
-    "auth": 152751
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 215,
-    "name": "朱勇",
-    "rent": 0,
-    "auth": "082733"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 216,
-    "name": "陆雪星 ",
-    "rent": 22,
-    "auth": 182719
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 303,
+    "id": "183272",
     "name": "陇正海",
-    "rent": 261,
-    "auth": 183272
+    "room": "303",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 8.0,
+            "water": 0.0,
+            "rent": 100.0
+          },
+          {
+            "month": 3,
+            "electricity": 61.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 3,
-    "id": 304,
-    "name": "单文华",
-    "rent": 229,
-    "auth": 182893
+    "id": "057212",
+    "name": "农尚留",
+    "room": "315",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 10.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 9.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 17.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 3,
-    "id": 305,
-    "name": "李永美",
-    "rent": 5,
-    "auth": "04326X"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 307,
-    "name": "张吉先",
-    "rent": 0,
-    "auth": 154177
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 307,
-    "name": "潘克平",
-    "rent": 6,
-    "auth": 111814
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 308,
-    "name": "王健丛",
-    "rent": 29,
-    "auth": "032935"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 309,
-    "name": "田松江",
-    "rent": 21,
-    "auth": 123751
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 310,
-    "name": "李德发",
-    "rent": 235,
-    "auth": "022931"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 311,
-    "name": "陈小付",
-    "rent": 59,
-    "auth": "015234"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 311,
-    "name": "陈朝华",
-    "rent": 59,
-    "auth": 210013
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 312,
-    "name": "王建辉",
-    "rent": 122,
-    "auth": 312914
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 315,
-    "name": "农尚留 ",
-    "rent": 17,
-    "auth": "057212"
-  },
-  {
-    "year": 2025,
-    "month": 3,
-    "id": 316,
-    "name": "陈朝敏 ",
-    "rent": 89,
-    "auth": "055258"
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 201,
-    "name": "刘凤群",
-    "rent": 4,
-    "auth": "024826"
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 202,
-    "name": "花开红",
-    "rent": 4,
-    "auth": 190918
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 203,
-    "name": "郑爱平",
-    "rent": 49,
-    "auth": 245540
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 204,
-    "name": "朱 涛",
-    "rent": 9,
-    "auth": 142713
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 204,
-    "name": "朱浪",
-    "rent": 9,
-    "auth": 112710
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 205,
-    "name": "汪志勇",
-    "rent": 231,
-    "auth": "093311"
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 206,
-    "name": "卢兴武",
-    "rent": 271,
-    "auth": "070636"
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 207,
-    "name": "郑祖名",
-    "rent": 14,
-    "auth": "021917"
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 207,
-    "name": "周训普",
-    "rent": 14,
-    "auth": 252914
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 208,
-    "name": "卢海金",
-    "rent": 5,
-    "auth": 150613
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 208,
-    "name": "卢小良 ",
-    "rent": 5,
-    "auth": 200613
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 208,
-    "name": "朱江恒",
-    "rent": 124,
-    "auth": 152735
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 210,
-    "name": "王昌国",
-    "rent": 229,
-    "auth": 232971
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 211,
-    "name": "王 磊",
-    "rent": 29,
-    "auth": 112711
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 211,
-    "name": "王刚岭",
-    "rent": 29,
-    "auth": "032713"
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 212,
-    "name": "朱 凯",
-    "rent": 124,
-    "auth": 152751
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 215,
+    "id": "082733",
     "name": "朱勇",
-    "rent": 166,
-    "auth": "082733"
+    "room": "215",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 166.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 4,
-    "id": 216,
-    "name": "陆雪星 ",
-    "rent": 19,
-    "auth": 182719
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 303,
-    "name": "陇正海",
-    "rent": 214,
-    "auth": 183272
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 304,
-    "name": "单文华",
-    "rent": 238,
-    "auth": 182893
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 305,
-    "name": "李永美",
-    "rent": 14,
-    "auth": "04326X"
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 307,
-    "name": "张吉先",
-    "rent": 8,
-    "auth": 154177
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 307,
-    "name": "潘克平",
-    "rent": 8,
-    "auth": 111814
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 308,
-    "name": "王健丛",
-    "rent": 28,
-    "auth": "032935"
-  },
-  {
-    "year": 2025,
-    "month": 4,
-    "id": 309,
+    "id": "123751",
     "name": "田松江",
-    "rent": 17,
-    "auth": 123751
+    "room": "309",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 21.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 17.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 4,
-    "id": 310,
-    "name": "李德发",
-    "rent": 214,
-    "auth": "022931"
+    "id": "232971",
+    "name": "王昌国",
+    "room": "210",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 32.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 4,
-    "id": 311,
+    "id": "182893",
+    "name": "单文华",
+    "room": "304",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 100.0
+          },
+          {
+            "month": 3,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 38.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "04326X",
+    "name": "李永美",
+    "room": "305",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 3,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "154177",
+    "name": "张吉先",
+    "room": "307",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 4,
+            "electricity": 8.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "111814",
+    "name": "潘克平",
+    "room": "307",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 3.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 8.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "021917",
+    "name": "郑祖名",
+    "room": "207",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 42.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "252914",
+    "name": "周训普",
+    "room": "207",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 42.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "015234",
     "name": "陈小付",
-    "rent": 51,
-    "auth": "015234"
+    "room": "311",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 48.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 59.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 51.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 4,
-    "id": 311,
+    "id": "210013",
     "name": "陈朝华",
-    "rent": 51,
-    "auth": 210013
+    "room": "311",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 48.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 59.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 51.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 4,
-    "id": 312,
+    "id": "312914",
     "name": "王建辉",
-    "rent": 100,
-    "auth": 312914
+    "room": "312",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 161.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 122.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 100.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 4,
-    "id": 315,
-    "name": "农尚留 ",
-    "rent": 9,
-    "auth": "057212"
+    "id": "055258",
+    "name": "陈朝敏",
+    "room": "316",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 55.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 89.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 72.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   },
   {
-    "year": 2025,
-    "month": 4,
-    "id": 316,
-    "name": "陈朝敏 ",
-    "rent": 72,
-    "auth": "055258"
+    "id": "032935",
+    "name": "王建丛",
+    "room": "308",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 24.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 28.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "019399",
+    "name": "罗宁",
+    "room": "315",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 4,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
   }
 ]
