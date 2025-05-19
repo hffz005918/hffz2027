@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>费用明细 - 宏方纺织</title>
+    <style>
+        :root {
+            --primary: #2c7be5;
+            --text: #2d3748;
+            --border: #e2e8f0;
+            --bg: #f8f9fc;
+            --error: #e53e3e;
+        }
+        
+        body {
+            background: var(--bg);
+            margin: 0;
+            padding: 20px;
+            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%);
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--text);
+            font-size: 1.8em;
+        }
+
+        .meta-info {
+            margin-top: 10px;
+            color: #718096;
+            font-size: 0.95em;
+        }
+
+        .summary-card {
+            padding: 25px 30px;
+            background: #f8fafc;
+            margin: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-amount {
+            font-size: 2.2em;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .loading {
+            padding: 50px 20px;
+            text-align: center;
+            color: #718096;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 20px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-box {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--error);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 25px;
+            background: var(--primary);
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            
+            th, td {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+            
+            .total-amount {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                正在加载费用数据...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class FinanceReport {
+            constructor() {
+                this.container = document.getElementById('content');
+                this.init();
+            }
+
+            async init() {
+                try {
+                    const params = new URLSearchParams(location.search);
+                    const authCode = sessionStorage.getItem('authCode');
+                    const year = params.get('year') || new Date().getFullYear().toString();
+
+                    if (!authCode) throw new Error('请从正规渠道访问本页面');
+
+                    const data = await this.loadData();
+                    const user = data.find(u => u.id === authCode);
+                    if (!user) throw new Error('找不到对应的用户信息');
+
+                    const yearlyData = user.yearly_data[year];
+                    if (!yearlyData) throw new Error(`未找到${year}年度数据`);
+
+                    this.renderReport(user, yearlyData, year);
+                } catch (err) {
+                    this.showError(err.message);
+                }
+            }
+
+            async loadData() {
+                try {
+                    const res = await fetch('data/data.json?_t=' + Date.now());
+                    if (!res.ok) throw new Error('数据加载失败');
+                    return await res.json();
+                } catch (err) {
+                    throw new Error('网络连接异常，请稍后重试');
+                }
+            }
+
+            renderReport(user, yearlyData, year) {
+                // 计算统计数据
+                const total = yearlyData.monthly.reduce((sum, m) => sum + this.parseAmount(m), 0);
+                const months = yearlyData.monthly.sort((a, b) => a.month - b.month);
+
+                this.container.innerHTML = `
+                    <div class="header">
+                        <h1>${user.name} 费用明细</h1>
+                        <div class="meta-info">
+                            <span>年度：${year}</span>
+                            ${user.room ? `<span style="margin-left:15px;">房间号：${user.room}</span>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="summary-card">
+                        <div>
+                            <div class="total-amount">¥ ${total.toFixed(2)}</div>
+                            <div style="color:#718096;margin-top:5px;">年度总费用</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:1.1em;">共 ${months.length} 个月数据</div>
+                            <div style="color:#718096;margin-top:3px;">最近更新：${this.getLastMonth(months)}</div>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">月份</th>
+                                <th scope="col">电费</th>
+                                <th scope="col">水费</th>
+                                <th scope="col">房租</th>
+                                <th scope="col">月合计</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${months.map(m => `
+                                <tr>
+                                    <td>${m.month}月</td>
+                                    <td>¥ ${(m.electricity || 0).toFixed(2)}</td>
+                                    <td>¥ ${(m.water || 0).toFixed(2)}</td>
+                                    <td>¥ ${(m.rent || 0).toFixed(2)}</td>
+                                    <td>¥ ${this.parseAmount(m).toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            parseAmount(month) {
+                return (month.electricity || 0) + (month.water || 0) + (month.rent || 0);
+            }
+
+            getLastMonth(months) {
+                const last = [...months].sort((a, b) => b.month - a.month)[0];
+                return last ? `${last.month}月` : '-';
+            }
+
+            showError(message) {
+                this.container.innerHTML = `
+                    <div class="error-box">
+                        <h2 style="margin:0 0 20px;">⚠️ 数据加载失败</h2>
+                        <p>${message}</p>
+                        <a href="javascript:history.back()" class="btn">返回查询页</a>
+                    </div>
+                `;
+            }
+        }
+
+        // 初始化系统
+        new FinanceReport();
+    </script>
+</body>
+</html>
