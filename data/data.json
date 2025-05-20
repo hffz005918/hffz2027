@@ -81,6 +81,12 @@
             "electricity": 49.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -478,13 +484,13 @@
           },
           {
             "month": 3,
-            "electricity": 9.0,
+            "electricity": 17.0,
             "water": 0.0,
             "rent": 0.0
           },
           {
             "month": 4,
-            "electricity": 17.0,
+            "electricity": 9.0,
             "water": 0.0,
             "rent": 0.0
           }
