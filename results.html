@@ -39,13 +39,13 @@
         .header h1 {
             margin: 0;
             color: var(--text);
-            font-size: 1.8em;
+            font-size: 1.4em;
         }
 
         .meta-info {
             margin-top: 10px;
-            color: #718096;
-            font-size: 0.95em;
+            color: #000000;
+            font-size: 1.2em;
         }
 
         .summary-card {
@@ -129,17 +129,17 @@
 
         @media (max-width: 768px) {
             .container {
-                margin: 10px;
-                border-radius: 8px;
+                margin: 5px;
+                border-radius: 0px;
             }
             
             th, td {
-                padding: 12px 15px;
-                font-size: 0.9em;
+                padding: 10px 12px;
+                font-size: 0.85em;
             }
             
             .total-amount {
-                font-size: 1.8em;
+                font-size: 1.5em;
             }
         }
     </style>
@@ -199,7 +199,10 @@
 
                 this.container.innerHTML = `
                     <div class="header">
-                        <h1>${user.name} 费用明细</h1>
+                        <h1 style="display: flex; justify-content: space-between;">
+                            <span>${user.name}</span>
+                            <span style="flex: 1; text-align: center;">费用明细</span>
+                      </h1>
                         <div class="meta-info">
                             <span>年度：${year}</span>
                             ${user.room ? `<span style="margin-left:15px;">房间号：${user.room}</span>` : ''}
@@ -254,7 +257,7 @@
             showError(message) {
                 this.container.innerHTML = `
                     <div class="error-box">
-                        <h2 style="margin:0 0 20px;">⚠️ 数据加载失败</h2>
+                        <h2 style="margin:0 0 20px;"⚠️ 数据加载失败</h2>
                         <p>${message}</p>
                         <a href="javascript:history.back()" class="btn">返回查询页</a>
                     </div>
