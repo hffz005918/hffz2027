@@ -24,6 +24,7 @@
             font-family: "Helvetica Neue", "PingFang SC", "微软雅黑", sans-serif;
             line-height: 1.6;
             color: var(--text);
+            overflow-x: hidden;
         }
 
         .container {
@@ -115,25 +116,28 @@
             margin-top: 6px;
         }
 
-        /* 表格样式 */
+        /* 表格容器 - 新增高度限制 */
         .table-container {
             padding: 0 10px 10px;
-            overflow-x: auto;
+            max-height: 50vh; /* 限制最大高度为视口的50% */
+            overflow-y: auto; /* 允许垂直滚动 */
             -webkit-overflow-scrolling: touch;
         }
 
+        /* 表格样式 - 调整为固定布局 */
         table {
             width: 100%;
             border-collapse: collapse;
             background: white;
-            min-width: 500px;
+            table-layout: fixed; /* 固定表格布局 */
         }
 
         th, td {
-            padding: 10px 12px;
+            padding: 10px 5px; /* 减小内边距 */
             text-align: center;
             border-bottom: 1px solid var(--border);
-            font-size: 0.85em;
+            font-size: 0.8em; /* 减小字体大小 */
+            word-break: break-word; /* 允许单词换行 */
         }
 
         th {
@@ -142,15 +146,19 @@
             font-weight: 500;
             position: sticky;
             top: 0;
+            font-size: 0.85em; /* 表头字体稍大 */
         }
 
         tr:nth-child(even) {
             background-color: var(--light);
         }
 
-        tr:hover {
-            background-color: #e9ecef;
-        }
+        /* 设置列宽 */
+        th:nth-child(1), td:nth-child(1) { width: 15%; } /* 月份 */
+        th:nth-child(2), td:nth-child(2) { width: 20%; } /* 电费 */
+        th:nth-child(3), td:nth-child(3) { width: 20%; } /* 水费 */
+        th:nth-child(4), td:nth-child(4) { width: 20%; } /* 房租 */
+        th:nth-child(5), td:nth-child(5) { width: 25%; } /* 月合计 */
 
         /* 加载状态 */
         .loading {
@@ -243,15 +251,17 @@
 
             .table-container {
                 padding: 0 15px 15px;
+                max-height: none;
+            }
+
+            table {
+                table-layout: auto;
             }
 
             th, td {
                 padding: 12px 15px;
                 font-size: 1em;
-            }
-
-            table {
-                min-width: auto;
+                width: auto !important;
             }
         }
     </style>
