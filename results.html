@@ -2,101 +2,166 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>费用明细 - 宏方纺织</title>
     <style>
         :root {
-            --primary: #2c7be5;
-            --text: #2d3748;
-            --border: #e2e8f0;
-            --bg: #f8f9fc;
-            --error: #e53e3e;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --text: #2b2d42;
+            --light: #f8f9fa;
+            --border: #dee2e6;
+            --bg: #f1faee;
+            --error: #e63946;
+            --success: #2a9d8f;
         }
         
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             background: var(--bg);
             margin: 0;
             padding: 20px;
-            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
-            line-height: 1.5;
+            font-family: "Helvetica Neue", "PingFang SC", "微软雅黑", sans-serif;
+            line-height: 1.6;
+            color: var(--text);
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 20px auto;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             overflow: hidden;
+            position: relative;
         }
 
+        /* 头部样式 */
         .header {
-            padding: 25px 30px;
-            border-bottom: 1px solid var(--border);
-            background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%);
+            padding: 28px 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-nav {
+            display: inline-flex;
+            align-items: center;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            margin-right: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .back-nav:hover {
+            transform: translateX(-3px);
+            opacity: 0.9;
+        }
+
+        .back-nav svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
         }
 
         .header h1 {
             margin: 0;
-            color: var(--text);
-            font-size: 1.4em;
+            font-size: 1.8em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         .meta-info {
-            margin-top: 10px;
-            color: #000000;
-            font-size: 1.2em;
+            margin-top: 12px;
+            font-size: 0.95em;
+            opacity: 0.9;
         }
 
+        /* 汇总卡片 */
         .summary-card {
-            padding: 25px 30px;
-            background: #f8fafc;
-            margin: 20px;
-            border-radius: 8px;
+            padding: 28px 32px;
+            margin: 24px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, #4cc9f0 0%, var(--primary) 100%);
+            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.15);
         }
 
         .total-amount {
-            font-size: 2.2em;
-            color: var(--primary);
-            font-weight: 600;
+            font-size: 2.6em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .total-amount::before {
+            content: "¥";
+            font-size: 0.6em;
+            margin-right: 6px;
+            opacity: 0.8;
+        }
+
+        .summary-detail {
+            text-align: right;
+        }
+
+        /* 表格样式 */
+        .table-container {
+            padding: 0 24px 24px;
+            overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             background: white;
+            min-width: 600px;
         }
 
         th, td {
-            padding: 15px 20px;
+            padding: 16px 24px;
             text-align: center;
             border-bottom: 1px solid var(--border);
         }
 
         th {
-            background: #f7fafc;
-            font-weight: 600;
-            color: var(--text);
+            background: var(--primary);
+            color: white;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--light);
         }
 
         tr:hover {
-            background-color: #f8fafc;
+            background-color: #e9ecef;
+            transition: background 0.2s;
         }
 
+        /* 加载状态 */
         .loading {
-            padding: 50px 20px;
+            padding: 60px 20px;
             text-align: center;
-            color: #718096;
+            color: var(--text);
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             margin: 0 auto 20px;
-            border: 3px solid rgba(0,0,0,0.1);
+            border: 4px solid rgba(0,0,0,0.1);
             border-left-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -106,40 +171,93 @@
             to { transform: rotate(360deg); }
         }
 
+        /* 错误提示 */
         .error-box {
-            padding: 40px 20px;
+            padding: 60px 20px;
             text-align: center;
             color: var(--error);
         }
 
         .btn {
-            display: inline-block;
-            padding: 10px 25px;
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 28px;
             background: var(--primary);
             color: white;
-            border-radius: 6px;
+            border-radius: 8px;
             text-decoration: none;
-            margin-top: 15px;
-            transition: transform 0.2s;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
         }
 
         .btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
         }
 
+        /* 移动端适配 */
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
             .container {
-                margin: 5px;
-                border-radius: 0px;
+                border-radius: 12px;
+                margin: 10px 0;
             }
-            
-            th, td {
-                padding: 10px 12px;
-                font-size: 0.85em;
+
+            .header {
+                padding: 20px;
+                flex-direction: column;
+                align-items: flex-start;
             }
-            
-            .total-amount {
+
+            .back-nav {
+                margin-bottom: 15px;
+            }
+
+            .header h1 {
                 font-size: 1.5em;
+            }
+
+            .summary-card {
+                margin: 16px;
+                padding: 20px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .total-amount {
+                font-size: 2em;
+                margin-bottom: 15px;
+            }
+
+            .summary-detail {
+                text-align: left;
+            }
+
+            th, td {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+
+            .table-container {
+                padding: 0 16px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .total-amount {
+                font-size: 1.8em;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+                padding: 14px;
             }
         }
     </style>
@@ -193,55 +311,61 @@
             }
 
             renderReport(user, yearlyData, year) {
-                // 计算统计数据
                 const total = yearlyData.monthly.reduce((sum, m) => sum + this.parseAmount(m), 0);
                 const months = yearlyData.monthly.sort((a, b) => a.month - b.month);
 
                 this.container.innerHTML = `
                     <div class="header">
-                        <h1 style="display: flex; justify-content: space-between;">
-                            <span style="font-size: 0.85em;">${user.name}</span>
-                            <span style="flex: 1; text-align: center;">费用明细</span>
-                      </h1>
-                        <div class="meta-info">
-                            <span>年度：${year}</span>
-                            ${user.room ? `<span style="margin-left:15px;">房间号：${user.room}</span>` : ''}
+                        <a href="javascript:history.back()" class="back-nav">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                            </svg>
+                            返回
+                        </a>
+                        <div>
+                            <h1>${user.name} 费用明细</h1>
+                            <div class="meta-info">
+                                <span>年度：${year}</span>
+                                ${user.room ? `<span style="margin-left:15px;">房间号：${user.room}</span>` : ''}
+                            </div>
                         </div>
                     </div>
 
                     <div class="summary-card">
                         <div>
-                            <div class="total-amount">¥ ${total.toFixed(2)}</div>
-                            <div style="color:#718096;margin-top:5px;">年度总费用</div>
+                            <div class="total-amount">${total.toFixed(2)}</div>
+                            <div style="opacity:0.9;margin-top:8px;">年度总费用</div>
                         </div>
-                        <div style="text-align:right;">
+                        <div class="summary-detail">
                             <div style="font-size:1.1em;">共 ${months.length} 个月数据</div>
-                            <div style="color:#718096;margin-top:3px;">最近更新：${this.getLastMonth(months)}</div>
+                            <div style="opacity:0.9;margin-top:6px;">最近更新：${this.getLastMonth(months)}</div>
                         </div>
                     </div>
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th scope="col">月份</th>
-                                <th scope="col">电费</th>
-                                <th scope="col">水费</th>
-                                <th scope="col">房租</th>
-                                <th scope="col">月合计</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${months.map(m => `
+                    <div class="table-container">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td>${m.month}月</td>
-                                    <td>¥ ${(m.electricity || 0).toFixed(2)}</td>
-                                    <td>¥ ${(m.water || 0).toFixed(2)}</td>
-                                    <td>¥ ${(m.rent || 0).toFixed(2)}</td>
-                                    <td>¥ ${this.parseAmount(m).toFixed(2)}</td>
+                                    <th scope="col">月份</th>
+                                    <th scope="col">电费</th>
+                                    <th scope="col">水费</th>
+                                    <th scope="col">房租</th>
+                                    <th scope="col">月合计</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${months.map(m => `
+                                    <tr>
+                                        <td>${m.month}月</td>
+                                        <td>¥ ${(m.electricity || 0).toFixed(2)}</td>
+                                        <td>¥ ${(m.water || 0).toFixed(2)}</td>
+                                        <td>¥ ${(m.rent || 0).toFixed(2)}</td>
+                                        <td><strong>¥ ${this.parseAmount(m).toFixed(2)}</strong></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 `;
             }
 
@@ -257,9 +381,9 @@
             showError(message) {
                 this.container.innerHTML = `
                     <div class="error-box">
-                        <h2 style="margin:0 0 20px;"⚠️ 数据加载失败</h2>
+                        <h2 style="margin:0 0 20px;">⚠️ 数据加载失败</h2>
                         <p>${message}</p>
-                        <a href="javascript:history.back()" class="btn">返回查询页</a>
+                        <button onclick="history.back()" class="btn">返回查询页</button>
                     </div>
                 `;
             }
