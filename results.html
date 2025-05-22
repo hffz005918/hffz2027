@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>费用明细 - 宏方纺织</title>
     <style>
         :root {
@@ -14,12 +14,9 @@
             --bg: #f1faee;
             --error: #e63946;
             --success: #2a9d8f;
+            --card-shadow: 0 6px 18px rgba(67, 97, 238, 0.12);
         }
         
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             background: var(--bg);
             margin: 0;
@@ -30,7 +27,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 20px auto;
             background: white;
             border-radius: 16px;
@@ -39,34 +36,11 @@
             position: relative;
         }
 
-        /* 头部样式 */
+        /* 头部样式 - 渐变色 */
         .header {
             padding: 28px 32px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .back-nav {
-            display: inline-flex;
-            align-items: center;
-            color: rgba(255,255,255,0.9);
-            text-decoration: none;
-            margin-right: 25px;
-            transition: all 0.3s ease;
-        }
-
-        .back-nav:hover {
-            transform: translateX(-3px);
-            opacity: 0.9;
-        }
-
-        .back-nav svg {
-            width: 20px;
-            height: 20px;
-            margin-right: 8px;
         }
 
         .header h1 {
@@ -82,7 +56,7 @@
             opacity: 0.9;
         }
 
-        /* 汇总卡片 */
+        /* 汇总卡片 - 立体阴影 */
         .summary-card {
             padding: 28px 32px;
             margin: 24px;
@@ -92,15 +66,34 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.15);
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
         }
 
+        .summary-card::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0.3) 0%,
+                rgba(255, 255, 255, 0) 60%
+            );
+            transform: rotate(30deg);
+        }
+
+        /* 金额特殊样式 */
         .total-amount {
-            font-size: 2.6em;
+            font-size: 2.4em;
             font-weight: 700;
             letter-spacing: 1px;
             display: flex;
             align-items: baseline;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .total-amount::before {
@@ -114,7 +107,7 @@
             text-align: right;
         }
 
-        /* 表格样式 */
+        /* 表格样式 - 斑马纹+固定表头 */
         .table-container {
             padding: 0 24px 24px;
             overflow-x: auto;
@@ -124,7 +117,7 @@
             width: 100%;
             border-collapse: collapse;
             background: white;
-            min-width: 600px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         th, td {
@@ -139,6 +132,7 @@
             font-weight: 500;
             position: sticky;
             top: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         tr:nth-child(even) {
@@ -148,6 +142,17 @@
         tr:hover {
             background-color: #e9ecef;
             transition: background 0.2s;
+        }
+
+        /* 金额单元格特殊样式 */
+        td:not(:first-child) {
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+        }
+
+        td:last-child {
+            font-weight: 600;
+            color: var(--primary);
         }
 
         /* 加载状态 */
@@ -179,8 +184,7 @@
         }
 
         .btn {
-            display: inline-flex;
-            align-items: center;
+            display: inline-block;
             padding: 12px 28px;
             background: var(--primary);
             color: white;
@@ -191,11 +195,12 @@
             border: none;
             cursor: pointer;
             font-size: 16px;
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.2);
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            box-shadow: 0 6px 12px rgba(67, 97, 238, 0.25);
         }
 
         /* 移动端适配 */
@@ -211,12 +216,6 @@
 
             .header {
                 padding: 20px;
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .back-nav {
-                margin-bottom: 15px;
             }
 
             .header h1 {
@@ -226,17 +225,10 @@
             .summary-card {
                 margin: 16px;
                 padding: 20px;
-                flex-direction: column;
-                align-items: flex-start;
             }
 
             .total-amount {
                 font-size: 2em;
-                margin-bottom: 15px;
-            }
-
-            .summary-detail {
-                text-align: left;
             }
 
             th, td {
@@ -246,18 +238,6 @@
 
             .table-container {
                 padding: 0 16px 16px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .total-amount {
-                font-size: 1.8em;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-                padding: 14px;
             }
         }
     </style>
@@ -287,14 +267,14 @@
 
                     if (!authCode) throw new Error('请从正规渠道访问本页面');
 
-                    const data = await this.loadData();
+                    const { data, lastUpdated } = await this.loadData();
                     const user = data.find(u => u.id === authCode);
                     if (!user) throw new Error('找不到对应的用户信息');
 
                     const yearlyData = user.yearly_data[year];
                     if (!yearlyData) throw new Error(`未找到${year}年度数据`);
 
-                    this.renderReport(user, yearlyData, year);
+                    this.renderReport(user, yearlyData, year, lastUpdated);
                 } catch (err) {
                     this.showError(err.message);
                 }
@@ -304,30 +284,28 @@
                 try {
                     const res = await fetch('data/data.json?_t=' + Date.now());
                     if (!res.ok) throw new Error('数据加载失败');
-                    return await res.json();
+                    const data = await res.json();
+                    
+                    // 获取最后修改时间
+                    const lastUpdated = new Date(res.headers.get('Last-Modified') || new Date()).toLocaleString();
+                    
+                    return { data, lastUpdated };
                 } catch (err) {
                     throw new Error('网络连接异常，请稍后重试');
                 }
             }
 
-            renderReport(user, yearlyData, year) {
+            renderReport(user, yearlyData, year, lastUpdated) {
+                // 计算统计数据
                 const total = yearlyData.monthly.reduce((sum, m) => sum + this.parseAmount(m), 0);
                 const months = yearlyData.monthly.sort((a, b) => a.month - b.month);
 
                 this.container.innerHTML = `
                     <div class="header">
-                        <a href="javascript:history.back()" class="back-nav">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-                            </svg>
-                            返回
-                        </a>
-                        <div>
-                            <h1>${user.name} 费用明细</h1>
-                            <div class="meta-info">
-                                <span>年度：${year}</span>
-                                ${user.room ? `<span style="margin-left:15px;">房间号：${user.room}</span>` : ''}
-                            </div>
+                        <h1>${user.name} 费用明细</h1>
+                        <div class="meta-info">
+                            <span>年度：${year}</span>
+                            ${user.room ? `<span style="margin-left:15px;">房间号：${user.room}</span>` : ''}
                         </div>
                     </div>
 
@@ -339,6 +317,7 @@
                         <div class="summary-detail">
                             <div style="font-size:1.1em;">共 ${months.length} 个月数据</div>
                             <div style="opacity:0.9;margin-top:6px;">最近更新：${this.getLastMonth(months)}</div>
+                            <div style="opacity:0.9;margin-top:6px;font-size:0.9em;">数据上传时间：${lastUpdated}</div>
                         </div>
                     </div>
 
@@ -360,7 +339,7 @@
                                         <td>¥ ${(m.electricity || 0).toFixed(2)}</td>
                                         <td>¥ ${(m.water || 0).toFixed(2)}</td>
                                         <td>¥ ${(m.rent || 0).toFixed(2)}</td>
-                                        <td><strong>¥ ${this.parseAmount(m).toFixed(2)}</strong></td>
+                                        <td>¥ ${this.parseAmount(m).toFixed(2)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
