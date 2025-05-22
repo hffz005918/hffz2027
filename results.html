@@ -36,9 +36,9 @@
             overflow: hidden;
         }
 
-        /* 头部样式 */
+        /* 头部样式 - 增大字体 */
         .header {
-            padding: 12px 15px 15px;
+            padding: 12px 15px 12px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
             position: relative;
@@ -63,8 +63,8 @@
         }
 
         .header h1 {
-            margin: 12px 0 0;
-            font-size: 1.2em;
+            margin: 8px 0 0;
+            font-size: 1.4em; /* 增大字体 */
             font-weight: 600;
             text-align: center;
         }
@@ -78,7 +78,7 @@
             line-height: 1.5;
         }
 
-        /* 汇总卡片 */
+        /* 汇总卡片 - 增大总费用字体 */
         .summary-card {
             padding: 12px 15px;
             margin: 12px;
@@ -90,7 +90,7 @@
         }
 
         .total-amount {
-            font-size: 1.6em;
+            font-size: 1.8em; /* 增大字体 */
             font-weight: 700;
             display: flex;
             align-items: baseline;
@@ -116,28 +116,28 @@
             margin-top: 6px;
         }
 
-        /* 表格容器 - 新增高度限制 */
+        /* 表格容器 - 紧凑布局 */
         .table-container {
             padding: 0 10px 10px;
-            max-height: 50vh; /* 限制最大高度为视口的50% */
-            overflow-y: auto; /* 允许垂直滚动 */
+            max-height: 50vh;
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
 
-        /* 表格样式 - 调整为固定布局 */
+        /* 表格样式 - 减小行间距 */
         table {
             width: 100%;
             border-collapse: collapse;
             background: white;
-            table-layout: fixed; /* 固定表格布局 */
+            table-layout: fixed;
         }
 
         th, td {
-            padding: 10px 5px; /* 减小内边距 */
+            padding: 8px 5px; /* 减小内边距 */
             text-align: center;
             border-bottom: 1px solid var(--border);
-            font-size: 0.8em; /* 减小字体大小 */
-            word-break: break-word; /* 允许单词换行 */
+            font-size: 0.8em;
+            word-break: break-word;
         }
 
         th {
@@ -146,7 +146,8 @@
             font-weight: 500;
             position: sticky;
             top: 0;
-            font-size: 0.85em; /* 表头字体稍大 */
+            font-size: 0.85em;
+            padding: 10px 5px; /* 表头保持稍大间距 */
         }
 
         tr:nth-child(even) {
@@ -154,11 +155,11 @@
         }
 
         /* 设置列宽 */
-        th:nth-child(1), td:nth-child(1) { width: 15%; } /* 月份 */
-        th:nth-child(2), td:nth-child(2) { width: 20%; } /* 电费 */
-        th:nth-child(3), td:nth-child(3) { width: 20%; } /* 水费 */
-        th:nth-child(4), td:nth-child(4) { width: 20%; } /* 房租 */
-        th:nth-child(5), td:nth-child(5) { width: 25%; } /* 月合计 */
+        th:nth-child(1), td:nth-child(1) { width: 15%; }
+        th:nth-child(2), td:nth-child(2) { width: 20%; }
+        th:nth-child(3), td:nth-child(3) { width: 20%; }
+        th:nth-child(4), td:nth-child(4) { width: 20%; }
+        th:nth-child(5), td:nth-child(5) { width: 25%; }
 
         /* 加载状态 */
         .loading {
@@ -214,7 +215,11 @@
             }
 
             .header {
-                padding: 15px 25px 18px;
+                padding: 15px 25px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.6em; /* 桌面端也相应增大 */
             }
 
             .back-nav {
@@ -229,11 +234,6 @@
                 height: 16px;
             }
 
-            .header h1 {
-                font-size: 1.3em;
-                margin: 10px 0 0;
-            }
-
             .meta-info {
                 font-size: 0.9em;
                 padding-left: 5px;
@@ -246,7 +246,7 @@
             }
 
             .total-amount {
-                font-size: 1.8em;
+                font-size: 2em; /* 桌面端也相应增大 */
             }
 
             .table-container {
