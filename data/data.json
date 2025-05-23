@@ -899,82 +899,82 @@
   },
   {
     "id": "101330",
-    "name": "黄宅镇",
+    "name": "宏方",
     "room": "888",
     "yearly_data": {
       "2025": {
         "monthly": [
           {
             "month": 1,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 2,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 3,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 4,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 5,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 6,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 7,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 8,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 9,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 10,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 11,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           },
           {
             "month": 12,
-            "electricity": 444.0,
-            "water": 555.0,
-            "rent": 666.0
+            "electricity": 123.0,
+            "water": 456.0,
+            "rent": 789.0
           }
         ]
       }
