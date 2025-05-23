@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- 微信优化 -->
     <meta http-equiv="x-dns-prefetch-control" content="on">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="x5-page-mode" content="app">
     <meta name="x5-orientation" content="portrait">
     <meta name="renderer" content="webkit">
@@ -28,6 +31,7 @@
             height: 100vh;
             -webkit-tap-highlight-color: transparent;
             -webkit-text-size-adjust: 100%;
+            background-color: #4a6b8f; /* 默认背景色 */
         }
 
         /* 背景图容器 */
@@ -99,9 +103,8 @@
             margin-bottom: 0;
         }
 
-        /* 微信加载层 */
-        .wechat-loader {
-            display: none;
+        /* 加载层 */
+        .page-loader {
             position: fixed;
             top: 0;
             left: 0;
@@ -109,6 +112,7 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.9);
             z-index: 1000;
+            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -147,8 +151,8 @@
     <!-- 背景图容器 -->
     <div class="background" id="background"></div>
     
-    <!-- 微信加载提示 -->
-    <div class="wechat-loader" id="wechatLoader">
+    <!-- 页面加载提示 -->
+    <div class="page-loader" id="pageLoader">
         <div class="loader-spinner"></div>
         <div>正在加载中...</div>
     </div>
@@ -162,17 +166,17 @@
         
         <!-- 导航卡片 -->
         <div class="nav-cards">
-            <div class="nav-card" data-href="dorm-rules.html">
+            <div class="nav-card" data-href="dorm-rules.html?v=1.0">
                 <h2>宿舍管理</h2>
                 <p>员工宿舍管理制度</p>
             </div>
             
-            <div class="nav-card" data-href="fee-query.html">
+            <div class="nav-card" data-href="fee-query.html?v=1.0">
                 <h2>费用查询</h2>
                 <p>水电费用查询服务</p>
             </div>
 
-            <div class="nav-card" data-href="safety-details.html">
+            <div class="nav-card" data-href="safety-details.html?v=1.0">
                 <h2>安全须知</h2>
                 <p>夏季用电高峰安全注意事项</p>
             </div>
@@ -184,26 +188,31 @@
             // 环境检测
             const isWeChat = /micromessenger/i.test(navigator.userAgent);
             const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+            const loader = document.getElementById('pageLoader');
+            const bg = document.getElementById('background');
 
-            // 背景图加载
-            function loadBackground() {
-                const bg = document.getElementById('background');
-                const img = new Image();
-                
-                // 根据设备类型加载不同背景图
+            // 预加载关键资源
+            function preloadResources() {
+                // 预加载背景图
                 const bgPath = isMobile ? 
-                    'images/bg-mobile.jpg' : 
-                    'images/bg-desktop.jpg';
+                    'images/bg-mobile.webp?t=1.0' : 
+                    'images/bg-desktop.webp?t=1.0';
+                
+                const img = new Image();
+                img.src = bgPath;
                 
                 img.onload = function() {
                     bg.style.backgroundImage = `url('${this.src}')`;
                     bg.classList.add('loaded');
+                    loader.style.display = 'none';
                 };
+                
                 img.onerror = function() {
-                    console.warn('背景图加载失败，使用备用背景');
+                    console.log('背景图加载失败，使用默认背景');
                     bg.style.backgroundColor = '#4a6b8f';
+                    bg.classList.add('loaded');
+                    loader.style.display = 'none';
                 };
-                img.src = bgPath;
             }
 
             // 微信环境初始化
@@ -226,34 +235,39 @@
                 } else {
                     document.addEventListener('WeixinJSBridgeReady', setFontSize, false);
                 }
-                
-                // 处理页面跳转
+            }
+
+            // 统一处理卡片点击事件
+            function setupCardClick() {
                 document.querySelectorAll('.nav-card').forEach(card => {
                     card.addEventListener('click', function() {
-                        const loader = document.getElementById('wechatLoader');
                         loader.style.display = 'flex';
-                        
-                        // 添加时间戳防止缓存
                         setTimeout(() => {
-                            window.location.href = this.dataset.href + '?_t=' + Date.now();
-                        }, 300);
+                            window.location.href = this.dataset.href;
+                        }, 150); // 缩短延迟时间
                     });
                 });
             }
 
             // 主初始化
             document.addEventListener('DOMContentLoaded', function() {
-                loadBackground();
+                // 立即显示加载层
+                loader.style.display = 'flex';
+                
+                // 初始化微信环境
                 initWeChat();
                 
-                // 非微信环境的事件绑定
-                if (!isWeChat) {
-                    document.querySelectorAll('.nav-card').forEach(card => {
-                        card.addEventListener('click', function() {
-                            window.location.href = this.dataset.href;
-                        });
-                    });
-                }
+                // 预加载资源
+                preloadResources();
+                
+                // 设置卡片点击事件
+                setupCardClick();
+                
+                // 3秒超时强制显示内容
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    bg.classList.add('loaded');
+                }, 3000);
             });
         })();
     </script>
