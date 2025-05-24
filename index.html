@@ -14,8 +14,7 @@
     <meta name="x5-fullscreen" content="true">
     <meta name="renderer" content="webkit">
     <!-- 预加载关键资源 -->
-    <link rel="preload" as="image" href="images/bg-mobile.webp" media="(max-width: 768px)">
-    <link rel="preload" as="image" href="images/bg-desktop.webp" media="(min-width: 769px)">
+    <link rel="preload" as="image" href="images/bg-desktop.webp">
     <!-- 主CSS内联避免阻塞 -->
     <style id="critical-css">
         :root{--primary-color:#1890ff;--secondary-color:#1a73e8;--card-bg:rgba(255,255,255,0.95);--text-light:#fff;--text-dark:#333;--text-secondary:#666}
@@ -72,7 +71,6 @@
         // 极速初始化
         const startTime = Date.now();
         const isWeChat = /micromessenger/i.test(navigator.userAgent);
-        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
         const loader = document.getElementById('pageLoader');
         const bg = document.getElementById('background');
         
@@ -113,9 +111,8 @@
             const connection = navigator.connection || {effectiveType: '4g'};
             const isSlowNetwork = /2g|3g|slow-2g/i.test(connection.effectiveType);
             
-            // 动态生成背景图URL
-            const bgPath = (isMobile ? 'bg-mobile' : 'bg-desktop') + 
-                          (isSlowNetwork ? '-low.webp' : '.webp') + '?t=1.1';
+            // 只加载桌面版背景图
+            const bgPath = 'bg-desktop' + (isSlowNetwork ? '-low.webp' : '.webp') + '?t=1.1';
             
             // 渐进式加载
             const img = new Image();
