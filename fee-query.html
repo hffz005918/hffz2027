@@ -32,6 +32,15 @@
             padding: 25px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
         }
         h1 {
             text-align: center;
@@ -63,6 +72,7 @@
 </head>
 <body>
     <div class="container">
+        <a href="javascript:history.back()" class="back-btn">← 返回</a>
         <h1>宏方纺织费用查询服务</h1>
         
         <div class="input-group">
