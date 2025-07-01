@@ -29,11 +29,7 @@
             "electricity": 5.0,
             "water": 0.0,
             "rent": 0.0
-          }
-        ]
-      },
-      "2026": {
-        "monthly": [
+          },
           {
             "month": 6,
             "electricity": 22.0,
