@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="x-dns-prefetch-control" content="on">
-    <link rel="dns-prefetch" href="//your-cdn-domain.com">
-    <link rel="preconnect" href="https://your-cdn-domain.com">
+    
+    <!-- 强化缓存控制 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     
     <!-- 手机端优化标签 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,9 +17,6 @@
     <meta name="msapplication-tap-highlight" content="no">
     
     <!-- 微信优化标签 -->
-    <meta http-equiv="Cache-Control" content="no-siteapp, no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <meta name="x5-page-mode" content="app">
     <meta name="x5-orientation" content="portrait">
     <meta name="renderer" content="webkit">
@@ -248,19 +248,21 @@
             }
         }
 
-        @media (min-width: 1024px) {
-            .background {
-                background-size: cover;
-                background-attachment: fixed;
-            }
-        }
-
         /* 防止iOS橡皮筋效果过度滚动 */
         body.ios-scroll-fix {
             position: fixed;
             width: 100%;
             height: 100%;
             overflow: hidden;
+        }
+        
+        /* 微信专用样式 */
+        body.wechat-browser {
+            background: linear-gradient(135deg, #6a8bad 0%, #4a6b8f 100%);
+        }
+        
+        body.wechat-browser .background {
+            display: none;
         }
     </style>
 </head>
@@ -306,612 +308,299 @@
     </div>
 
     <script>
-        (function() {
-            // 环境检测
-            const isWeChat = /micromessenger/i.test(navigator.userAgent);
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-            const isAndroid = /Android/i.test(navigator.userAgent);
+        // 版本号 - 每次更新时修改此版本号强制刷新缓存
+        const APP_VERSION = '20241001';
+        
+        // 简化环境检测
+        const isWeChat = /micromessenger/i.test(navigator.userAgent);
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        
+        // 微信专用错误处理
+        if (isWeChat) {
+            // 标记微信浏览器
+            document.body.classList.add('wechat-browser');
             
-            // 移动端优化工具
-            const MobileOptimizer = {
-                init() {
-                    this.fixViewport();
-                    this.preventZoom();
-                    this.fixIOSBounce();
-                    this.optimizeTouchEvents();
-                    this.addSafeAreaSupport();
-                },
+            // 全局错误捕获
+            window.addEventListener('error', function(e) {
+                console.error('微信环境错误:', e);
+                // 确保加载器隐藏
+                const loader = document.getElementById('wechatLoader');
+                if (loader) loader.style.display = 'none';
                 
-                fixViewport() {
-                    // 动态设置viewport以适应不同设备
-                    let viewport = document.querySelector('meta[name="viewport"]');
-                    if (!viewport) {
-                        viewport = document.createElement('meta');
-                        viewport.name = 'viewport';
-                        document.head.appendChild(viewport);
-                    }
-                    
-                    let content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-                    if (isIOS) {
-                        content += ', shrink-to-fit=no';
-                    }
-                    viewport.content = content;
-                },
-                
-                preventZoom() {
-                    // 防止双击缩放
-                    let lastTouchEnd = 0;
-                    document.addEventListener('touchend', function (event) {
-                        const now = (new Date()).getTime();
-                        if (now - lastTouchEnd <= 300) {
-                            event.preventDefault();
-                        }
-                        lastTouchEnd = now;
-                    }, false);
-                    
-                    // 防止手势缩放
-                    document.addEventListener('gesturestart', function (event) {
-                        event.preventDefault();
-                    });
-                },
-                
-                fixIOSBounce() {
-                    if (!isIOS) return;
-                    
-                    // 修复iOS橡皮筋效果
-                    document.body.classList.add('ios-scroll-fix');
-                    
-                    // 允许内容区域滚动
-                    const content = document.querySelector('.content');
-                    if (content) {
-                        content.style.overflow = 'auto';
-                        content.style.webkitOverflowScrolling = 'touch';
-                    }
-                },
-                
-                optimizeTouchEvents() {
-                    // 优化触摸事件响应
-                    document.addEventListener('touchstart', function() {}, {passive: true});
-                    document.addEventListener('touchmove', function() {}, {passive: true});
-                    
-                    // 移除300ms点击延迟
-                    if (isMobile) {
-                        if (window.PointerEvent) {
-                            document.addEventListener('pointerdown', function() {});
-                        } else {
-                            const fastClick = function(e) {
-                                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                                    return;
-                                }
-                                e.preventDefault();
-                                const target = e.target;
-                                const rect = target.getBoundingClientRect();
-                                const x = e.changedTouches[0].clientX - rect.left;
-                                const y = e.changedTouches[0].clientY - rect.top;
-                                
-                                const event = new MouseEvent('click', {
-                                    bubbles: true,
-                                    cancelable: true,
-                                    clientX: rect.left + x,
-                                    clientY: rect.top + y
-                                });
-                                
-                                target.dispatchEvent(event);
-                            };
-                            
-                            document.addEventListener('touchend', fastClick, true);
-                        }
-                    }
-                },
-                
-                addSafeAreaSupport() {
-                    // 支持刘海屏安全区域
-                    if (CSS.supports('padding-top: env(safe-area-inset-top)')) {
-                        document.documentElement.style.setProperty('--safe-area-inset-top', 'env(safe-area-inset-top)');
-                        document.documentElement.style.setProperty('--safe-area-inset-bottom', 'env(safe-area-inset-bottom)');
-                    }
+                // 确保内容可见
+                const content = document.querySelector('.content');
+                if (content) content.style.opacity = '1';
+            });
+            
+            // Promise错误捕获
+            window.addEventListener('unhandledrejection', function(e) {
+                console.warn('微信中Promise错误:', e.reason);
+                e.preventDefault();
+            });
+        }
+        
+        // 简化移动端优化
+        function initMobileOptimizations() {
+            if (!isMobile) return;
+            
+            // 防止双击缩放
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function (event) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
                 }
-            };
+                lastTouchEnd = now;
+            }, false);
             
-            // 微信浏览器缓存清理机制
-            const cleanWechatCache = function() {
-                if (!isWeChat) return;
-                
-                try {
-                    // 清理URL参数中的缓存标记
-                    if (window.location.search.indexOf('_t=') > -1) {
-                        const cleanUrl = window.location.origin + window.location.pathname;
-                        window.history.replaceState({}, document.title, cleanUrl);
-                    }
-                } catch (e) {
-                    console.warn('缓存清理失败:', e);
+            // 防止手势缩放
+            document.addEventListener('gesturestart', function (event) {
+                event.preventDefault();
+            });
+            
+            // iOS橡皮筋效果修复
+            if (isIOS) {
+                document.body.classList.add('ios-scroll-fix');
+                const content = document.querySelector('.content');
+                if (content) {
+                    content.style.overflow = 'auto';
+                    content.style.webkitOverflowScrolling = 'touch';
                 }
-            };
+            }
+        }
+        
+        // 简化导航功能
+        function initNavigation() {
+            const cards = document.querySelectorAll('.nav-card');
             
-            // 核心导航功能
-            const NavigationManager = {
-                init() {
-                    this.setupCardInteractions();
-                    if (isWeChat) {
-                        this.setupWechatFeatures();
-                        cleanWechatCache();
+            cards.forEach(card => {
+                // 点击事件
+                card.addEventListener('click', function() {
+                    handleCardClick(this);
+                });
+                
+                // 键盘事件
+                card.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleCardClick(this);
                     }
-                },
+                });
                 
-                setupCardInteractions() {
-                    const cards = document.querySelectorAll('.nav-card');
-                    cards.forEach(card => {
-                        // 触摸事件（移动端优先）
-                        card.addEventListener('touchstart', this.handleTouchStart.bind(this));
-                        card.addEventListener('touchend', this.handleTouchEnd.bind(this));
-                        
-                        // 点击事件（桌面端备用）
-                        card.addEventListener('click', (e) => {
-                            // 防止移动端重复触发
-                            if (!e.isTrusted || e.detail === 0) return;
-                            this.handleNavigation(card);
-                        });
-                        
-                        // 键盘事件
-                        card.addEventListener('keydown', (e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                this.handleNavigation(card);
-                            }
-                        });
-                    });
-                },
+                // 触摸反馈
+                card.addEventListener('touchstart', function() {
+                    this.style.transform = 'translateY(-2px) scale(0.98)';
+                });
                 
-                handleTouchStart(e) {
-                    // 触摸开始时的视觉反馈
-                    e.currentTarget.style.transform = 'translateY(-2px) scale(0.98)';
-                },
+                card.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                });
+            });
+        }
+        
+        // 处理卡片点击
+        function handleCardClick(card) {
+            // 防止快速多次点击
+            if (card.getAttribute('data-navigating') === 'true') return;
+            card.setAttribute('data-navigating', 'true');
+            
+            const href = card.getAttribute('data-href');
+            if (!href) return;
+            
+            // 显示加载状态
+            showLoading();
+            
+            // 生成带版本号和缓存的URL
+            const url = generateUrl(href);
+            
+            // 延迟导航确保加载状态可见
+            setTimeout(() => {
+                if (isWeChat) {
+                    wechatNavigate(url);
+                } else {
+                    window.location.href = url;
+                }
+            }, 100);
+        }
+        
+        // 生成带缓存控制的URL
+        function generateUrl(path) {
+            const separator = path.indexOf('?') > -1 ? '&' : '?';
+            return path + separator + 'v=' + APP_VERSION + '&_t=' + Date.now();
+        }
+        
+        // 微信专用导航
+        function wechatNavigate(url) {
+            try {
+                const loader = document.getElementById('wechatLoader');
+                if (loader) {
+                    loader.style.display = 'flex';
+                }
                 
-                handleTouchEnd(e) {
-                    // 恢复原状并导航
-                    e.currentTarget.style.transform = '';
-                    this.handleNavigation(e.currentTarget);
-                },
-                
-                handleNavigation(card) {
-                    const url = card.getAttribute('data-href');
-                    if (!url) return;
-                    
-                    // 防止快速多次点击
-                    if (card.getAttribute('data-navigating') === 'true') return;
-                    card.setAttribute('data-navigating', 'true');
-                    
-                    this.showLoading();
-                    const finalUrl = this.generateUrl(url);
-                    
-                    // 短暂延迟确保加载状态可见
-                    setTimeout(() => {
-                        if (isWeChat) {
-                            this.wechatNavigate(finalUrl);
-                        } else {
-                            window.location.href = finalUrl;
-                        }
-                    }, 100);
-                },
-                
-                generateUrl(path) {
+                // 延迟导航确保加载状态可见
+                setTimeout(() => {
                     try {
-                        const url = new URL(path, window.location.href);
-                        // 添加时间戳防止缓存
-                        url.searchParams.set('_t', Date.now());
-                        // 添加设备标识
-                        if (isMobile) {
-                            url.searchParams.set('_mobile', '1');
-                        }
-                        if (isWeChat) {
-                            url.searchParams.set('_wx', '1');
-                        }
-                        return url.href;
-                    } catch {
-                        return path + (path.indexOf('?') > -1 ? '&' : '?') + '_t=' + Date.now();
-                    }
-                },
-                
-                wechatNavigate(url) {
-                    try {
-                        // 微信浏览器中先显示加载状态
-                        const loader = document.getElementById('wechatLoader');
-                        if (loader) {
-                            loader.style.display = 'flex';
-                        }
-                        
-                        // 延迟导航，确保加载状态可见
-                        setTimeout(() => {
-                            try {
-                                // 优先使用replace防止返回问题
-                                window.location.replace(url);
-                            } catch (e) {
-                                // 降级方案
-                                window.location.href = url;
-                            }
-                        }, 300);
+                        window.location.replace(url);
                     } catch (e) {
-                        console.error('微信导航失败:', e);
                         window.location.href = url;
                     }
-                },
+                }, 300);
+            } catch (e) {
+                console.error('微信导航失败:', e);
+                window.location.href = url;
+            }
+        }
+        
+        // 显示加载状态
+        function showLoading() {
+            const loader = document.getElementById('wechatLoader');
+            if (loader) {
+                loader.style.display = 'flex';
                 
-                showLoading() {
-                    const loader = document.getElementById('wechatLoader');
-                    if (loader) {
-                        loader.style.display = 'flex';
-                        // 设置超时自动隐藏（安全措施）
-                        setTimeout(() => {
-                            if (loader.style.display === 'flex') {
-                                loader.style.display = 'none';
-                                // 重置导航状态
-                                document.querySelectorAll('.nav-card').forEach(card => {
-                                    card.setAttribute('data-navigating', 'false');
-                                });
-                            }
-                        }, 10000);
-                    }
-                },
-                
-                setupWechatFeatures() {
-                    // 确保所有卡片可聚焦
-                    document.querySelectorAll('.nav-card').forEach(card => {
-                        card.setAttribute('tabindex', '0');
-                    });
-                    
-                    // 初始化微信JSBridge
-                    this.initWechatBridge();
-                },
-                
-                initWechatBridge() {
-                    if (typeof WeixinJSBridge !== 'undefined') {
-                        this.setupBridge();
-                        return;
-                    }
-                    
-                    // 微信JSBridge就绪事件
-                    if (document.addEventListener) {
-                        document.addEventListener('WeixinJSBridgeReady', () => {
-                            this.setupBridge();
-                        }, false);
-                    }
-                    
-                    // 备用方案：轮询检测
-                    let checkCount = 0;
-                    const checkBridge = setInterval(() => {
-                        if (typeof WeixinJSBridge !== 'undefined') {
-                            clearInterval(checkBridge);
-                            this.setupBridge();
-                        }
-                        checkCount++;
-                        if (checkCount > 10) { // 最多检查10次（5秒）
-                            clearInterval(checkBridge);
-                            console.warn('微信JSBridge加载超时');
-                        }
-                    }, 500);
-                },
-                
-                setupBridge() {
-                    try {
-                        WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
-                        WeixinJSBridge.on('menu:setfont', () => {
-                            WeixinJSBridge.invoke('setFontSizeCallback', { fontSize: 0 });
+                // 设置超时自动隐藏（安全措施）
+                setTimeout(() => {
+                    if (loader.style.display === 'flex') {
+                        loader.style.display = 'none';
+                        // 重置导航状态
+                        document.querySelectorAll('.nav-card').forEach(card => {
+                            card.setAttribute('data-navigating', 'false');
                         });
-                    } catch (e) {
-                        console.error('微信JSBridge初始化失败:', e);
                     }
-                }
+                }, 10000);
+            }
+        }
+        
+        // 简化背景加载
+        function initBackground() {
+            const bg = document.getElementById('background');
+            if (!bg) return;
+            
+            // 微信中不加载背景图
+            if (isWeChat) {
+                bg.style.display = 'none';
+                return;
+            }
+            
+            // 移动端使用简化背景
+            if (isMobile) {
+                loadMobileBackground(bg);
+            } else {
+                loadStandardBackground(bg);
+            }
+        }
+        
+        function loadMobileBackground(bg) {
+            const img = new Image();
+            const bgUrl = 'images/bg-mobile-optimized.jpg?v=' + APP_VERSION;
+            
+            img.onload = function() {
+                bg.style.backgroundImage = 'url("' + img.src + '")';
+                bg.classList.add('loaded');
             };
             
-            // 背景加载
-            const BackgroundLoader = {
-                init() {
-                    const bg = document.getElementById('background');
-                    if (!bg) return;
-                    
-                    // 移动端使用更小的图片或纯色背景
-                    if (isMobile && window.innerWidth < 768) {
-                        this.loadMobileBackground(bg);
-                    } else {
-                        this.loadStandardBackground(bg);
-                    }
-                },
-                
-                loadMobileBackground(bg) {
-                    // 移动端优先使用纯色背景或小图
-                    const img = new Image();
-                    const bgUrl = this.getMobileBackgroundUrl();
-                    
-                    img.onload = () => {
-                        bg.style.backgroundImage = `url('${img.src}')`;
-                        bg.classList.add('loaded');
-                    };
-                    
-                    img.onerror = () => {
-                        // 移动端背景加载失败时直接使用纯色背景
-                        bg.style.display = 'none';
-                    };
-                    
-                    img.src = isWeChat ? 
-                        `${bgUrl}?t=${Date.now()}&r=${Math.random()}&mobile=1` : 
-                        bgUrl;
-                },
-                
-                loadStandardBackground(bg) {
-                    const img = new Image();
-                    const supportsWebP = this.checkWebPSupport();
-                    const bgUrl = this.getBackgroundUrl(supportsWebP);
-                    
-                    img.onload = () => {
-                        bg.style.backgroundImage = `url('${img.src}')`;
-                        bg.classList.add('loaded');
-                    };
-                    
-                    img.onerror = () => {
-                        bg.style.display = 'none';
-                    };
-                    
-                    img.src = isWeChat ? 
-                        `${bgUrl}?t=${Date.now()}&r=${Math.random()}` : 
-                        bgUrl;
-                },
-                
-                checkWebPSupport() {
-                    try {
-                        return document.createElement('canvas')
-                            .toDataURL('image/webp')
-                            .indexOf('data:image/webp') === 0;
-                    } catch {
-                        return false;
-                    }
-                },
-                
-                getBackgroundUrl(supportsWebP) {
-                    const base = supportsWebP ? 'images/bg-' : 'images/bg-';
-                    const ext = supportsWebP ? '.webp' : '.jpg';
-                    return base + (isMobile ? 'mobile' : 'desktop') + ext;
-                },
-                
-                getMobileBackgroundUrl() {
-                    // 移动端专用背景，可以更小或优化
-                    return 'images/bg-mobile-optimized.jpg';
-                }
+            img.onerror = function() {
+                bg.style.display = 'none';
             };
             
-            // 页面加载状态管理
-            const PageLoadManager = {
-                init() {
-                    // 隐藏初始加载器
-                    setTimeout(() => {
-                        const loader = document.getElementById('wechatLoader');
-                        if (loader && loader.style.display === 'flex') {
-                            loader.style.display = 'none';
-                        }
-                    }, 1000);
-                    
-                    // 移动端页面显示事件
-                    if (isMobile) {
-                        document.addEventListener('visibilitychange', this.handleVisibilityChange);
-                    }
-                },
-                
-                handleVisibilityChange() {
-                    if (document.visibilityState === 'visible') {
-                        // 页面重新可见时检查状态
-                        const loader = document.getElementById('wechatLoader');
-                        if (loader && loader.style.display === 'flex') {
+            img.src = bgUrl;
+        }
+        
+        function loadStandardBackground(bg) {
+            const img = new Image();
+            const supportsWebP = checkWebPSupport();
+            const bgUrl = getBackgroundUrl(supportsWebP);
+            
+            img.onload = function() {
+                bg.style.backgroundImage = 'url("' + img.src + '")';
+                bg.classList.add('loaded');
+            };
+            
+            img.onerror = function() {
+                bg.style.display = 'none';
+            };
+            
+            img.src = bgUrl;
+        }
+        
+        function checkWebPSupport() {
+            try {
+                return document.createElement('canvas')
+                    .toDataURL('image/webp')
+                    .indexOf('data:image/webp') === 0;
+            } catch {
+                return false;
+            }
+        }
+        
+        function getBackgroundUrl(supportsWebP) {
+            const base = supportsWebP ? 'images/bg-' : 'images/bg-';
+            const ext = supportsWebP ? '.webp' : '.jpg';
+            return base + (isMobile ? 'mobile' : 'desktop') + ext + '?v=' + APP_VERSION;
+        }
+        
+        // 页面加载完成后的处理
+        function initPageLoad() {
+            // 隐藏初始加载器
+            setTimeout(() => {
+                const loader = document.getElementById('wechatLoader');
+                if (loader && loader.style.display === 'flex') {
+                    loader.style.display = 'none';
+                }
+            }, 1000);
+            
+            // 微信中设置超时处理
+            if (isWeChat) {
+                setTimeout(() => {
+                    const loader = document.getElementById('wechatLoader');
+                    if (loader && loader.style.display === 'flex') {
+                        const loaderText = document.getElementById('loaderText');
+                        if (loaderText) {
+                            loaderText.textContent = '加载完成';
                             setTimeout(() => {
                                 loader.style.display = 'none';
                             }, 1000);
                         }
                     }
-                }
-            };
+                }, 5000);
+            }
             
-            // 移动端连接优化
-            const MobileConnectionOptimizer = {
-                init() {
-                    if (!isMobile) return;
-                    
-                    this.optimizeNetwork();
-                    this.preventCachingIssues();
-                    this.setupOfflineDetection();
-                },
-                
-                optimizeNetwork() {
-                    // 预连接优化
-                    const preconnectLinks = document.querySelectorAll('link[rel="preconnect"], link[rel="dns-prefetch"]');
-                    preconnectLinks.forEach(link => {
-                        link.rel = 'dns-prefetch preconnect';
-                    });
-                    
-                    // 添加连接超时保护
-                    setTimeout(() => {
-                        const loader = document.getElementById('wechatLoader');
-                        if (loader && loader.style.display === 'flex') {
-                            const loaderText = document.getElementById('loaderText');
-                            if (loaderText) {
-                                loaderText.innerHTML = '正在连接...<br><small>如遇网络问题，请检查连接后重试</small>';
-                            }
-                        }
-                    }, 3000);
-                },
-                
-                preventCachingIssues() {
-                    // 防止移动端浏览器缓存问题
-                    window.addEventListener('pageshow', function(event) {
-                        if (event.persisted) {
-                            window.location.reload();
-                        }
-                    });
-                    
-                    // 添加缓存清除按钮（开发用）
-                    if (window.location.href.indexOf('debug=1') > -1) {
-                        this.addCacheClearButton();
-                    }
-                },
-                
-                setupOfflineDetection() {
-                    // 检测离线状态
-                    window.addEventListener('online', () => {
-                        console.log('网络连接已恢复');
-                    });
-                    
-                    window.addEventListener('offline', () => {
-                        const loader = document.getElementById('wechatLoader');
-                        if (loader) {
-                            const loaderText = document.getElementById('loaderText');
-                            if (loaderText) {
-                                loaderText.textContent = '网络连接已断开，请检查网络设置';
-                            }
-                        }
-                    });
-                },
-                
-                addCacheClearButton() {
-                    // 开发调试用缓存清除按钮
-                    const clearBtn = document.createElement('button');
-                    clearBtn.textContent = '清除缓存';
-                    clearBtn.style.position = 'fixed';
-                    clearBtn.style.bottom = '10px';
-                    clearBtn.style.right = '10px';
-                    clearBtn.style.zIndex = '10000';
-                    clearBtn.style.padding = '5px 10px';
-                    clearBtn.style.background = '#f00';
-                    clearBtn.style.color = '#fff';
-                    clearBtn.style.border = 'none';
-                    clearBtn.style.borderRadius = '3px';
-                    
-                    clearBtn.addEventListener('click', () => {
-                        window.location.reload(true);
-                    });
-                    
-                    document.body.appendChild(clearBtn);
-                }
-            };
+            // 页面加载完成标记
+            setTimeout(() => {
+                document.body.setAttribute('data-loaded', 'true');
+            }, 500);
+        }
+        
+        // 主初始化函数
+        function initApp() {
+            initMobileOptimizations();
+            initNavigation();
+            initBackground();
+            initPageLoad();
             
-            // 性能监控
-            const PerformanceMonitor = {
-                init() {
-                    if (!isMobile) return;
-                    
-                    this.monitorLoadTime();
-                    this.detectSlowNetwork();
-                },
-                
-                monitorLoadTime() {
-                    window.addEventListener('load', () => {
-                        setTimeout(() => {
-                            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-                            console.log(`页面加载时间: ${loadTime}ms`);
-                            
-                            if (loadTime > 5000) {
-                                console.warn('页面加载较慢，建议优化');
-                            }
-                        }, 0);
-                    });
-                },
-                
-                detectSlowNetwork() {
-                    // 通过加载时间检测慢速网络
-                    const startTime = Date.now();
-                    window.addEventListener('load', () => {
-                        const loadTime = Date.now() - startTime;
-                        if (loadTime > 3000) {
-                            // 慢速网络，可以采取优化措施
-                            this.enableLowBandwidthMode();
-                        }
-                    });
-                },
-                
-                enableLowBandwidthMode() {
-                    // 低速网络模式优化
-                    const bg = document.getElementById('background');
-                    if (bg) {
-                        bg.style.display = 'none';
-                    }
-                }
-            };
-            
-            // 主应用
-            const App = {
-                init() {
-                    // 初始化顺序很重要
-                    MobileOptimizer.init();
-                    MobileConnectionOptimizer.init();
-                    PerformanceMonitor.init();
-                    PageLoadManager.init();
-                    NavigationManager.init();
-                    BackgroundLoader.init();
-                    
-                    if (isWeChat) {
-                        this.setupWechatTimeout();
-                    }
-                    
-                    // 页面加载完成标记
-                    setTimeout(() => {
-                        document.body.setAttribute('data-loaded', 'true');
-                        console.log('页面加载完成');
-                    }, 500);
-                },
-                
-                setupWechatTimeout() {
-                    // 微信浏览器超时处理
-                    setTimeout(() => {
-                        const loader = document.getElementById('wechatLoader');
-                        if (loader && loader.style.display === 'flex') {
-                            const loaderText = document.getElementById('loaderText');
-                            if (loaderText) {
-                                loaderText.textContent = '加载完成';
-                                setTimeout(() => {
-                                    loader.style.display = 'none';
-                                }, 1000);
-                            }
-                        }
-                    }, 5000);
-                }
-            };
-            
-            // 安全启动 - 移动端优先
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => {
-                    try {
-                        App.init();
-                    } catch (e) {
-                        console.error('应用初始化失败:', e);
-                        const loader = document.getElementById('wechatLoader');
-                        if (loader) loader.style.display = 'none';
-                    }
-                });
-            } else {
-                // DOM已经就绪
+            console.log('应用初始化完成 - 版本: ' + APP_VERSION);
+        }
+        
+        // 安全启动
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
                 try {
-                    App.init();
+                    initApp();
                 } catch (e) {
                     console.error('应用初始化失败:', e);
                     const loader = document.getElementById('wechatLoader');
                     if (loader) loader.style.display = 'none';
                 }
+            });
+        } else {
+            try {
+                initApp();
+            } catch (e) {
+                console.error('应用初始化失败:', e);
+                const loader = document.getElementById('wechatLoader');
+                if (loader) loader.style.display = 'none';
             }
-            
-            // 移动端特殊处理
-            if (isMobile) {
-                // 防止页面滚动
-                document.body.addEventListener('touchmove', function(e) {
-                    if (e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-                        e.preventDefault();
-                    }
-                }, { passive: false });
-                
-                // 适配键盘弹出
-                window.addEventListener('resize', function() {
-                    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                        document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                });
-            }
-        })();
+        }
     </script>
 </body>
 </html>
