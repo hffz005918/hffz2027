@@ -3,603 +3,409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="x-dns-prefetch-control" content="on">
     
-    <!-- 强化缓存控制 -->
+    <!-- 强化缓存和网络控制 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta http-equiv="x-dns-prefetch-control" content="on">
     
-    <!-- 手机端优化标签 -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="msapplication-tap-highlight" content="no">
-    
-    <!-- 微信优化标签 -->
-    <meta name="x5-page-mode" content="app">
-    <meta name="x5-orientation" content="portrait">
-    <meta name="renderer" content="webkit">
-    
-    <!-- SEO优化 -->
-    <meta name="description" content="宏方纺织员工服务平台，提供宿舍管理、费用查询等服务">
-    
-    <title>员工服务系统 - 宏方纺织</title>
-
+    <title>员工服务系统 - 网络诊断</title>
     <style>
-        :root {
-            --primary-color: #1890ff;
-            --secondary-color: #1a73e8;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --text-light: #ffffff;
-            --text-dark: #333333;
-            --text-secondary: #666666;
-            --transition-speed: 0.3s;
-            --border-radius: 12px;
-            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            --box-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-
+        
         body {
-            font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
-            height: 100vh;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
             background: linear-gradient(135deg, #6a8bad 0%, #4a6b8f 100%);
-            line-height: 1.5;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        .background {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background: no-repeat center/cover;
-            filter: brightness(0.8);
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.8s ease;
-        }
-
-        .background.loaded {
-            opacity: 1;
-        }
-
-        .content {
-            height: 100%;
+            min-height: 100vh;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            animation: fadeInContent 0.5s ease 0.3s forwards;
-        }
-
-        .title {
-            color: var(--text-light);
-            text-align: center;
-            margin-bottom: 3rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .title h1 {
-            font-size: clamp(1.8rem, 5vw, 2.5rem);
-            margin-bottom: 0.8rem;
-            font-weight: 500;
-        }
-
-        .title p {
-            font-size: clamp(1rem, 3vw, 1.2rem);
-            opacity: 0.9;
-        }
-
-        .nav-cards {
-            display: grid;
-            gap: 1.5rem;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            width: min(90%, 800px);
-            margin: 0 auto;
-        }
-
-        .nav-card {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: 
-                transform var(--transition-speed) ease,
-                box-shadow var(--transition-speed) ease;
-            box-shadow: var(--box-shadow);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .nav-card:focus-visible {
-            box-shadow: 0 0 0 3px var(--secondary-color);
-        }
-
-        .nav-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--box-shadow-hover);
-        }
-
-        .nav-card:active {
-            transform: translateY(-2px) scale(0.98);
-        }
-
-        .nav-card h2 {
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-            font-size: clamp(1.3rem, 4vw, 1.6rem);
-            font-weight: 500;
-        }
-
-        .nav-card p {
-            color: var(--text-secondary);
-            font-size: clamp(0.9rem, 3vw, 1rem);
-        }
-
-        .wechat-loader {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
             color: white;
-            font-size: 1.1rem;
-            backdrop-filter: blur(3px);
-            -webkit-backdrop-filter: blur(3px);
         }
-
-        .loader-content {
-            text-align: center;
-            max-width: 80%;
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 90%;
+            width: 500px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            color: #333;
         }
-
-        .loader-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
+        
+        h1 {
+            color: #1890ff;
             margin-bottom: 1rem;
-        }
-
-        .mobile-status-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: env(safe-area-inset-top);
-            background: transparent;
-            z-index: 999;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeInContent {
-            to { opacity: 1; }
-        }
-
-        @media (max-width: 768px) {
-            .nav-cards {
-                gap: 1.2rem;
-                width: 95%;
-            }
-            
-            .nav-card {
-                padding: 1.5rem;
-            }
-            
-            .title {
-                margin-bottom: 2.5rem;
-            }
-
-            body {
-                /* 防止移动端缩放 */
-                touch-action: manipulation;
-                -webkit-text-size-adjust: 100%;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .nav-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .nav-card {
-                padding: 1.2rem;
-            }
-
-            .title {
-                margin-bottom: 2rem;
-            }
-        }
-
-        @supports not (backdrop-filter: blur(5px)) {
-            .nav-card {
-                background: rgba(255, 255, 255, 0.98);
-            }
-            
-            .wechat-loader {
-                background: rgba(0, 0, 0, 0.85);
-            }
-        }
-
-        /* 防止iOS橡皮筋效果过度滚动 */
-        body.ios-scroll-fix {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
+            text-align: center;
         }
         
-        /* 微信专用样式 */
-        body.wechat-browser {
-            background: linear-gradient(135deg, #6a8bad 0%, #4a6b8f 100%);
+        .status-item {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            background: #f5f5f5;
         }
         
-        body.wechat-browser .background {
+        .status-good {
+            border-left: 4px solid #52c41a;
+        }
+        
+        .status-bad {
+            border-left: 4px solid #ff4d4f;
+        }
+        
+        .status-warning {
+            border-left: 4px solid #faad14;
+        }
+        
+        .btn {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            background: #40a9ff;
+        }
+        
+        .btn-retry {
+            background: #52c41a;
+        }
+        
+        .btn-copy {
+            background: #722ed1;
+        }
+        
+        .hidden {
             display: none;
+        }
+        
+        #diagnosisResult {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #e6f7ff;
+            border-radius: 6px;
+            border-left: 4px solid #1890ff;
         }
     </style>
 </head>
 <body>
-    <div class="mobile-status-bar"></div>
-    
-    <div class="wechat-loader" id="wechatLoader" aria-live="polite">
-        <div class="loader-spinner"></div>
-        <div class="loader-content">
-            <div id="loaderText">正在加载，请稍候...</div>
-        </div>
-    </div>
-
-    <div class="background" id="background"></div>
-    
-    <div class="content">
-        <div class="title">
-            <h1>员工服务系统</h1>
-            <p>欢迎使用宏方纺织服务平台</p>
+    <div class="container">
+        <h1>网络连接诊断</h1>
+        
+        <div class="status-item" id="networkStatus">
+            <h3>网络连接状态</h3>
+            <p>检测中...</p>
         </div>
         
-        <div class="nav-cards" role="navigation">
-            <div class="nav-card" 
-                 role="button" 
-                 tabindex="0"
-                 data-href="dorm-rules.html"
-                 aria-labelledby="dorm-title"
-                 aria-describedby="dorm-desc">
-                <h2 id="dorm-title">宿舍管理</h2>
-                <p id="dorm-desc">员工宿舍管理制度</p>
-            </div>
-            
-            <div class="nav-card" 
-                 role="button" 
-                 tabindex="0"
-                 data-href="fee-query.html"
-                 aria-labelledby="fee-title"
-                 aria-describedby="fee-desc">
-                <h2 id="fee-title">费用查询</h2>
-                <p id="fee-desc">水电费用查询服务</p>
-            </div>
+        <div class="status-item" id="wechatStatus">
+            <h3>微信浏览器兼容性</h3>
+            <p>检测中...</p>
+        </div>
+        
+        <div class="status-item" id="serverStatus">
+            <h3>服务器连接状态</h3>
+            <p>检测中...</p>
+        </div>
+        
+        <div id="diagnosisResult" class="hidden"></div>
+        
+        <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn btn-retry" onclick="retryConnection()">重新检测连接</button>
+            <button class="btn" onclick="showSolutions()">显示解决方案</button>
+            <button class="btn btn-copy" onclick="copyUrl()">复制页面链接</button>
+            <button class="btn" onclick="openInBrowser()">在浏览器中打开</button>
         </div>
     </div>
 
     <script>
-        // 版本号 - 每次更新时修改此版本号强制刷新缓存
+        // 版本控制
         const APP_VERSION = '20241001';
         
-        // 简化环境检测
+        // 环境检测
         const isWeChat = /micromessenger/i.test(navigator.userAgent);
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
         
         // 微信专用错误处理
         if (isWeChat) {
-            // 标记微信浏览器
-            document.body.classList.add('wechat-browser');
-            
-            // 全局错误捕获
             window.addEventListener('error', function(e) {
                 console.error('微信环境错误:', e);
-                // 确保加载器隐藏
-                const loader = document.getElementById('wechatLoader');
-                if (loader) loader.style.display = 'none';
-                
-                // 确保内容可见
-                const content = document.querySelector('.content');
-                if (content) content.style.opacity = '1';
-            });
-            
-            // Promise错误捕获
-            window.addEventListener('unhandledrejection', function(e) {
-                console.warn('微信中Promise错误:', e.reason);
-                e.preventDefault();
+                updateStatus('wechatStatus', 'error', '微信环境中存在兼容性问题');
             });
         }
         
-        // 简化移动端优化
-        function initMobileOptimizations() {
-            if (!isMobile) return;
+        // 网络诊断功能
+        function diagnoseNetwork() {
+            updateStatus('networkStatus', 'checking', '检测网络连接...');
+            updateStatus('wechatStatus', 'checking', '检测微信兼容性...');
+            updateStatus('serverStatus', 'checking', '检测服务器连接...');
             
-            // 防止双击缩放
-            let lastTouchEnd = 0;
-            document.addEventListener('touchend', function (event) {
-                const now = Date.now();
-                if (now - lastTouchEnd <= 300) {
-                    event.preventDefault();
-                }
-                lastTouchEnd = now;
-            }, false);
+            // 检测网络连接
+            checkNetworkConnection();
             
-            // 防止手势缩放
-            document.addEventListener('gesturestart', function (event) {
-                event.preventDefault();
-            });
+            // 检测微信环境
+            checkWechatEnvironment();
             
-            // iOS橡皮筋效果修复
-            if (isIOS) {
-                document.body.classList.add('ios-scroll-fix');
-                const content = document.querySelector('.content');
-                if (content) {
-                    content.style.overflow = 'auto';
-                    content.style.webkitOverflowScrolling = 'touch';
-                }
-            }
+            // 检测服务器连接
+            checkServerConnection();
         }
         
-        // 简化导航功能
-        function initNavigation() {
-            const cards = document.querySelectorAll('.nav-card');
-            
-            cards.forEach(card => {
-                // 点击事件
-                card.addEventListener('click', function() {
-                    handleCardClick(this);
-                });
-                
-                // 键盘事件
-                card.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleCardClick(this);
-                    }
-                });
-                
-                // 触摸反馈
-                card.addEventListener('touchstart', function() {
-                    this.style.transform = 'translateY(-2px) scale(0.98)';
-                });
-                
-                card.addEventListener('touchend', function() {
-                    this.style.transform = '';
-                });
-            });
-        }
-        
-        // 处理卡片点击
-        function handleCardClick(card) {
-            // 防止快速多次点击
-            if (card.getAttribute('data-navigating') === 'true') return;
-            card.setAttribute('data-navigating', 'true');
-            
-            const href = card.getAttribute('data-href');
-            if (!href) return;
-            
-            // 显示加载状态
-            showLoading();
-            
-            // 生成带版本号和缓存的URL
-            const url = generateUrl(href);
-            
-            // 延迟导航确保加载状态可见
-            setTimeout(() => {
-                if (isWeChat) {
-                    wechatNavigate(url);
-                } else {
-                    window.location.href = url;
-                }
-            }, 100);
-        }
-        
-        // 生成带缓存控制的URL
-        function generateUrl(path) {
-            const separator = path.indexOf('?') > -1 ? '&' : '?';
-            return path + separator + 'v=' + APP_VERSION + '&_t=' + Date.now();
-        }
-        
-        // 微信专用导航
-        function wechatNavigate(url) {
-            try {
-                const loader = document.getElementById('wechatLoader');
-                if (loader) {
-                    loader.style.display = 'flex';
-                }
-                
-                // 延迟导航确保加载状态可见
-                setTimeout(() => {
-                    try {
-                        window.location.replace(url);
-                    } catch (e) {
-                        window.location.href = url;
-                    }
-                }, 300);
-            } catch (e) {
-                console.error('微信导航失败:', e);
-                window.location.href = url;
-            }
-        }
-        
-        // 显示加载状态
-        function showLoading() {
-            const loader = document.getElementById('wechatLoader');
-            if (loader) {
-                loader.style.display = 'flex';
-                
-                // 设置超时自动隐藏（安全措施）
-                setTimeout(() => {
-                    if (loader.style.display === 'flex') {
-                        loader.style.display = 'none';
-                        // 重置导航状态
-                        document.querySelectorAll('.nav-card').forEach(card => {
-                            card.setAttribute('data-navigating', 'false');
-                        });
-                    }
-                }, 10000);
-            }
-        }
-        
-        // 简化背景加载
-        function initBackground() {
-            const bg = document.getElementById('background');
-            if (!bg) return;
-            
-            // 微信中不加载背景图
-            if (isWeChat) {
-                bg.style.display = 'none';
+        function checkNetworkConnection() {
+            if (!navigator.onLine) {
+                updateStatus('networkStatus', 'error', '设备处于离线状态');
                 return;
             }
             
-            // 移动端使用简化背景
-            if (isMobile) {
-                loadMobileBackground(bg);
-            } else {
-                loadStandardBackground(bg);
-            }
-        }
-        
-        function loadMobileBackground(bg) {
-            const img = new Image();
-            const bgUrl = 'images/bg-mobile-optimized.jpg?v=' + APP_VERSION;
+            // 尝试访问几个常用网站测试网络
+            const testUrls = [
+                'https://www.qq.com/',
+                'https://www.baidu.com/',
+                'https://www.taobao.com/'
+            ];
             
-            img.onload = function() {
-                bg.style.backgroundImage = 'url("' + img.src + '")';
-                bg.classList.add('loaded');
-            };
+            let connected = false;
+            let testCount = 0;
             
-            img.onerror = function() {
-                bg.style.display = 'none';
-            };
-            
-            img.src = bgUrl;
-        }
-        
-        function loadStandardBackground(bg) {
-            const img = new Image();
-            const supportsWebP = checkWebPSupport();
-            const bgUrl = getBackgroundUrl(supportsWebP);
-            
-            img.onload = function() {
-                bg.style.backgroundImage = 'url("' + img.src + '")';
-                bg.classList.add('loaded');
-            };
-            
-            img.onerror = function() {
-                bg.style.display = 'none';
-            };
-            
-            img.src = bgUrl;
-        }
-        
-        function checkWebPSupport() {
-            try {
-                return document.createElement('canvas')
-                    .toDataURL('image/webp')
-                    .indexOf('data:image/webp') === 0;
-            } catch {
-                return false;
-            }
-        }
-        
-        function getBackgroundUrl(supportsWebP) {
-            const base = supportsWebP ? 'images/bg-' : 'images/bg-';
-            const ext = supportsWebP ? '.webp' : '.jpg';
-            return base + (isMobile ? 'mobile' : 'desktop') + ext + '?v=' + APP_VERSION;
-        }
-        
-        // 页面加载完成后的处理
-        function initPageLoad() {
-            // 隐藏初始加载器
-            setTimeout(() => {
-                const loader = document.getElementById('wechatLoader');
-                if (loader && loader.style.display === 'flex') {
-                    loader.style.display = 'none';
-                }
-            }, 1000);
-            
-            // 微信中设置超时处理
-            if (isWeChat) {
-                setTimeout(() => {
-                    const loader = document.getElementById('wechatLoader');
-                    if (loader && loader.style.display === 'flex') {
-                        const loaderText = document.getElementById('loaderText');
-                        if (loaderText) {
-                            loaderText.textContent = '加载完成';
-                            setTimeout(() => {
-                                loader.style.display = 'none';
-                            }, 1000);
-                        }
+            testUrls.forEach(url => {
+                fetch(url, { 
+                    method: 'HEAD',
+                    mode: 'no-cors',
+                    cache: 'no-cache'
+                }).then(() => {
+                    connected = true;
+                    testCount++;
+                    if (testCount === 1) { // 只要有一个成功就认为网络正常
+                        updateStatus('networkStatus', 'good', '网络连接正常');
                     }
-                }, 5000);
+                }).catch(() => {
+                    testCount++;
+                    if (testCount === testUrls.length && !connected) {
+                        updateStatus('networkStatus', 'error', '网络连接异常，可能被限制');
+                    }
+                });
+            });
+            
+            // 超时处理
+            setTimeout(() => {
+                const statusElement = document.getElementById('networkStatus');
+                if (statusElement.querySelector('p').textContent.includes('检测中')) {
+                    updateStatus('networkStatus', 'warning', '网络检测超时，连接可能较慢');
+                }
+            }, 5000);
+        }
+        
+        function checkWechatEnvironment() {
+            if (!isWeChat) {
+                updateStatus('wechatStatus', 'good', '非微信环境，兼容性良好');
+                return;
             }
             
-            // 页面加载完成标记
-            setTimeout(() => {
-                document.body.setAttribute('data-loaded', 'true');
-            }, 500);
-        }
-        
-        // 主初始化函数
-        function initApp() {
-            initMobileOptimizations();
-            initNavigation();
-            initBackground();
-            initPageLoad();
+            // 微信环境检测
+            const wechatVersion = navigator.userAgent.match(/MicroMessenger\/([\d.]+)/i);
+            const version = wechatVersion ? wechatVersion[1] : '未知';
             
-            console.log('应用初始化完成 - 版本: ' + APP_VERSION);
+            // 检测微信JSBridge
+            if (typeof WeixinJSBridge !== 'undefined') {
+                updateStatus('wechatStatus', 'good', `微信版本 ${version}，JSBridge 可用`);
+            } else {
+                updateStatus('wechatStatus', 'warning', `微信版本 ${version}，部分功能可能受限`);
+            }
+            
+            // 检测常见微信限制
+            testWechatLimitations();
         }
         
-        // 安全启动
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                try {
-                    initApp();
-                } catch (e) {
-                    console.error('应用初始化失败:', e);
-                    const loader = document.getElementById('wechatLoader');
-                    if (loader) loader.style.display = 'none';
+        function testWechatLimitations() {
+            // 测试本地存储
+            try {
+                localStorage.setItem('test', 'value');
+                localStorage.removeItem('test');
+            } catch (e) {
+                updateStatus('wechatStatus', 'warning', '本地存储可能被限制');
+            }
+            
+            // 测试Cookie
+            try {
+                document.cookie = 'test=value; path=/';
+                const hasCookie = document.cookie.indexOf('test=') !== -1;
+                if (!hasCookie) {
+                    updateStatus('wechatStatus', 'warning', 'Cookie 可能被限制');
+                }
+            } catch (e) {
+                // Cookie设置失败
+            }
+        }
+        
+        function checkServerConnection() {
+            // 尝试连接当前域名
+            const currentDomain = window.location.origin;
+            
+            fetch(currentDomain + '/?t=' + Date.now(), {
+                method: 'HEAD',
+                cache: 'no-cache',
+                mode: 'same-origin'
+            }).then(response => {
+                if (response.status === 200) {
+                    updateStatus('serverStatus', 'good', '服务器连接正常');
+                } else {
+                    updateStatus('serverStatus', 'error', `服务器返回状态: ${response.status}`);
+                }
+            }).catch(error => {
+                console.error('服务器连接错误:', error);
+                
+                if (error.name === 'TypeError') {
+                    updateStatus('serverStatus', 'error', '域名解析失败或跨域限制');
+                } else if (error.name === 'NetworkError') {
+                    updateStatus('serverStatus', 'error', '网络错误，可能被防火墙拦截');
+                } else {
+                    updateStatus('serverStatus', 'error', '连接失败: ' + error.message);
                 }
             });
-        } else {
-            try {
-                initApp();
-            } catch (e) {
-                console.error('应用初始化失败:', e);
-                const loader = document.getElementById('wechatLoader');
-                if (loader) loader.style.display = 'none';
+            
+            // 超时处理
+            setTimeout(() => {
+                const statusElement = document.getElementById('serverStatus');
+                if (statusElement.querySelector('p').textContent.includes('检测中')) {
+                    updateStatus('serverStatus', 'error', '服务器连接超时');
+                }
+            }, 10000);
+        }
+        
+        function updateStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            const statusElement = element.querySelector('p');
+            
+            // 移除旧的状态类
+            element.classList.remove('status-good', 'status-bad', 'status-warning');
+            
+            // 添加新的状态类
+            switch(status) {
+                case 'good':
+                    element.classList.add('status-good');
+                    break;
+                case 'error':
+                    element.classList.add('status-bad');
+                    break;
+                case 'warning':
+                    element.classList.add('status-warning');
+                    break;
             }
+            
+            statusElement.textContent = message;
+        }
+        
+        function retryConnection() {
+            diagnoseNetwork();
+        }
+        
+        function showSolutions() {
+            const resultDiv = document.getElementById('diagnosisResult');
+            let solutions = '';
+            
+            if (isWeChat) {
+                solutions = `
+                    <h4>微信浏览器访问问题解决方案：</h4>
+                    <ol>
+                        <li><strong>方法一：刷新页面</strong> - 下拉页面触发刷新</li>
+                        <li><strong>方法二：复制链接</strong> - 点击右上角复制链接，在浏览器中打开</li>
+                        <li><strong>方法三：清理缓存</strong> - 微信设置 → 通用 → 存储空间 → 清理缓存</li>
+                        <li><strong>方法四：更新微信</strong> - 确保使用最新版微信</li>
+                        <li><strong>方法五：更换网络</strong> - 尝试切换WiFi/移动数据</li>
+                    </ol>
+                    <p><strong>重要提示：</strong>如果域名未备案或使用境外服务器，可能在微信中受限。</p>
+                `;
+            } else {
+                solutions = `
+                    <h4>网络连接问题解决方案：</h4>
+                    <ol>
+                        <li>检查网络连接是否正常</li>
+                        <li>尝试刷新页面 (F5 或 Ctrl+R)</li>
+                        <li>清除浏览器缓存和Cookie</li>
+                        <li>尝试使用其他浏览器</li>
+                        <li>联系网络管理员检查防火墙设置</li>
+                    </ol>
+                `;
+            }
+            
+            resultDiv.innerHTML = solutions;
+            resultDiv.classList.remove('hidden');
+        }
+        
+        function copyUrl() {
+            const url = window.location.href;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('链接已复制到剪贴板');
+                }).catch(() => {
+                    fallbackCopy(url);
+                });
+            } else {
+                fallbackCopy(url);
+            }
+        }
+        
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('链接已复制到剪贴板');
+            } catch (err) {
+                alert('复制失败，请手动复制链接: ' + text);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+        
+        function openInBrowser() {
+            if (isWeChat) {
+                // 微信中提示用户手动打开
+                const url = window.location.href;
+                alert(`请在浏览器中打开以下链接：\n\n${url}\n\n点击"复制页面链接"按钮后，粘贴到浏览器中访问。`);
+            } else {
+                // 非微信环境直接尝试打开
+                window.open(window.location.href, '_blank');
+            }
+        }
+        
+        // 页面加载完成后开始诊断
+        document.addEventListener('DOMContentLoaded', function() {
+            diagnoseNetwork();
+            
+            // 监听网络状态变化
+            window.addEventListener('online', function() {
+                updateStatus('networkStatus', 'good', '网络已恢复连接');
+            });
+            
+            window.addEventListener('offline', function() {
+                updateStatus('networkStatus', 'error', '网络连接已断开');
+            });
+        });
+        
+        // 微信JSBridge就绪处理
+        if (isWeChat) {
+            document.addEventListener('WeixinJSBridgeReady', function() {
+                updateStatus('wechatStatus', 'good', '微信JSBridge已就绪');
+            });
         }
     </script>
 </body>
