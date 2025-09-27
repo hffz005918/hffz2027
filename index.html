@@ -7,6 +7,12 @@
     <link rel="dns-prefetch" href="//your-cdn-domain.com">
     <link rel="preconnect" href="https://your-cdn-domain.com">
     
+    <!-- 手机端优化标签 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    
     <!-- 微信优化标签 -->
     <meta http-equiv="Cache-Control" content="no-siteapp, no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -38,16 +44,19 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
             height: 100vh;
             -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
             background: linear-gradient(135deg, #6a8bad 0%, #4a6b8f 100%);
             line-height: 1.5;
             overflow-x: hidden;
+            position: relative;
         }
 
         .background {
@@ -115,6 +124,7 @@
             -webkit-backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             outline: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .nav-card:focus-visible {
@@ -175,6 +185,16 @@
             margin-bottom: 1rem;
         }
 
+        .mobile-status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: env(safe-area-inset-top);
+            background: transparent;
+            z-index: 999;
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -196,11 +216,25 @@
             .title {
                 margin-bottom: 2.5rem;
             }
+
+            body {
+                /* 防止移动端缩放 */
+                touch-action: manipulation;
+                -webkit-text-size-adjust: 100%;
+            }
         }
 
         @media (max-width: 480px) {
             .nav-cards {
                 grid-template-columns: 1fr;
+            }
+
+            .nav-card {
+                padding: 1.2rem;
+            }
+
+            .title {
+                margin-bottom: 2rem;
             }
         }
 
@@ -220,13 +254,23 @@
                 background-attachment: fixed;
             }
         }
+
+        /* 防止iOS橡皮筋效果过度滚动 */
+        body.ios-scroll-fix {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
+    <div class="mobile-status-bar"></div>
+    
     <div class="wechat-loader" id="wechatLoader" aria-live="polite">
         <div class="loader-spinner"></div>
         <div class="loader-content">
-            <div id="loaderText">正在连接服务器，请稍候...</div>
+            <div id="loaderText">正在加载，请稍候...</div>
         </div>
     </div>
 
@@ -263,9 +307,116 @@
 
     <script>
         (function() {
+            // 环境检测
+            const isWeChat = /micromessenger/i.test(navigator.userAgent);
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            
+            // 移动端优化工具
+            const MobileOptimizer = {
+                init() {
+                    this.fixViewport();
+                    this.preventZoom();
+                    this.fixIOSBounce();
+                    this.optimizeTouchEvents();
+                    this.addSafeAreaSupport();
+                },
+                
+                fixViewport() {
+                    // 动态设置viewport以适应不同设备
+                    let viewport = document.querySelector('meta[name="viewport"]');
+                    if (!viewport) {
+                        viewport = document.createElement('meta');
+                        viewport.name = 'viewport';
+                        document.head.appendChild(viewport);
+                    }
+                    
+                    let content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                    if (isIOS) {
+                        content += ', shrink-to-fit=no';
+                    }
+                    viewport.content = content;
+                },
+                
+                preventZoom() {
+                    // 防止双击缩放
+                    let lastTouchEnd = 0;
+                    document.addEventListener('touchend', function (event) {
+                        const now = (new Date()).getTime();
+                        if (now - lastTouchEnd <= 300) {
+                            event.preventDefault();
+                        }
+                        lastTouchEnd = now;
+                    }, false);
+                    
+                    // 防止手势缩放
+                    document.addEventListener('gesturestart', function (event) {
+                        event.preventDefault();
+                    });
+                },
+                
+                fixIOSBounce() {
+                    if (!isIOS) return;
+                    
+                    // 修复iOS橡皮筋效果
+                    document.body.classList.add('ios-scroll-fix');
+                    
+                    // 允许内容区域滚动
+                    const content = document.querySelector('.content');
+                    if (content) {
+                        content.style.overflow = 'auto';
+                        content.style.webkitOverflowScrolling = 'touch';
+                    }
+                },
+                
+                optimizeTouchEvents() {
+                    // 优化触摸事件响应
+                    document.addEventListener('touchstart', function() {}, {passive: true});
+                    document.addEventListener('touchmove', function() {}, {passive: true});
+                    
+                    // 移除300ms点击延迟
+                    if (isMobile) {
+                        if (window.PointerEvent) {
+                            document.addEventListener('pointerdown', function() {});
+                        } else {
+                            const fastClick = function(e) {
+                                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                                    return;
+                                }
+                                e.preventDefault();
+                                const target = e.target;
+                                const rect = target.getBoundingClientRect();
+                                const x = e.changedTouches[0].clientX - rect.left;
+                                const y = e.changedTouches[0].clientY - rect.top;
+                                
+                                const event = new MouseEvent('click', {
+                                    bubbles: true,
+                                    cancelable: true,
+                                    clientX: rect.left + x,
+                                    clientY: rect.top + y
+                                });
+                                
+                                target.dispatchEvent(event);
+                            };
+                            
+                            document.addEventListener('touchend', fastClick, true);
+                        }
+                    }
+                },
+                
+                addSafeAreaSupport() {
+                    // 支持刘海屏安全区域
+                    if (CSS.supports('padding-top: env(safe-area-inset-top)')) {
+                        document.documentElement.style.setProperty('--safe-area-inset-top', 'env(safe-area-inset-top)');
+                        document.documentElement.style.setProperty('--safe-area-inset-bottom', 'env(safe-area-inset-bottom)');
+                    }
+                }
+            };
+            
             // 微信浏览器缓存清理机制
             const cleanWechatCache = function() {
-                if (!/micromessenger/i.test(navigator.userAgent)) return;
+                if (!isWeChat) return;
                 
                 try {
                     // 清理URL参数中的缓存标记
@@ -277,10 +428,6 @@
                     console.warn('缓存清理失败:', e);
                 }
             };
-
-            // 环境检测
-            const isWeChat = /micromessenger/i.test(navigator.userAgent);
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             
             // 核心导航功能
             const NavigationManager = {
@@ -295,8 +442,14 @@
                 setupCardInteractions() {
                     const cards = document.querySelectorAll('.nav-card');
                     cards.forEach(card => {
-                        // 点击事件
+                        // 触摸事件（移动端优先）
+                        card.addEventListener('touchstart', this.handleTouchStart.bind(this));
+                        card.addEventListener('touchend', this.handleTouchEnd.bind(this));
+                        
+                        // 点击事件（桌面端备用）
                         card.addEventListener('click', (e) => {
+                            // 防止移动端重复触发
+                            if (!e.isTrusted || e.detail === 0) return;
                             this.handleNavigation(card);
                         });
                         
@@ -310,19 +463,36 @@
                     });
                 },
                 
+                handleTouchStart(e) {
+                    // 触摸开始时的视觉反馈
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(0.98)';
+                },
+                
+                handleTouchEnd(e) {
+                    // 恢复原状并导航
+                    e.currentTarget.style.transform = '';
+                    this.handleNavigation(e.currentTarget);
+                },
+                
                 handleNavigation(card) {
                     const url = card.getAttribute('data-href');
                     if (!url) return;
                     
+                    // 防止快速多次点击
+                    if (card.getAttribute('data-navigating') === 'true') return;
+                    card.setAttribute('data-navigating', 'true');
+                    
                     this.showLoading();
                     const finalUrl = this.generateUrl(url);
                     
-                    // 微信浏览器特殊处理
-                    if (isWeChat) {
-                        this.wechatNavigate(finalUrl);
-                    } else {
-                        window.location.href = finalUrl;
-                    }
+                    // 短暂延迟确保加载状态可见
+                    setTimeout(() => {
+                        if (isWeChat) {
+                            this.wechatNavigate(finalUrl);
+                        } else {
+                            window.location.href = finalUrl;
+                        }
+                    }, 100);
                 },
                 
                 generateUrl(path) {
@@ -330,7 +500,10 @@
                         const url = new URL(path, window.location.href);
                         // 添加时间戳防止缓存
                         url.searchParams.set('_t', Date.now());
-                        // 添加微信特殊标记
+                        // 添加设备标识
+                        if (isMobile) {
+                            url.searchParams.set('_mobile', '1');
+                        }
                         if (isWeChat) {
                             url.searchParams.set('_wx', '1');
                         }
@@ -372,6 +545,10 @@
                         setTimeout(() => {
                             if (loader.style.display === 'flex') {
                                 loader.style.display = 'none';
+                                // 重置导航状态
+                                document.querySelectorAll('.nav-card').forEach(card => {
+                                    card.setAttribute('data-navigating', 'false');
+                                });
                             }
                         }, 10000);
                     }
@@ -433,8 +610,36 @@
                     const bg = document.getElementById('background');
                     if (!bg) return;
                     
+                    // 移动端使用更小的图片或纯色背景
+                    if (isMobile && window.innerWidth < 768) {
+                        this.loadMobileBackground(bg);
+                    } else {
+                        this.loadStandardBackground(bg);
+                    }
+                },
+                
+                loadMobileBackground(bg) {
+                    // 移动端优先使用纯色背景或小图
                     const img = new Image();
+                    const bgUrl = this.getMobileBackgroundUrl();
                     
+                    img.onload = () => {
+                        bg.style.backgroundImage = `url('${img.src}')`;
+                        bg.classList.add('loaded');
+                    };
+                    
+                    img.onerror = () => {
+                        // 移动端背景加载失败时直接使用纯色背景
+                        bg.style.display = 'none';
+                    };
+                    
+                    img.src = isWeChat ? 
+                        `${bgUrl}?t=${Date.now()}&r=${Math.random()}&mobile=1` : 
+                        bgUrl;
+                },
+                
+                loadStandardBackground(bg) {
+                    const img = new Image();
                     const supportsWebP = this.checkWebPSupport();
                     const bgUrl = this.getBackgroundUrl(supportsWebP);
                     
@@ -444,12 +649,9 @@
                     };
                     
                     img.onerror = () => {
-                        // 背景加载失败时使用纯色背景
                         bg.style.display = 'none';
-                        document.body.style.background = 'linear-gradient(135deg, #6a8bad 0%, #4a6b8f 100%)';
                     };
                     
-                    // 微信浏览器添加随机参数防止缓存
                     img.src = isWeChat ? 
                         `${bgUrl}?t=${Date.now()}&r=${Math.random()}` : 
                         bgUrl;
@@ -469,6 +671,11 @@
                     const base = supportsWebP ? 'images/bg-' : 'images/bg-';
                     const ext = supportsWebP ? '.webp' : '.jpg';
                     return base + (isMobile ? 'mobile' : 'desktop') + ext;
+                },
+                
+                getMobileBackgroundUrl() {
+                    // 移动端专用背景，可以更小或优化
+                    return 'images/bg-mobile-optimized.jpg';
                 }
             };
             
@@ -483,8 +690,8 @@
                         }
                     }, 1000);
                     
-                    // 微信浏览器页面显示事件
-                    if (isWeChat) {
+                    // 移动端页面显示事件
+                    if (isMobile) {
                         document.addEventListener('visibilitychange', this.handleVisibilityChange);
                     }
                 },
@@ -502,27 +709,19 @@
                 }
             };
             
-            // 微信连接优化
-            const WechatConnectionOptimizer = {
+            // 移动端连接优化
+            const MobileConnectionOptimizer = {
                 init() {
-                    if (!isWeChat) return;
+                    if (!isMobile) return;
                     
-                    this.preventWechatCache();
-                    this.optimizeConnection();
+                    this.optimizeNetwork();
+                    this.preventCachingIssues();
+                    this.setupOfflineDetection();
                 },
                 
-                preventWechatCache() {
-                    // 防止微信浏览器页面缓存
-                    window.addEventListener('pageshow', function(event) {
-                        if (event.persisted) {
-                            window.location.reload();
-                        }
-                    });
-                },
-                
-                optimizeConnection() {
+                optimizeNetwork() {
                     // 预连接优化
-                    const preconnectLinks = document.querySelectorAll('link[rel="preconnect"]');
+                    const preconnectLinks = document.querySelectorAll('link[rel="preconnect"], link[rel="dns-prefetch"]');
                     preconnectLinks.forEach(link => {
                         link.rel = 'dns-prefetch preconnect';
                     });
@@ -533,10 +732,105 @@
                         if (loader && loader.style.display === 'flex') {
                             const loaderText = document.getElementById('loaderText');
                             if (loaderText) {
-                                loaderText.innerHTML = '连接中...<br><small>如长时间无响应，请检查网络或稍后重试</small>';
+                                loaderText.innerHTML = '正在连接...<br><small>如遇网络问题，请检查连接后重试</small>';
                             }
                         }
                     }, 3000);
+                },
+                
+                preventCachingIssues() {
+                    // 防止移动端浏览器缓存问题
+                    window.addEventListener('pageshow', function(event) {
+                        if (event.persisted) {
+                            window.location.reload();
+                        }
+                    });
+                    
+                    // 添加缓存清除按钮（开发用）
+                    if (window.location.href.indexOf('debug=1') > -1) {
+                        this.addCacheClearButton();
+                    }
+                },
+                
+                setupOfflineDetection() {
+                    // 检测离线状态
+                    window.addEventListener('online', () => {
+                        console.log('网络连接已恢复');
+                    });
+                    
+                    window.addEventListener('offline', () => {
+                        const loader = document.getElementById('wechatLoader');
+                        if (loader) {
+                            const loaderText = document.getElementById('loaderText');
+                            if (loaderText) {
+                                loaderText.textContent = '网络连接已断开，请检查网络设置';
+                            }
+                        }
+                    });
+                },
+                
+                addCacheClearButton() {
+                    // 开发调试用缓存清除按钮
+                    const clearBtn = document.createElement('button');
+                    clearBtn.textContent = '清除缓存';
+                    clearBtn.style.position = 'fixed';
+                    clearBtn.style.bottom = '10px';
+                    clearBtn.style.right = '10px';
+                    clearBtn.style.zIndex = '10000';
+                    clearBtn.style.padding = '5px 10px';
+                    clearBtn.style.background = '#f00';
+                    clearBtn.style.color = '#fff';
+                    clearBtn.style.border = 'none';
+                    clearBtn.style.borderRadius = '3px';
+                    
+                    clearBtn.addEventListener('click', () => {
+                        window.location.reload(true);
+                    });
+                    
+                    document.body.appendChild(clearBtn);
+                }
+            };
+            
+            // 性能监控
+            const PerformanceMonitor = {
+                init() {
+                    if (!isMobile) return;
+                    
+                    this.monitorLoadTime();
+                    this.detectSlowNetwork();
+                },
+                
+                monitorLoadTime() {
+                    window.addEventListener('load', () => {
+                        setTimeout(() => {
+                            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+                            console.log(`页面加载时间: ${loadTime}ms`);
+                            
+                            if (loadTime > 5000) {
+                                console.warn('页面加载较慢，建议优化');
+                            }
+                        }, 0);
+                    });
+                },
+                
+                detectSlowNetwork() {
+                    // 通过加载时间检测慢速网络
+                    const startTime = Date.now();
+                    window.addEventListener('load', () => {
+                        const loadTime = Date.now() - startTime;
+                        if (loadTime > 3000) {
+                            // 慢速网络，可以采取优化措施
+                            this.enableLowBandwidthMode();
+                        }
+                    });
+                },
+                
+                enableLowBandwidthMode() {
+                    // 低速网络模式优化
+                    const bg = document.getElementById('background');
+                    if (bg) {
+                        bg.style.display = 'none';
+                    }
                 }
             };
             
@@ -544,7 +838,9 @@
             const App = {
                 init() {
                     // 初始化顺序很重要
-                    WechatConnectionOptimizer.init();
+                    MobileOptimizer.init();
+                    MobileConnectionOptimizer.init();
+                    PerformanceMonitor.init();
                     PageLoadManager.init();
                     NavigationManager.init();
                     BackgroundLoader.init();
@@ -556,6 +852,7 @@
                     // 页面加载完成标记
                     setTimeout(() => {
                         document.body.setAttribute('data-loaded', 'true');
+                        console.log('页面加载完成');
                     }, 500);
                 },
                 
@@ -566,7 +863,7 @@
                         if (loader && loader.style.display === 'flex') {
                             const loaderText = document.getElementById('loaderText');
                             if (loaderText) {
-                                loaderText.textContent = '页面加载完成';
+                                loaderText.textContent = '加载完成';
                                 setTimeout(() => {
                                     loader.style.display = 'none';
                                 }, 1000);
@@ -576,7 +873,7 @@
                 }
             };
             
-            // 安全启动
+            // 安全启动 - 移动端优先
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
                     try {
@@ -596,6 +893,23 @@
                     const loader = document.getElementById('wechatLoader');
                     if (loader) loader.style.display = 'none';
                 }
+            }
+            
+            // 移动端特殊处理
+            if (isMobile) {
+                // 防止页面滚动
+                document.body.addEventListener('touchmove', function(e) {
+                    if (e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                // 适配键盘弹出
+                window.addEventListener('resize', function() {
+                    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                        document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
             }
         })();
     </script>
