@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>员工反馈 - 宏方纺织</title>
+    <style>
+        /* 保持原有的样式不变 */
+        :root {
+            --primary-color: #1890ff;
+            --secondary-color: #1a73e8;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #ff4d4f;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-light: #ffffff;
+            --text-dark: #333333;
+            --text-secondary: #666666;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a8bad 0%, #4a6b8f 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1.5;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--text-light);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .feedback-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+        
+        select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .char-count {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        .submit-btn:hover {
+            background: var(--secondary-color);
+        }
+        
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+        
+        .back-link:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+        
+        .anonymous-notice {
+            background: #f0f8ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: var(--success-color);
+        }
+        
+        .success-message h2 {
+            margin-bottom: 1rem;
+        }
+        
+        /* 新增图片上传样式 */
+        .image-upload-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: #f0f8ff;
+        }
+        
+        .upload-area.drag-over {
+            border-color: var(--primary-color);
+            background: #e6f7ff;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+        
+        .upload-text {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-hint {
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        
+        .preview-item {
+            position: relative;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .preview-image {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .preview-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-count {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+        
+        .image-count.warning {
+            color: var(--warning-color);
+        }
+        
+        .image-count.error {
+            color: var(--error-color);
+        }
+
+        @media (max-width: 768px) {
+            .feedback-card {
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.7rem;
+            }
+            
+            .upload-area {
+                padding: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
+            .feedback-card {
+                padding: 1.2rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .upload-area {
+                padding: 1rem;
+            }
+            
+            .image-preview {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>员工反馈</h1>
+            <p>您的意见对我们非常重要</p>
+        </div>
+        
+        <div class="feedback-card">
+            <div class="anonymous-notice">
+                <strong>匿名提交：</strong>本反馈系统完全匿名，不会收集任何个人信息，请放心填写。
+            </div>
+            
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label for="feedbackType">反馈类型</label>
+                    <select id="feedbackType" required>
+                        <option value="">请选择反馈类型</option>
+                        <option value="suggestion">意见建议</option>
+                        <option value="problem">问题反馈</option>
+                        <option value="complaint">投诉举报</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedbackContent">反馈内容</label>
+                    <textarea 
+                        id="feedbackContent" 
+                        placeholder="请详细描述您的反馈内容..." 
+                        maxlength="1000"
+                        required
+                    ></textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span>/1000
+                    </div>
+                </div>
+                
+                <!-- 新增图片上传区域 -->
+                <div class="form-group image-upload-section">
+                    <label>上传图片（可选，最多3张）</label>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">点击或拖拽图片到此处上传</div>
+                        <div class="upload-hint">支持 JPG、PNG 格式，单张图片不超过 5MB</div>
+                        <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
+                    </div>
+                    <div class="image-preview" id="imagePreview"></div>
+                    <div class="image-count" id="imageCount">已选择 0/3 张图片</div>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">提交反馈</button>
+            </form>
+            
+            <div class="success-message" id="successMessage">
+                <h2>感谢您的反馈！</h2>
+                <p>您的意见已成功提交，我们将认真考虑并尽快处理。</p>
+                <p>页面将在 <span id="countdown">5</span> 秒后返回首页</p>
+            </div>
+        </div>
+        
+        <a href="index.html" class="back-link">返回首页</a>
+    </div>
+
+    <script>
+        // 使用localStorage模拟服务器存储
+        function saveFeedback(feedbackData) {
+            // 获取现有反馈数据
+            let feedbacks = JSON.parse(localStorage.getItem('employeeFeedbacks') || '[]');
+            
+            // 添加新反馈
+            feedbacks.push(feedbackData);
+            
+            // 保存回localStorage
+            localStorage.setItem('employeeFeedbacks', JSON.stringify(feedbacks));
+            
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const feedbackForm = document.getElementById('feedbackForm');
+            const feedbackContent = document.getElementById('feedbackContent');
+            const charCount = document.getElementById('charCount');
+            const submitBtn = document.getElementById('submitBtn');
+            const successMessage = document.getElementById('successMessage');
+            const countdownElement = document.getElementById('countdown');
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const imageCount = document.getElementById('imageCount');
+            
+            let selectedImages = [];
+            const MAX_IMAGES = 3;
+            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+            // 字符计数
+            feedbackContent.addEventListener('input', function() {
+                const length = this.value.length;
+                charCount.textContent = length;
+                
+                if (length > 900) {
+                    charCount.style.color = '#ff4d4f';
+                } else {
+                    charCount.style.color = '';
+                }
+            });
+
+            // 图片上传功能
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // 拖拽功能
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('drag-over');
+            });
+
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.classList.remove('drag-over');
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
+
+            function handleFileSelect(e) {
+                const files = e.target.files;
+                handleFiles(files);
+            }
+
+            function handleFiles(files) {
+                const remainingSlots = MAX_IMAGES - selectedImages.length;
+                
+                if (files.length > remainingSlots) {
+                    alert(`最多只能上传 ${MAX_IMAGES} 张图片，您已选择 ${selectedImages.length} 张`);
+                    return;
+                }
+
+                for (let file of files) {
+                    if (selectedImages.length >= MAX_IMAGES) break;
+
+                    // 检查文件类型
+                    if (!file.type.startsWith('image/')) {
+                        alert('请选择图片文件');
+                        continue;
+                    }
+
+                    // 检查文件大小
+                    if (file.size > MAX_FILE_SIZE) {
+                        alert(`文件 ${file.name} 大小超过 5MB 限制`);
+                        continue;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        selectedImages.push({
+                            name: file.name,
+                            data: e.target.result,
+                            type: file.type
+                        });
+                        updateImagePreview();
+                        updateImageCount();
+                    };
+                    reader.readAsDataURL(file);
+                }
+
+                // 清空文件输入，允许重复选择相同文件
+                fileInput.value = '';
+            }
+
+            function updateImagePreview() {
+                imagePreview.innerHTML = '';
+                selectedImages.forEach((image, index) => {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = image.data;
+                    img.alt = image.name;
+                    img.className = 'preview-image';
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'preview-remove';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.onclick = function() {
+                        selectedImages.splice(index, 1);
+                        updateImagePreview();
+                        updateImageCount();
+                    };
+                    
+                    previewItem.appendChild(img);
+                    previewItem.appendChild(removeBtn);
+                    imagePreview.appendChild(previewItem);
+                });
+            }
+
+            function updateImageCount() {
+                const count = selectedImages.length;
+                imageCount.textContent = `已选择 ${count}/${MAX_IMAGES} 张图片`;
+                
+                if (count === MAX_IMAGES) {
+                    imageCount.className = 'image-count error';
+                } else if (count >= MAX_IMAGES - 1) {
+                    imageCount.className = 'image-count warning';
+                } else {
+                    imageCount.className = 'image-count';
+                }
+            }
+
+            // 表单提交
+            feedbackForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 禁用提交按钮防止重复提交
+                submitBtn.disabled = true;
+                submitBtn.textContent = '提交中...';
+                
+                // 收集表单数据
+                const feedbackData = {
+                    id: Date.now().toString(), // 使用时间戳作为唯一ID
+                    type: document.getElementById('feedbackType').value,
+                    content: feedbackContent.value.trim(),
+                    images: selectedImages, // 添加图片数据
+                    timestamp: new Date().toISOString(),
+                    status: 'pending' // 待处理状态
+                };
+                
+                // 保存反馈数据
+                const saved = saveFeedback(feedbackData);
+                
+                if (saved) {
+                    // 隐藏表单，显示成功消息
+                    feedbackForm.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    
+                    // 开始倒计时返回首页
+                    let countdown = 5;
+                    const countdownInterval = setInterval(function() {
+                        countdown--;
+                        countdownElement.textContent = countdown;
+                        
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            window.location.href = 'index.html';
+                        }
+                    }, 1000);
+                } else {
+                    alert('提交失败，请重试');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '提交反馈';
+                }
+            });
+            
+            // 添加简单的表单验证
+            feedbackForm.addEventListener('input', function() {
+                const typeSelected = document.getElementById('feedbackType').value !== '';
+                const contentFilled = feedbackContent.value.trim().length > 0;
+                
+                submitBtn.disabled = !(typeSelected && contentFilled);
+            });
+
+            // 初始化图片计数
+            updateImageCount();
+        });
+    </script>
+</body>
+</html>
