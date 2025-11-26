@@ -263,6 +263,15 @@
             color: var(--error-color);
         }
 
+        .storage-notice {
+            background: #f6ffed;
+            border-left: 4px solid var(--success-color);
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
         @media (max-width: 768px) {
             .feedback-card {
                 padding: 1.5rem;
@@ -311,6 +320,10 @@
             <div class="anonymous-notice">
                 <strong>匿名提交：</strong>本反馈系统完全匿名，不会收集任何个人信息，请放心填写。
             </div>
+
+            <div class="storage-notice">
+                <strong>数据存储：</strong>反馈数据将保存在您的浏览器本地存储中。管理员可以在管理页面查看。
+            </div>
             
             <form id="feedbackForm">
                 <div class="form-group">
@@ -355,7 +368,7 @@
             
             <div class="success-message" id="successMessage">
                 <h2>感谢您的反馈！</h2>
-                <p>您的意见已成功提交，我们将认真考虑并尽快处理。</p>
+                <p>您的意见已成功保存，我们将认真考虑并尽快处理。</p>
                 <p>页面将在 <span id="countdown">5</span> 秒后返回首页</p>
             </div>
         </div>
@@ -364,65 +377,89 @@
     </div>
 
     <script>
-        // 服务器API配置 - 请根据实际服务器地址修改
-        const API_BASE_URL = 'http://localhost:8000'; // 本地测试地址
-        // const API_BASE_URL = 'https://hffz005918.github.io/feedback-api'; // 生产环境地址
+        // 本地存储管理器
+        class LocalStorageManager {
+            constructor() {
+                this.storageKey = 'employeeFeedbacks';
+            }
 
-        // 服务器API函数
-        async function apiRequest(endpoint, options = {}) {
-            try {
-                const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}/${endpoint}`;
-                const response = await fetch(url, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...options.headers
-                    },
-                    ...options
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+            saveFeedback(feedbackData) {
+                try {
+                    let feedbacks = this.getFeedbacks();
+                    
+                    feedbackData.id = Date.now().toString();
+                    feedbackData.timestamp = new Date().toISOString();
+                    feedbackData.status = feedbackData.status || 'pending';
+                    feedbackData.localSaved = true;
+                    
+                    feedbacks.push(feedbackData);
+                    localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
+                    
+                    console.log('✅ 反馈已保存到本地存储，ID:', feedbackData.id);
+                    return { success: true, id: feedbackData.id };
+                } catch (error) {
+                    console.error('❌ 本地存储失败:', error);
+                    return { success: false, error: error.message };
                 }
-                
-                return await response.json();
-            } catch (error) {
-                console.error('API请求失败:', error);
-                throw error;
+            }
+
+            getFeedbacks() {
+                try {
+                    return JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+                } catch (error) {
+                    console.error('读取本地存储失败:', error);
+                    return [];
+                }
+            }
+
+            updateFeedbackStatus(feedbackId, status) {
+                try {
+                    let feedbacks = this.getFeedbacks();
+                    const feedbackIndex = feedbacks.findIndex(fb => fb.id === feedbackId);
+                    
+                    if (feedbackIndex !== -1) {
+                        feedbacks[feedbackIndex].status = status;
+                        localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
+                        return { success: true };
+                    }
+                    return { success: false, error: '反馈不存在' };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+
+            deleteFeedback(feedbackId) {
+                try {
+                    let feedbacks = this.getFeedbacks();
+                    const filteredFeedbacks = feedbacks.filter(fb => fb.id !== feedbackId);
+                    localStorage.setItem(this.storageKey, JSON.stringify(filteredFeedbacks));
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+
+            exportData() {
+                const feedbacks = this.getFeedbacks();
+                return JSON.stringify(feedbacks, null, 2);
+            }
+
+            importData(jsonData) {
+                try {
+                    const importedData = JSON.parse(jsonData);
+                    if (Array.isArray(importedData)) {
+                        localStorage.setItem(this.storageKey, jsonData);
+                        return { success: true, count: importedData.length };
+                    }
+                    return { success: false, error: '数据格式错误' };
+                } catch (error) {
+                    return { success: false, error: 'JSON解析失败' };
+                }
             }
         }
 
-        // 保存反馈到服务器
-        async function saveFeedback(feedbackData) {
-            try {
-                const result = await apiRequest('server.php', {
-                    method: 'POST',
-                    body: JSON.stringify(feedbackData)
-                });
-                
-                return result.success;
-            } catch (error) {
-                console.error('保存反馈失败:', error);
-                // 降级方案：保存到本地存储
-                return saveToLocalStorage(feedbackData);
-            }
-        }
-
-        // 降级方案：本地存储
-        function saveToLocalStorage(feedbackData) {
-            try {
-                let feedbacks = JSON.parse(localStorage.getItem('employeeFeedbacks') || '[]');
-                feedbackData.id = Date.now().toString();
-                feedbacks.push(feedbackData);
-                localStorage.setItem('employeeFeedbacks', JSON.stringify(feedbacks));
-                
-                // 提示用户数据保存在本地
-                alert('网络连接失败，反馈已保存在本地。请联网后联系管理员同步数据。');
-                return true;
-            } catch (e) {
-                console.error('本地存储失败:', e);
-                return false;
-            }
-        }
+        // 初始化存储管理器
+        const storageManager = new LocalStorageManager();
 
         document.addEventListener('DOMContentLoaded', function() {
             const feedbackForm = document.getElementById('feedbackForm');
@@ -492,13 +529,11 @@
                 for (let file of files) {
                     if (selectedImages.length >= MAX_IMAGES) break;
 
-                    // 检查文件类型
                     if (!file.type.startsWith('image/')) {
                         alert('请选择图片文件');
                         continue;
                     }
 
-                    // 检查文件大小
                     if (file.size > MAX_FILE_SIZE) {
                         alert(`文件 ${file.name} 大小超过 5MB 限制`);
                         continue;
@@ -517,7 +552,6 @@
                     reader.readAsDataURL(file);
                 }
 
-                // 清空文件输入，允许重复选择相同文件
                 fileInput.value = '';
             }
 
@@ -560,16 +594,35 @@
                 }
             }
 
-            // 表单提交 - 更新为异步
+            // 保存反馈函数
+            async function saveFeedback(feedbackData) {
+                console.log('开始保存反馈...');
+                
+                try {
+                    const result = storageManager.saveFeedback(feedbackData);
+                    
+                    if (result.success) {
+                        console.log('✅ 保存成功，ID:', result.id);
+                        return true;
+                    } else {
+                        throw new Error(result.error || '保存失败');
+                    }
+                } catch (error) {
+                    console.error('保存失败:', error);
+                    return false;
+                }
+            }
+
+            // 表单提交
             feedbackForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                // 禁用提交按钮防止重复提交
+                console.log('开始提交表单...');
+                
                 submitBtn.disabled = true;
                 submitBtn.textContent = '提交中...';
                 
                 try {
-                    // 收集表单数据
                     const feedbackData = {
                         type: document.getElementById('feedbackType').value,
                         content: feedbackContent.value.trim(),
@@ -578,15 +631,15 @@
                         status: 'pending'
                     };
                     
-                    // 保存反馈数据到服务器
+                    console.log('收集到的数据:', feedbackData);
+                    
                     const saved = await saveFeedback(feedbackData);
                     
                     if (saved) {
-                        // 隐藏表单，显示成功消息
+                        console.log('✅ 提交成功！');
                         feedbackForm.style.display = 'none';
                         successMessage.style.display = 'block';
                         
-                        // 开始倒计时返回首页
                         let countdown = 5;
                         const countdownInterval = setInterval(function() {
                             countdown--;
@@ -601,13 +654,14 @@
                         throw new Error('保存失败');
                     }
                 } catch (error) {
-                    alert('提交失败，请重试');
+                    console.error('提交过程出错:', error);
+                    alert('提交失败: ' + error.message);
                     submitBtn.disabled = false;
                     submitBtn.textContent = '提交反馈';
                 }
             });
             
-            // 添加简单的表单验证
+            // 表单验证
             feedbackForm.addEventListener('input', function() {
                 const typeSelected = document.getElementById('feedbackType').value !== '';
                 const contentFilled = feedbackContent.value.trim().length > 0;
@@ -617,6 +671,10 @@
 
             // 初始化图片计数
             updateImageCount();
+
+            // 显示当前存储的数据量（调试用）
+            const feedbacks = storageManager.getFeedbacks();
+            console.log('当前存储的反馈数量:', feedbacks.length);
         });
     </script>
 </body>
