@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>网络连接诊断</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button { padding: 10px 20px; margin: 5px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>网络连接诊断工具</h1>
+    
+    <div class="test-section">
+        <h3>1. 服务器连接测试</h3>
+        <button onclick="testServerConnection()">测试服务器连接</button>
+        <div id="serverResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. API接口测试</h3>
+        <button onclick="testApiGet()">测试GET接口</button>
+        <button onclick="testApiPost()">测试POST接口</button>
+        <div id="apiResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. 当前配置信息</h3>
+        <div id="configInfo"></div>
+    </div>
+
+    <script>
+        // 使用与feedback.html相同的配置
+        const API_BASE_URL = 'http://localhost:8000'; // 请检查这个地址
+        
+        // 显示当前配置
+        document.getElementById('configInfo').innerHTML = `
+            <strong>API地址:</strong> ${API_BASE_URL}<br>
+            <strong>当前页面:</strong> ${window.location.href}<br>
+            <strong>User Agent:</strong> ${navigator.userAgent}
+        `;
+
+        async function testServerConnection() {
+            const resultDiv = document.getElementById('serverResult');
+            resultDiv.innerHTML = '测试中...';
+            
+            try {
+                // 测试基本的服务器响应
+                const startTime = Date.now();
+                const response = await fetch(API_BASE_URL + '/', {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                resultDiv.innerHTML = `
+                    <span class="success">✅ 服务器连接成功</span><br>
+                    响应时间: ${responseTime}ms<br>
+                    状态: 服务器可访问
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <span class="error">❌ 服务器连接失败</span><br>
+                    错误: ${error.message}<br>
+                    可能原因: 服务器地址错误、服务器未启动、网络问题
+                `;
+            }
+        }
+
+        async function testApiGet() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '测试GET接口中...';
+            
+            try {
+                const response = await fetch(API_BASE_URL + '/server.php');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <span class="success">✅ GET接口正常</span><br>
+                    返回数据: <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <span class="error">❌ GET接口失败</span><br>
+                    错误: ${error.message}<br>
+                    详细错误: <pre>${error.stack}</pre>
+                `;
+            }
+        }
+
+        async function testApiPost() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '测试POST接口中...';
+            
+            const testData = {
+                type: "diagnose",
+                content: "诊断测试 - " + new Date().toLocaleString(),
+                images: [],
+                timestamp: new Date().toISOString(),
+                status: "pending"
+            };
+
+            try {
+                const response = await fetch(API_BASE_URL + '/server.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                resultDiv.innerHTML = `
+                    <span class="success">✅ POST接口正常</span><br>
+                    返回结果: <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <span class="error">❌ POST接口失败</span><br>
+                    错误: ${error.message}<br>
+                    请求数据: <pre>${JSON.stringify(testData, null, 2)}</pre>
+                `;
+            }
+        }
+        
+        // 页面加载时自动测试服务器连接
+        testServerConnection();
+    </script>
+</body>
+</html>
