@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>员工反馈 - 宏方纺织</title>
     <style>
-        /* 保持原有的样式不变 */
         :root {
             --primary-color: #1890ff;
             --secondary-color: #1a73e8;
@@ -166,7 +165,7 @@
             margin-bottom: 1rem;
         }
         
-        /* 新增图片上传样式 */
+        /* 图片上传样式 */
         .image-upload-section {
             margin-bottom: 1.5rem;
         }
@@ -338,7 +337,7 @@
                     </div>
                 </div>
                 
-                <!-- 新增图片上传区域 -->
+                <!-- 图片上传区域 -->
                 <div class="form-group image-upload-section">
                     <label>上传图片（可选，最多3张）</label>
                     <div class="upload-area" id="uploadArea">
@@ -365,18 +364,64 @@
     </div>
 
     <script>
-        // 使用localStorage模拟服务器存储
-        function saveFeedback(feedbackData) {
-            // 获取现有反馈数据
-            let feedbacks = JSON.parse(localStorage.getItem('employeeFeedbacks') || '[]');
-            
-            // 添加新反馈
-            feedbacks.push(feedbackData);
-            
-            // 保存回localStorage
-            localStorage.setItem('employeeFeedbacks', JSON.stringify(feedbacks));
-            
-            return true;
+        // 服务器API配置 - 请根据实际服务器地址修改
+        const API_BASE_URL = 'http://localhost:8000'; // 本地测试地址
+        // const API_BASE_URL = 'https://hffz005918.github.io/hffz2027/feedback-api'; // 生产环境地址
+
+        // 服务器API函数
+        async function apiRequest(endpoint, options = {}) {
+            try {
+                const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}/${endpoint}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API请求失败:', error);
+                throw error;
+            }
+        }
+
+        // 保存反馈到服务器
+        async function saveFeedback(feedbackData) {
+            try {
+                const result = await apiRequest('server.php', {
+                    method: 'POST',
+                    body: JSON.stringify(feedbackData)
+                });
+                
+                return result.success;
+            } catch (error) {
+                console.error('保存反馈失败:', error);
+                // 降级方案：保存到本地存储
+                return saveToLocalStorage(feedbackData);
+            }
+        }
+
+        // 降级方案：本地存储
+        function saveToLocalStorage(feedbackData) {
+            try {
+                let feedbacks = JSON.parse(localStorage.getItem('employeeFeedbacks') || '[]');
+                feedbackData.id = Date.now().toString();
+                feedbacks.push(feedbackData);
+                localStorage.setItem('employeeFeedbacks', JSON.stringify(feedbacks));
+                
+                // 提示用户数据保存在本地
+                alert('网络连接失败，反馈已保存在本地。请联网后联系管理员同步数据。');
+                return true;
+            } catch (e) {
+                console.error('本地存储失败:', e);
+                return false;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -515,44 +560,47 @@
                 }
             }
 
-            // 表单提交
-            feedbackForm.addEventListener('submit', function(e) {
+            // 表单提交 - 更新为异步
+            feedbackForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 // 禁用提交按钮防止重复提交
                 submitBtn.disabled = true;
                 submitBtn.textContent = '提交中...';
                 
-                // 收集表单数据
-                const feedbackData = {
-                    id: Date.now().toString(), // 使用时间戳作为唯一ID
-                    type: document.getElementById('feedbackType').value,
-                    content: feedbackContent.value.trim(),
-                    images: selectedImages, // 添加图片数据
-                    timestamp: new Date().toISOString(),
-                    status: 'pending' // 待处理状态
-                };
-                
-                // 保存反馈数据
-                const saved = saveFeedback(feedbackData);
-                
-                if (saved) {
-                    // 隐藏表单，显示成功消息
-                    feedbackForm.style.display = 'none';
-                    successMessage.style.display = 'block';
+                try {
+                    // 收集表单数据
+                    const feedbackData = {
+                        type: document.getElementById('feedbackType').value,
+                        content: feedbackContent.value.trim(),
+                        images: selectedImages,
+                        timestamp: new Date().toISOString(),
+                        status: 'pending'
+                    };
                     
-                    // 开始倒计时返回首页
-                    let countdown = 5;
-                    const countdownInterval = setInterval(function() {
-                        countdown--;
-                        countdownElement.textContent = countdown;
+                    // 保存反馈数据到服务器
+                    const saved = await saveFeedback(feedbackData);
+                    
+                    if (saved) {
+                        // 隐藏表单，显示成功消息
+                        feedbackForm.style.display = 'none';
+                        successMessage.style.display = 'block';
                         
-                        if (countdown <= 0) {
-                            clearInterval(countdownInterval);
-                            window.location.href = 'index.html';
-                        }
-                    }, 1000);
-                } else {
+                        // 开始倒计时返回首页
+                        let countdown = 5;
+                        const countdownInterval = setInterval(function() {
+                            countdown--;
+                            countdownElement.textContent = countdown;
+                            
+                            if (countdown <= 0) {
+                                clearInterval(countdownInterval);
+                                window.location.href = 'index.html';
+                            }
+                        }, 1000);
+                    } else {
+                        throw new Error('保存失败');
+                    }
+                } catch (error) {
                     alert('提交失败，请重试');
                     submitBtn.disabled = false;
                     submitBtn.textContent = '提交反馈';
