@@ -371,6 +371,93 @@
             font-size: 1rem;
         }
 
+        /* 数据管理样式 */
+        .data-management {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .data-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .gist-info {
+            background: #e6f7ff;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .gist-info a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .gist-info a:hover {
+            text-decoration: underline;
+        }
+
+        /* 评论样式 */
+        .comments-section {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .comment-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .comment-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .comment-submit {
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .comment-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .comment-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .comment-content {
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 768px) {
             .admin-card {
                 padding: 1.5rem;
@@ -453,8 +540,24 @@
         
         <div id="adminPanel" style="display: none;">
             <div class="admin-card">
+                <!-- Gist信息 -->
+                <div class="gist-info" id="gistInfo">
+                    <strong>公开讨论区：</strong>
+                    <a id="gistLink" target="_blank">加载中...</a>
+                    <span id="gistStatus"></span>
+                </div>
+
                 <div class="stats" id="statsContainer">
                     <!-- 统计数据将通过JavaScript动态生成 -->
+                </div>
+                
+                <div class="data-management">
+                    <h3 style="margin-bottom: 1rem;">数据管理</h3>
+                    <div class="data-buttons">
+                        <button class="action-btn" onclick="refreshData()" style="background: var(--primary-color); color: white;">刷新数据</button>
+                        <button class="action-btn" onclick="exportData()" style="background: var(--success-color); color: white;">导出数据</button>
+                        <button class="action-btn" onclick="addSampleData()" style="background: var(--warning-color); color: white;">添加示例</button>
+                    </div>
                 </div>
                 
                 <div class="filters">
@@ -472,8 +575,7 @@
                         <option value="other">其他</option>
                     </select>
                     
-                    <button class="action-btn" onclick="refreshData()" style="background: var(--primary-color); color: white;">刷新数据</button>
-                    <button class="action-btn" onclick="exportData()" style="background: var(--secondary-color); color: white;">导出数据</button>
+                    <button class="action-btn" onclick="showAllComments()" style="background: #722ed1; color: white;">显示所有评论</button>
                 </div>
                 
                 <div class="feedback-list" id="feedbackList">
@@ -501,142 +603,10 @@
         <div class="modal-counter" id="modalCounter"></div>
     </div>
 
+    <script src="gist-storage.js"></script>
     <script>
-        // 服务器API配置 - 请根据实际服务器地址修改
-        const API_BASE_URL = 'http://localhost:8000'; // 本地测试地址
-        // const API_BASE_URL = 'https://hffz005918.github.io/feedback-api'; // 生产环境地址
-
-        // 服务器API函数
-        async function apiRequest(endpoint, options = {}) {
-            try {
-                const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}/${endpoint}`;
-                const response = await fetch(url, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...options.headers
-                    },
-                    ...options
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error('API请求失败:', error);
-                throw error;
-            }
-        }
-
-        // 获取反馈数据从服务器
-        async function getFeedbacks() {
-            try {
-                const result = await apiRequest('server.php');
-                return result.data || [];
-            } catch (error) {
-                console.error('获取反馈数据失败:', error);
-                // 降级方案：从本地存储获取
-                return getFromLocalStorage();
-            }
-        }
-
-        // 降级方案：本地存储
-        function getFromLocalStorage() {
-            try {
-                return JSON.parse(localStorage.getItem('employeeFeedbacks') || '[]');
-            } catch (e) {
-                console.error('本地存储读取失败:', e);
-                return [];
-            }
-        }
-
-        // 更新反馈状态到服务器
-        async function updateFeedbackStatus(feedbackId, status) {
-            try {
-                const result = await apiRequest(`server.php?id=${encodeURIComponent(feedbackId)}`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ status })
-                });
-                
-                return result.success;
-            } catch (error) {
-                console.error('更新状态失败:', error);
-                // 降级方案：更新本地存储
-                return updateLocalStorageStatus(feedbackId, status);
-            }
-        }
-
-        // 降级方案：更新本地状态
-        function updateLocalStorageStatus(feedbackId, status) {
-            try {
-                let feedbacks = JSON.parse(localStorage.getItem('employeeFeedbacks') || '[]');
-                const feedbackIndex = feedbacks.findIndex(fb => fb.id === feedbackId);
-                
-                if (feedbackIndex !== -1) {
-                    feedbacks[feedbackIndex].status = status;
-                    localStorage.setItem('employeeFeedbacks', JSON.stringify(feedbacks));
-                    return true;
-                }
-                return false;
-            } catch (e) {
-                console.error('本地存储更新失败:', e);
-                return false;
-            }
-        }
-
-        // 删除反馈从服务器
-        async function deleteFeedback(feedbackId) {
-            try {
-                const result = await apiRequest(`server.php?id=${encodeURIComponent(feedbackId)}`, {
-                    method: 'DELETE'
-                });
-                
-                return result.success;
-            } catch (error) {
-                console.error('删除失败:', error);
-                // 降级方案：删除本地存储
-                return deleteFromLocalStorage(feedbackId);
-            }
-        }
-
-        // 降级方案：删除本地数据
-        function deleteFromLocalStorage(feedbackId) {
-            try {
-                let feedbacks = JSON.parse(localStorage.getItem('employeeFeedbacks') || '[]');
-                const filteredFeedbacks = feedbacks.filter(fb => fb.id !== feedbackId);
-                localStorage.setItem('employeeFeedbacks', JSON.stringify(filteredFeedbacks));
-                return true;
-            } catch (e) {
-                console.error('本地存储删除失败:', e);
-                return false;
-            }
-        }
-
-        // 渲染统计数据 - 更新为异步
-        async function renderStats() {
-            const feedbacks = await getFeedbacks();
-            const total = feedbacks.length;
-            const pending = feedbacks.filter(fb => fb.status === 'pending').length;
-            const processed = feedbacks.filter(fb => fb.status === 'processed').length;
-            
-            const statsHTML = `
-                <div class="stat-card">
-                    <div class="stat-number stat-total">${total}</div>
-                    <div>总反馈数</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number stat-pending">${pending}</div>
-                    <div>待处理</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number stat-processed">${processed}</div>
-                    <div>已处理</div>
-                </div>
-            `;
-            
-            document.getElementById('statsContainer').innerHTML = statsHTML;
-        }
+        // 初始化存储管理器
+        const storageManager = new GistStorage();
 
         // 图片查看相关变量
         let currentImages = [];
@@ -659,7 +629,6 @@
             modalCounter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
             modal.style.display = 'flex';
             
-            // 阻止背景滚动
             document.body.style.overflow = 'hidden';
         }
 
@@ -683,13 +652,106 @@
             showImageModal();
         }
 
-        // 渲染反馈列表 - 更新为异步
+        // 更新Gist信息显示
+        function updateGistInfo() {
+            const gistLink = document.getElementById('gistLink');
+            const gistStatus = document.getElementById('gistStatus');
+            
+            const gistUrl = storageManager.getGistUrl();
+            if (gistUrl) {
+                gistLink.href = gistUrl;
+                gistLink.textContent = '点击访问公开讨论区';
+                gistStatus.innerHTML = ' <span style="color: var(--success-color);">✅ 连接正常</span>';
+            } else {
+                gistStatus.innerHTML = ' <span style="color: var(--error-color);">❌ 连接失败</span>';
+            }
+        }
+
+        // 渲染统计数据
+        async function renderStats() {
+            const feedbacks = await getFeedbacks();
+            const total = feedbacks.length;
+            const pending = feedbacks.filter(fb => fb.status === 'pending').length;
+            const processed = feedbacks.filter(fb => fb.status === 'processed').length;
+            const withComments = feedbacks.filter(fb => fb.comments && fb.comments.length > 0).length;
+            
+            const statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-number stat-total">${total}</div>
+                    <div>总反馈数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number stat-pending">${pending}</div>
+                    <div>待处理</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number stat-processed">${processed}</div>
+                    <div>已处理</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: #722ed1;">${withComments}</div>
+                    <div>有评论</div>
+                </div>
+            `;
+            
+            document.getElementById('statsContainer').innerHTML = statsHTML;
+        }
+
+        // 获取反馈数据
+        async function getFeedbacks() {
+            try {
+                return await storageManager.getFeedbacks();
+            } catch (error) {
+                console.error('获取数据失败:', error);
+                return [];
+            }
+        }
+
+        // 更新反馈状态
+        async function updateFeedbackStatus(feedbackId, status) {
+            const result = await storageManager.updateFeedbackStatus(feedbackId, status);
+            if (result.success) {
+                await renderStats();
+                await renderFeedbackList();
+            } else {
+                alert('更新失败: ' + result.error);
+            }
+        }
+
+        // 删除反馈
+        async function deleteFeedback(feedbackId) {
+            const result = await storageManager.deleteFeedback(feedbackId);
+            return result.success;
+        }
+
+        // 添加评论
+        async function addComment(feedbackId, commentText) {
+            if (!commentText.trim()) {
+                alert('请输入评论内容');
+                return;
+            }
+
+            const commentData = {
+                author: '管理员',
+                content: commentText.trim(),
+                isAdmin: true
+            };
+
+            const result = await storageManager.addComment(feedbackId, commentData);
+            if (result.success) {
+                await renderFeedbackList();
+                alert('评论添加成功');
+            } else {
+                alert('评论失败: ' + result.error);
+            }
+        }
+
+        // 渲染反馈列表
         async function renderFeedbackList() {
             const feedbacks = await getFeedbacks();
             const statusFilter = document.getElementById('statusFilter').value;
             const typeFilter = document.getElementById('typeFilter').value;
             
-            // 过滤反馈
             let filteredFeedbacks = feedbacks;
             
             if (statusFilter !== 'all') {
@@ -700,7 +762,6 @@
                 filteredFeedbacks = filteredFeedbacks.filter(fb => fb.type === typeFilter);
             }
             
-            // 按时间倒序排序
             filteredFeedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             
             const feedbackList = document.getElementById('feedbackList');
@@ -744,12 +805,12 @@
                             <div>
                                 <span class="feedback-type ${typeClass}">${typeText}</span>
                                 <span class="status-badge ${statusClass}" style="margin-left: 8px;">${statusText}</span>
+                                ${feedback.likes > 0 ? `<span style="margin-left: 8px; color: #ff6b6b;">👍 ${feedback.likes || 0}</span>` : ''}
                             </div>
-                            <div class="feedback-time">${timeString}</div>
+                            <div class="feedback-time">${timeString} - ${feedback.employeeName || '匿名'}</div>
                         </div>
                         <div class="feedback-content">${feedback.content}</div>
                         
-                        <!-- 图片显示区域 -->
                         ${feedback.images && feedback.images.length > 0 ? `
                             <div class="feedback-images">
                                 <div class="images-title">附件图片 (${feedback.images.length}张):</div>
@@ -763,11 +824,34 @@
                             </div>
                         ` : ''}
                         
+                        ${feedback.comments && feedback.comments.length > 0 ? `
+                            <div class="comments-section">
+                                <div class="images-title">评论 (${feedback.comments.length}条):</div>
+                                <div class="comment-list">
+                                    ${feedback.comments.map(comment => `
+                                        <div class="comment-item">
+                                            <div class="comment-header">
+                                                <span>${comment.author} ${comment.isAdmin ? '<span style="color: var(--primary-color);">[管理员]</span>' : ''}</span>
+                                                <span>${new Date(comment.timestamp).toLocaleString()}</span>
+                                            </div>
+                                            <div class="comment-content">${comment.content}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div class="comment-form">
+                            <input type="text" class="comment-input" id="comment_${feedback.id}" placeholder="回复此反馈...">
+                            <button class="comment-submit" onclick="addComment('${feedback.id}', document.getElementById('comment_${feedback.id}').value)">回复</button>
+                        </div>
+                        
                         <div class="feedback-actions">
                             ${feedback.status === 'pending' ? 
                                 `<button class="action-btn btn-process" onclick="processFeedback('${feedback.id}')">标记为已处理</button>` : 
                                 `<button class="action-btn btn-pending" onclick="pendingFeedback('${feedback.id}')">标记为待处理</button>`
                             }
+                            <button class="action-btn" onclick="likeFeedback('${feedback.id}')" style="background: #ff6b6b; color: white;">点赞 (${feedback.likes || 0})</button>
                             <button class="action-btn btn-delete" onclick="deleteFeedbackItem('${feedback.id}')">删除</button>
                         </div>
                     </div>
@@ -777,23 +861,28 @@
             feedbackList.innerHTML = feedbacksHTML;
         }
 
-        // 处理反馈 - 更新为异步
+        // 处理反馈
         async function processFeedback(feedbackId) {
-            if (await updateFeedbackStatus(feedbackId, 'processed')) {
-                await renderStats();
-                await renderFeedbackList();
-            }
+            await updateFeedbackStatus(feedbackId, 'processed');
         }
 
-        // 标记为待处理 - 更新为异步
+        // 标记为待处理
         async function pendingFeedback(feedbackId) {
-            if (await updateFeedbackStatus(feedbackId, 'pending')) {
-                await renderStats();
+            await updateFeedbackStatus(feedbackId, 'pending');
+        }
+
+        // 点赞反馈
+        async function likeFeedback(feedbackId) {
+            const userId = 'admin_' + Date.now();
+            const result = await storageManager.likeFeedback(feedbackId, userId);
+            if (result.success) {
                 await renderFeedbackList();
+            } else {
+                alert('点赞失败: ' + result.error);
             }
         }
 
-        // 删除反馈项 - 更新为异步
+        // 删除反馈项
         async function deleteFeedbackItem(feedbackId) {
             if (confirm('确定要删除这条反馈吗？此操作不可恢复。')) {
                 if (await deleteFeedback(feedbackId)) {
@@ -803,15 +892,21 @@
             }
         }
 
-        // 刷新数据 - 更新为异步
+        // 刷新数据
         async function refreshData() {
             await renderStats();
             await renderFeedbackList();
+            updateGistInfo();
         }
 
         // 导出数据
         async function exportData() {
             const feedbacks = await getFeedbacks();
+            if (feedbacks.length === 0) {
+                alert('没有数据可导出');
+                return;
+            }
+            
             const dataStr = JSON.stringify(feedbacks, null, 2);
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
             
@@ -819,6 +914,36 @@
             link.href = URL.createObjectURL(dataBlob);
             link.download = `员工反馈数据_${new Date().toISOString().split('T')[0]}.json`;
             link.click();
+            
+            alert(`成功导出 ${feedbacks.length} 条反馈数据`);
+        }
+
+        // 添加示例数据
+        async function addSampleData() {
+            const sampleData = {
+                employeeName: '示例用户',
+                type: 'suggestion',
+                content: '这是一个示例反馈，用于演示系统功能。建议可以增加更多的团队建设活动。',
+                images: [],
+                status: 'pending'
+            };
+
+            try {
+                const result = await storageManager.saveFeedback(sampleData);
+                if (result.success) {
+                    alert('示例数据添加成功');
+                    await refreshData();
+                }
+            } catch (error) {
+                alert('添加示例数据失败: ' + error.message);
+            }
+        }
+
+        // 显示所有评论
+        function showAllComments() {
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('typeFilter').value = 'all';
+            renderFeedbackList();
         }
 
         // 退出登录
@@ -826,12 +951,20 @@
             if (confirm('确定要退出登录吗？')) {
                 document.getElementById('adminPanel').style.display = 'none';
                 document.getElementById('loginSection').style.display = 'block';
-                // 清空登录表单
                 document.getElementById('loginForm').reset();
             }
         }
 
-        // 初始化页面 - 更新为异步
+        // 简单的管理员认证
+        function authenticate(username, password) {
+            const adminCredentials = {
+                username: 'admin',
+                password: '123456'
+            };
+            return username === adminCredentials.username && password === adminCredentials.password;
+        }
+
+        // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
             // 登录表单处理
             document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -844,11 +977,8 @@
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
                     
-                    // 初始化管理面板
-                    await renderStats();
-                    await renderFeedbackList();
+                    await refreshData();
                     
-                    // 设置过滤器事件监听
                     document.getElementById('statusFilter').addEventListener('change', renderFeedbackList);
                     document.getElementById('typeFilter').addEventListener('change', renderFeedbackList);
                 } else {
@@ -863,15 +993,6 @@
                 }
             });
         });
-
-        // 简单的管理员认证
-        function authenticate(username, password) {
-            const adminCredentials = {
-                username: 'admin',
-                password: '123456'
-            };
-            return username === adminCredentials.username && password === adminCredentials.password;
-        }
     </script>
 </body>
 </html>

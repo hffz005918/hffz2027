@@ -30,15 +30,13 @@
             background: linear-gradient(135deg, #6a8bad 0%, #4a6b8f 100%);
             min-height: 100vh;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             line-height: 1.5;
         }
         
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
+            margin: 0 auto;
         }
         
         .header {
@@ -53,18 +51,12 @@
             margin-bottom: 0.5rem;
         }
         
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        
         .feedback-card {
             background: var(--card-bg);
             border-radius: var(--border-radius);
             padding: 2rem;
             box-shadow: var(--box-shadow);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
+            margin-bottom: 2rem;
         }
         
         .form-group {
@@ -78,7 +70,7 @@
             font-weight: 500;
         }
         
-        select, textarea {
+        select, textarea, input {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
@@ -87,7 +79,7 @@
             transition: border-color 0.3s, box-shadow 0.3s;
         }
         
-        select:focus, textarea:focus {
+        select:focus, textarea:focus, input:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
@@ -272,6 +264,24 @@
             font-size: 0.85rem;
         }
 
+        .gist-link {
+            background: #e6f7ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .gist-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .gist-link a:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             .feedback-card {
                 padding: 1.5rem;
@@ -318,14 +328,19 @@
         
         <div class="feedback-card">
             <div class="anonymous-notice">
-                <strong>匿名提交：</strong>本反馈系统完全匿名，不会收集任何个人信息，请放心填写。
+                <strong>公开讨论：</strong>您的反馈将与其他同事共享，大家可以一起讨论和提出建议。
             </div>
 
             <div class="storage-notice">
-                <strong>数据存储：</strong>反馈数据将保存在您的浏览器本地存储中。管理员可以在管理页面查看。
+                <strong>实时同步：</strong>所有反馈实时同步，所有员工都可以查看和评论。
             </div>
             
             <form id="feedbackForm">
+                <div class="form-group">
+                    <label for="employeeName">您的称呼（可选）</label>
+                    <input type="text" id="employeeName" placeholder="可以填写姓名或昵称">
+                </div>
+
                 <div class="form-group">
                     <label for="feedbackType">反馈类型</label>
                     <select id="feedbackType" required>
@@ -368,98 +383,32 @@
             
             <div class="success-message" id="successMessage">
                 <h2>感谢您的反馈！</h2>
-                <p>您的意见已成功保存，我们将认真考虑并尽快处理。</p>
+                <p>您的意见已成功提交，其他同事可以看到并参与讨论。</p>
+                <div class="gist-link" id="gistLinkContainer" style="display: none;">
+                    <strong>公开讨论链接：</strong>
+                    <a id="gistLink" target="_blank">点击查看</a>
+                </div>
                 <p>页面将在 <span id="countdown">5</span> 秒后返回首页</p>
+            </div>
+        </div>
+
+        <!-- 反馈列表 -->
+        <div class="feedback-card">
+            <h2 style="margin-bottom: 1rem;">最新反馈</h2>
+            <div id="feedbacksList">
+                <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    加载中...
+                </div>
             </div>
         </div>
         
         <a href="index.html" class="back-link">返回首页</a>
     </div>
 
+    <script src="gist-storage.js"></script>
     <script>
-        // 本地存储管理器
-        class LocalStorageManager {
-            constructor() {
-                this.storageKey = 'employeeFeedbacks';
-            }
-
-            saveFeedback(feedbackData) {
-                try {
-                    let feedbacks = this.getFeedbacks();
-                    
-                    feedbackData.id = Date.now().toString();
-                    feedbackData.timestamp = new Date().toISOString();
-                    feedbackData.status = feedbackData.status || 'pending';
-                    feedbackData.localSaved = true;
-                    
-                    feedbacks.push(feedbackData);
-                    localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
-                    
-                    console.log('✅ 反馈已保存到本地存储，ID:', feedbackData.id);
-                    return { success: true, id: feedbackData.id };
-                } catch (error) {
-                    console.error('❌ 本地存储失败:', error);
-                    return { success: false, error: error.message };
-                }
-            }
-
-            getFeedbacks() {
-                try {
-                    return JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                } catch (error) {
-                    console.error('读取本地存储失败:', error);
-                    return [];
-                }
-            }
-
-            updateFeedbackStatus(feedbackId, status) {
-                try {
-                    let feedbacks = this.getFeedbacks();
-                    const feedbackIndex = feedbacks.findIndex(fb => fb.id === feedbackId);
-                    
-                    if (feedbackIndex !== -1) {
-                        feedbacks[feedbackIndex].status = status;
-                        localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
-                        return { success: true };
-                    }
-                    return { success: false, error: '反馈不存在' };
-                } catch (error) {
-                    return { success: false, error: error.message };
-                }
-            }
-
-            deleteFeedback(feedbackId) {
-                try {
-                    let feedbacks = this.getFeedbacks();
-                    const filteredFeedbacks = feedbacks.filter(fb => fb.id !== feedbackId);
-                    localStorage.setItem(this.storageKey, JSON.stringify(filteredFeedbacks));
-                    return { success: true };
-                } catch (error) {
-                    return { success: false, error: error.message };
-                }
-            }
-
-            exportData() {
-                const feedbacks = this.getFeedbacks();
-                return JSON.stringify(feedbacks, null, 2);
-            }
-
-            importData(jsonData) {
-                try {
-                    const importedData = JSON.parse(jsonData);
-                    if (Array.isArray(importedData)) {
-                        localStorage.setItem(this.storageKey, jsonData);
-                        return { success: true, count: importedData.length };
-                    }
-                    return { success: false, error: '数据格式错误' };
-                } catch (error) {
-                    return { success: false, error: 'JSON解析失败' };
-                }
-            }
-        }
-
         // 初始化存储管理器
-        const storageManager = new LocalStorageManager();
+        const storageManager = new GistStorage();
 
         document.addEventListener('DOMContentLoaded', function() {
             const feedbackForm = document.getElementById('feedbackForm');
@@ -472,10 +421,16 @@
             const fileInput = document.getElementById('fileInput');
             const imagePreview = document.getElementById('imagePreview');
             const imageCount = document.getElementById('imageCount');
+            const gistLinkContainer = document.getElementById('gistLinkContainer');
+            const gistLink = document.getElementById('gistLink');
+            const feedbacksList = document.getElementById('feedbacksList');
             
             let selectedImages = [];
             const MAX_IMAGES = 3;
-            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+            const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+            // 加载反馈列表
+            loadFeedbacks();
 
             // 字符计数
             feedbackContent.addEventListener('input', function() {
@@ -599,18 +554,102 @@
                 console.log('开始保存反馈...');
                 
                 try {
-                    const result = storageManager.saveFeedback(feedbackData);
+                    const result = await storageManager.saveFeedback(feedbackData);
                     
                     if (result.success) {
                         console.log('✅ 保存成功，ID:', result.id);
+                        // 显示Gist链接
+                        if (result.gistUrl) {
+                            gistLink.href = result.gistUrl;
+                            gistLink.textContent = result.gistUrl;
+                            gistLinkContainer.style.display = 'block';
+                        }
                         return true;
                     } else {
                         throw new Error(result.error || '保存失败');
                     }
                 } catch (error) {
                     console.error('保存失败:', error);
+                    alert('提交失败: ' + error.message);
                     return false;
                 }
+            }
+
+            // 加载反馈列表
+            async function loadFeedbacks() {
+                try {
+                    const feedbacks = await storageManager.getFeedbacks();
+                    displayFeedbacks(feedbacks);
+                } catch (error) {
+                    feedbacksList.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: var(--error-color);">
+                            加载失败: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            // 显示反馈列表
+            function displayFeedbacks(feedbacks) {
+                if (feedbacks.length === 0) {
+                    feedbacksList.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                            暂无反馈，成为第一个发言的人吧！
+                        </div>
+                    `;
+                    return;
+                }
+
+                // 按时间倒序排序
+                feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                let html = '';
+                feedbacks.forEach(feedback => {
+                    const typeText = {
+                        'suggestion': '意见建议',
+                        'problem': '问题反馈',
+                        'complaint': '投诉举报',
+                        'other': '其他'
+                    }[feedback.type];
+                    
+                    const typeClass = {
+                        'suggestion': 'type-suggestion',
+                        'problem': 'type-problem',
+                        'complaint': 'type-complaint',
+                        'other': 'type-other'
+                    }[feedback.type];
+                    
+                    const date = new Date(feedback.timestamp);
+                    const timeString = date.toLocaleString('zh-CN');
+                    
+                    html += `
+                        <div class="feedback-item" style="border-left: 4px solid var(--primary-color); padding: 1rem; margin-bottom: 1rem; background: white; border-radius: 8px;">
+                            <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 0.5rem;">
+                                <div>
+                                    <span class="feedback-type ${typeClass}" style="padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">${typeText}</span>
+                                    <strong style="margin-left: 8px;">${feedback.employeeName || '匿名同事'}</strong>
+                                </div>
+                                <div style="color: var(--text-secondary); font-size: 0.8rem;">${timeString}</div>
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">${feedback.content}</div>
+                            
+                            ${feedback.images && feedback.images.length > 0 ? `
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 5px; margin: 0.5rem 0;">
+                                    ${feedback.images.map((image, index) => `
+                                        <img src="${image.data}" alt="图片" style="width: 100%; height: 60px; object-fit: cover; border-radius: 4px;">
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-secondary);">
+                                <span>👍 ${feedback.likes || 0}</span>
+                                <span>💬 ${feedback.comments ? feedback.comments.length : 0}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                feedbacksList.innerHTML = html;
             }
 
             // 表单提交
@@ -624,6 +663,7 @@
                 
                 try {
                     const feedbackData = {
+                        employeeName: document.getElementById('employeeName').value.trim(),
                         type: document.getElementById('feedbackType').value,
                         content: feedbackContent.value.trim(),
                         images: selectedImages,
@@ -640,6 +680,9 @@
                         feedbackForm.style.display = 'none';
                         successMessage.style.display = 'block';
                         
+                        // 重新加载反馈列表
+                        loadFeedbacks();
+                        
                         let countdown = 5;
                         const countdownInterval = setInterval(function() {
                             countdown--;
@@ -655,7 +698,6 @@
                     }
                 } catch (error) {
                     console.error('提交过程出错:', error);
-                    alert('提交失败: ' + error.message);
                     submitBtn.disabled = false;
                     submitBtn.textContent = '提交反馈';
                 }
@@ -671,10 +713,6 @@
 
             // 初始化图片计数
             updateImageCount();
-
-            // 显示当前存储的数据量（调试用）
-            const feedbacks = storageManager.getFeedbacks();
-            console.log('当前存储的反馈数量:', feedbacks.length);
         });
     </script>
 </body>
