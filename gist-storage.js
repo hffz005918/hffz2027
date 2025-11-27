@@ -1,8 +1,8 @@
 class GistStorage {
     constructor() {
-        // 使用你提供的Token
+        // 使用你的新Token
         this.token = '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';
-        this.gistId = localStorage.getItem('feedbackGistId'); // 从本地存储获取Gist ID
+        this.gistId = localStorage.getItem('feedbackGistId');
         this.gistFilename = 'employee-feedbacks.json';
         this.baseURL = 'https://api.github.com';
         this.debug = true;
@@ -26,10 +26,12 @@ class GistStorage {
         };
 
         try {
-            const response = await fetch(url, { 
-                ...options, 
-                headers: headers 
-            });
+            const config = {
+                ...options,
+                headers: headers
+            };
+
+            const response = await fetch(url, config);
             
             this.log(`响应状态: ${response.status} ${response.statusText}`);
             
@@ -38,16 +40,7 @@ class GistStorage {
             }
             
             if (response.status === 403) {
-                const resetTime = response.headers.get('x-ratelimit-reset');
-                if (resetTime) {
-                    const resetDate = new Date(resetTime * 1000);
-                    throw new Error(`API速率限制，请在 ${resetDate.toLocaleTimeString()} 后重试`);
-                }
-                throw new Error('API权限不足，请检查Token权限');
-            }
-            
-            if (response.status === 404) {
-                throw new Error('资源不存在，可能Gist已被删除');
+                throw new Error('API权限不足或速率限制');
             }
             
             if (!response.ok) {
@@ -58,12 +51,6 @@ class GistStorage {
             return await response.json();
         } catch (error) {
             this.log(`请求失败: ${error.message}`);
-            
-            // 如果是网络错误，提供更友好的提示
-            if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-                throw new Error('网络连接失败，请检查网络连接或使用本地存储方案');
-            }
-            
             throw error;
         }
     }
@@ -263,6 +250,60 @@ class GistStorage {
                 return { success: true, commentId: commentData.id };
             }
             return { success: false, error: '反馈不存在' };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 更新反馈状态
+    async updateFeedbackStatus(feedbackId, status) {
+        try {
+            const gist = await this.getExistingGist();
+            const currentData = JSON.parse(gist.files[this.gistFilename].content);
+            
+            const feedbackIndex = currentData.findIndex(fb => fb.id === feedbackId);
+            if (feedbackIndex !== -1) {
+                currentData[feedbackIndex].status = status;
+                
+                await this.request(`/gists/${this.gistId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        files: {
+                            [this.gistFilename]: {
+                                content: JSON.stringify(currentData, null, 2)
+                            }
+                        }
+                    })
+                });
+                
+                return { success: true };
+            }
+            return { success: false, error: '反馈不存在' };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 删除反馈
+    async deleteFeedback(feedbackId) {
+        try {
+            const gist = await this.getExistingGist();
+            const currentData = JSON.parse(gist.files[this.gistFilename].content);
+            
+            const filteredData = currentData.filter(fb => fb.id !== feedbackId);
+            
+            await this.request(`/gists/${this.gistId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    files: {
+                        [this.gistFilename]: {
+                            content: JSON.stringify(filteredData, null, 2)
+                        }
+                    }
+                })
+            });
+            
+            return { success: true };
         } catch (error) {
             return { success: false, error: error.message };
         }
