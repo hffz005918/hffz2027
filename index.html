@@ -30,8 +30,6 @@
         :root {
             --primary-color: #1890ff;
             --secondary-color: #1a73e8;
-            --admin-color: #722ed1;
-            --success-color: #52c41a;
             --card-bg: rgba(255, 255, 255, 0.95);
             --text-light: #ffffff;
             --text-dark: #333333;
@@ -127,8 +125,6 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             outline: none;
             -webkit-tap-highlight-color: transparent;
-            position: relative;
-            overflow: hidden;
         }
 
         .nav-card:focus-visible {
@@ -145,6 +141,7 @@
         }
 
         .nav-card h2 {
+            color: var(--primary-color);
             margin-bottom: 1rem;
             font-size: clamp(1.3rem, 4vw, 1.6rem);
             font-weight: 500;
@@ -153,52 +150,6 @@
         .nav-card p {
             color: var(--text-secondary);
             font-size: clamp(0.9rem, 3vw, 1rem);
-        }
-
-        /* 不同卡片的颜色主题 */
-        .nav-card.dorm {
-            border-top: 4px solid var(--primary-color);
-        }
-
-        .nav-card.dorm h2 {
-            color: var(--primary-color);
-        }
-
-        .nav-card.fee {
-            border-top: 4px solid var(--success-color);
-        }
-
-        .nav-card.fee h2 {
-            color: var(--success-color);
-        }
-
-        .nav-card.feedback {
-            border-top: 4px solid #fa8c16;
-        }
-
-        .nav-card.feedback h2 {
-            color: #fa8c16;
-        }
-
-        .nav-card.admin {
-            border-top: 4px solid var(--admin-color);
-        }
-
-        .nav-card.admin h2 {
-            color: var(--admin-color);
-        }
-
-        /* 管理员卡片特殊样式 */
-        .admin-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--admin-color);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: bold;
         }
 
         .wechat-loader {
@@ -379,49 +330,24 @@
         </div>
         
         <div class="nav-cards" role="navigation">
-            <!-- 宿舍管理 -->
-            <div class="nav-card dorm" 
+            <div class="nav-card" 
                  role="button" 
                  tabindex="0"
                  data-href="dorm-rules.html"
                  aria-labelledby="dorm-title"
                  aria-describedby="dorm-desc">
                 <h2 id="dorm-title">宿舍管理</h2>
-                <p id="dorm-desc">员工宿舍管理制度与规定</p>
+                <p id="dorm-desc">员工宿舍管理制度</p>
             </div>
             
-            <!-- 费用查询 -->
-            <div class="nav-card fee" 
+            <div class="nav-card" 
                  role="button" 
                  tabindex="0"
                  data-href="fee-query.html"
                  aria-labelledby="fee-title"
                  aria-describedby="fee-desc">
                 <h2 id="fee-title">费用查询</h2>
-                <p id="fee-desc">水电费用查询与缴纳服务</p>
-            </div>
-            
-            <!-- 员工反馈 -->
-            <div class="nav-card feedback" 
-                 role="button" 
-                 tabindex="0"
-                 data-href="feedback.html"
-                 aria-labelledby="feedback-title"
-                 aria-describedby="feedback-desc">
-                <h2 id="feedback-title">员工反馈</h2>
-                <p id="feedback-desc">意见建议与问题匿名反馈</p>
-            </div>
-            
-            <!-- 管理员入口 -->
-            <div class="nav-card admin" 
-                 role="button" 
-                 tabindex="0"
-                 data-href="admin-feedback.html"
-                 aria-labelledby="admin-title"
-                 aria-describedby="admin-desc">
-                <div class="admin-badge">管理员</div>
-                <h2 id="admin-title">反馈管理</h2>
-                <p id="admin-desc">查看和处理员工反馈信息</p>
+                <p id="fee-desc">水电费用查询服务</p>
             </div>
         </div>
     </div>
