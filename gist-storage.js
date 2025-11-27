@@ -1,7 +1,7 @@
 class GistStorage {
     constructor() {
         // 使用你提供的Token
-        this.token = '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';
+        this.token = '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';
         this.gistId = localStorage.getItem('feedbackGistId'); // 从本地存储获取Gist ID
         this.gistFilename = 'employee-feedbacks.json';
         this.baseURL = 'https://api.github.com';
