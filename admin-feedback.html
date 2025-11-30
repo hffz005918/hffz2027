@@ -385,24 +385,6 @@
             flex-wrap: wrap;
         }
 
-        .gist-info {
-            background: #e6f7ff;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .gist-info a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .gist-info a:hover {
-            text-decoration: underline;
-        }
-
         /* 评论样式 */
         .comments-section {
             margin-top: 1rem;
@@ -456,6 +438,61 @@
 
         .comment-content {
             font-size: 0.9rem;
+        }
+
+        /* 搜索框样式 */
+        .search-box {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        /* 加载动画 */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 服务器状态 */
+        .server-status {
+            background: #e6f7ff;
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+            font-size: 0.9rem;
+        }
+
+        .status-online {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .status-offline {
+            color: var(--error-color);
+            font-weight: bold;
         }
 
         @media (max-width: 768px) {
@@ -540,7 +577,12 @@
         
         <div id="adminPanel" style="display: none;">
             <div class="admin-card">
-                
+                <!-- 服务器状态 -->
+                <div class="server-status" id="serverStatus">
+                    <strong>服务器状态：</strong>
+                    <span id="statusText" class="status-online">正在检查...</span>
+                </div>
+
                 <div class="stats" id="statsContainer">
                     <!-- 统计数据将通过JavaScript动态生成 -->
                 </div>
@@ -551,7 +593,13 @@
                         <button class="action-btn" onclick="refreshData()" style="background: var(--primary-color); color: white;">刷新数据</button>
                         <button class="action-btn" onclick="exportData()" style="background: var(--success-color); color: white;">导出数据</button>
                         <button class="action-btn" onclick="addSampleData()" style="background: var(--warning-color); color: white;">添加示例</button>
+                        <button class="action-btn" onclick="clearAllData()" style="background: var(--error-color); color: white;">清空数据</button>
                     </div>
+                </div>
+                
+                <!-- 搜索框 -->
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="搜索反馈内容...">
                 </div>
                 
                 <div class="filters">
@@ -567,6 +615,12 @@
                         <option value="problem">问题反馈</option>
                         <option value="complaint">投诉举报</option>
                         <option value="other">其他</option>
+                    </select>
+                    
+                    <select class="filter-select" id="sortFilter">
+                        <option value="newest">最新优先</option>
+                        <option value="oldest">最旧优先</option>
+                        <option value="mostLikes">点赞最多</option>
                     </select>
                     
                     <button class="action-btn" onclick="showAllComments()" style="background: #722ed1; color: white;">显示所有评论</button>
@@ -597,19 +651,173 @@
         <div class="modal-counter" id="modalCounter"></div>
     </div>
 
-   <script src="server-storage.js"></script>
     <script>
+        // 服务器存储管理器
+        class ServerStorage {
+            constructor() {
+                this.serverURL = 'server.php';
+                this.debug = true;
+            }
+
+            log(message) {
+                if (this.debug) {
+                    console.log('🔍 ServerStorage:', message);
+                }
+            }
+
+            async request(data = {}) {
+                try {
+                    this.log(`发送请求: ${JSON.stringify(data)}`);
+                    
+                    const response = await fetch(this.serverURL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`服务器错误: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    this.log(`收到响应: ${JSON.stringify(result)}`);
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || '服务器返回错误');
+                    }
+
+                    return result;
+                } catch (error) {
+                    this.log(`请求失败: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            // 获取所有反馈
+            async getFeedbacks() {
+                try {
+                    this.log('从服务器获取反馈数据...');
+                    
+                    const result = await this.request({
+                        action: 'get_all'
+                    });
+
+                    this.log(`获取到 ${result.data.length} 条反馈`);
+                    return Array.isArray(result.data) ? result.data : [];
+                } catch (error) {
+                    this.log(`❌ 获取数据失败: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            // 保存反馈
+            async saveFeedback(feedbackData) {
+                try {
+                    this.log('保存反馈到服务器...');
+                    
+                    const result = await this.request({
+                        action: 'save_feedback',
+                        feedback: feedbackData
+                    });
+
+                    this.log('✅ 反馈保存成功');
+                    return { 
+                        success: true, 
+                        id: result.id,
+                        message: result.message
+                    };
+                } catch (error) {
+                    this.log(`❌ 保存失败: ${error.message}`);
+                    return { success: false, error: error.message };
+                }
+            }
+
+            // 添加评论
+            async addComment(feedbackId, commentData) {
+                try {
+                    const result = await this.request({
+                        action: 'add_comment',
+                        feedbackId: feedbackId,
+                        comment: commentData
+                    });
+
+                    return { success: true, commentId: result.commentId };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+
+            // 更新反馈状态
+            async updateFeedbackStatus(feedbackId, status) {
+                try {
+                    await this.request({
+                        action: 'update_status',
+                        feedbackId: feedbackId,
+                        status: status
+                    });
+
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+
+            // 删除反馈
+            async deleteFeedback(feedbackId) {
+                try {
+                    await this.request({
+                        action: 'delete_feedback',
+                        feedbackId: feedbackId
+                    });
+
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+
+            // 点赞反馈
+            async likeFeedback(feedbackId, userId) {
+                try {
+                    await this.request({
+                        action: 'like_feedback',
+                        feedbackId: feedbackId,
+                        userId: userId
+                    });
+
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+
+            // 清空所有数据
+            async clearAllData() {
+                try {
+                    await this.request({
+                        action: 'clear_all'
+                    });
+
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+        }
+
         // 初始化存储管理器
-       const storageManager = new ServerStorage();
+        const storageManager = new ServerStorage();
 
         // 图片查看相关变量
         let currentImages = [];
         let currentImageIndex = 0;
 
         // 查看图片
-        function viewImage(imageData, index) {
-            currentImages = [imageData];
-            currentImageIndex = 0;
+        function viewImage(images, index) {
+            currentImages = images;
+            currentImageIndex = index;
             showImageModal();
         }
 
@@ -619,11 +827,13 @@
             const modalImage = document.getElementById('modalImage');
             const modalCounter = document.getElementById('modalCounter');
             
-            modalImage.src = currentImages[currentImageIndex].data;
-            modalCounter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
-            modal.style.display = 'flex';
-            
-            document.body.style.overflow = 'hidden';
+            if (currentImages && currentImages.length > 0 && currentImages[currentImageIndex]) {
+                modalImage.src = currentImages[currentImageIndex].data;
+                modalCounter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
+                modal.style.display = 'flex';
+                
+                document.body.style.overflow = 'hidden';
+            }
         }
 
         // 关闭图片模态框
@@ -646,18 +856,16 @@
             showImageModal();
         }
 
-        // 更新Gist信息显示
-        function updateGistInfo() {
-            const gistLink = document.getElementById('gistLink');
-            const gistStatus = document.getElementById('gistStatus');
-            
-            const gistUrl = storageManager.getGistUrl();
-            if (gistUrl) {
-                gistLink.href = gistUrl;
-                gistLink.textContent = '点击访问公开讨论区';
-                gistStatus.innerHTML = ' <span style="color: var(--success-color);">✅ 连接正常</span>';
-            } else {
-                gistStatus.innerHTML = ' <span style="color: var(--error-color);">❌ 连接失败</span>';
+        // 检查服务器状态
+        async function checkServerStatus() {
+            const statusText = document.getElementById('statusText');
+            try {
+                await storageManager.getFeedbacks();
+                statusText.textContent = '在线';
+                statusText.className = 'status-online';
+            } catch (error) {
+                statusText.textContent = '离线 - ' + error.message;
+                statusText.className = 'status-offline';
             }
         }
 
@@ -668,6 +876,7 @@
             const pending = feedbacks.filter(fb => fb.status === 'pending').length;
             const processed = feedbacks.filter(fb => fb.status === 'processed').length;
             const withComments = feedbacks.filter(fb => fb.comments && fb.comments.length > 0).length;
+            const withImages = feedbacks.filter(fb => fb.images && fb.images.length > 0).length;
             
             const statsHTML = `
                 <div class="stat-card">
@@ -685,6 +894,10 @@
                 <div class="stat-card">
                     <div class="stat-number" style="color: #722ed1;">${withComments}</div>
                     <div>有评论</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: #13c2c2;">${withImages}</div>
+                    <div>有图片</div>
                 </div>
             `;
             
@@ -734,7 +947,8 @@
             const result = await storageManager.addComment(feedbackId, commentData);
             if (result.success) {
                 await renderFeedbackList();
-                alert('评论添加成功');
+                // 清空评论输入框
+                document.getElementById(`comment_${feedbackId}`).value = '';
             } else {
                 alert('评论失败: ' + result.error);
             }
@@ -745,18 +959,41 @@
             const feedbacks = await getFeedbacks();
             const statusFilter = document.getElementById('statusFilter').value;
             const typeFilter = document.getElementById('typeFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
             
             let filteredFeedbacks = feedbacks;
             
+            // 状态筛选
             if (statusFilter !== 'all') {
                 filteredFeedbacks = filteredFeedbacks.filter(fb => fb.status === statusFilter);
             }
             
+            // 类型筛选
             if (typeFilter !== 'all') {
                 filteredFeedbacks = filteredFeedbacks.filter(fb => fb.type === typeFilter);
             }
             
-            filteredFeedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            // 搜索筛选
+            if (searchText) {
+                filteredFeedbacks = filteredFeedbacks.filter(fb => 
+                    fb.content.toLowerCase().includes(searchText) ||
+                    (fb.employeeName && fb.employeeName.toLowerCase().includes(searchText))
+                );
+            }
+            
+            // 排序
+            switch (sortFilter) {
+                case 'newest':
+                    filteredFeedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    break;
+                case 'oldest':
+                    filteredFeedbacks.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                    break;
+                case 'mostLikes':
+                    filteredFeedbacks.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+                    break;
+            }
             
             const feedbackList = document.getElementById('feedbackList');
             
@@ -810,7 +1047,7 @@
                                 <div class="images-title">附件图片 (${feedback.images.length}张):</div>
                                 <div class="images-grid">
                                     ${feedback.images.map((image, index) => `
-                                        <div class="image-item" onclick="viewImage(${JSON.stringify(image)}, ${index})">
+                                        <div class="image-item" onclick="viewImage(feedback.images, ${index})">
                                             <img src="${image.data}" alt="反馈图片 ${index + 1}" class="thumbnail">
                                         </div>
                                     `).join('')}
@@ -888,9 +1125,16 @@
 
         // 刷新数据
         async function refreshData() {
+            document.getElementById('feedbackList').innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>正在加载数据...</div>
+                </div>
+            `;
+            
+            await checkServerStatus();
             await renderStats();
             await renderFeedbackList();
-            updateGistInfo();
         }
 
         // 导出数据
@@ -917,7 +1161,7 @@
             const sampleData = {
                 employeeName: '示例用户',
                 type: 'suggestion',
-                content: '这是一个示例反馈，用于演示系统功能。建议可以增加更多的团队建设活动。',
+                content: '这是一个示例反馈，用于演示系统功能。建议可以增加更多的团队建设活动，提升团队凝聚力。',
                 images: [],
                 status: 'pending'
             };
@@ -930,6 +1174,23 @@
                 }
             } catch (error) {
                 alert('添加示例数据失败: ' + error.message);
+            }
+        }
+
+        // 清空所有数据
+        async function clearAllData() {
+            if (confirm('确定要清空所有反馈数据吗？此操作不可恢复！')) {
+                try {
+                    // 由于server.php没有clear_all动作，我们通过删除所有反馈来实现
+                    const feedbacks = await getFeedbacks();
+                    for (const feedback of feedbacks) {
+                        await storageManager.deleteFeedback(feedback.id);
+                    }
+                    alert('所有数据已清空');
+                    await refreshData();
+                } catch (error) {
+                    alert('清空数据失败: ' + error.message);
+                }
             }
         }
 
@@ -973,8 +1234,11 @@
                     
                     await refreshData();
                     
+                    // 添加事件监听器
                     document.getElementById('statusFilter').addEventListener('change', renderFeedbackList);
                     document.getElementById('typeFilter').addEventListener('change', renderFeedbackList);
+                    document.getElementById('sortFilter').addEventListener('change', renderFeedbackList);
+                    document.getElementById('searchInput').addEventListener('input', renderFeedbackList);
                 } else {
                     alert('用户名或密码错误！');
                 }
