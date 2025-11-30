@@ -118,12 +118,12 @@
                     </div>
                     <div class="form-group">
                         <label for="password">密码</label>
-                        <input type="password" id="password" required value="123456">
+                        <input type="password" id="password" required value="******">
                     </div>
                     <button type="submit" class="login-btn">登录</button>
                 </form>
                 <p style="text-align: center; margin-top: 1rem; color: #666; font-size: 0.9rem;">
-                    默认账号: admin / 密码: 123456
+                    默认账号: admin / 密码: ******
                 </p>
             </div>
         </div>
@@ -235,7 +235,7 @@
             const password = document.getElementById('password').value;
             
             // 简单的认证
-            if (username === 'admin' && password === '123456') {
+            if (username === 'admin' && password === '******') {
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 loadFeedbacks();
@@ -247,7 +247,7 @@
         // 尝试自动登录（开发时方便测试）
         setTimeout(() => {
             document.getElementById('username').value = 'admin';
-            document.getElementById('password').value = '123456';
+            document.getElementById('password').value = '******';
         }, 100);
     });
 
