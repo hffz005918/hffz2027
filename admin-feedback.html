@@ -540,13 +540,7 @@
         
         <div id="adminPanel" style="display: none;">
             <div class="admin-card">
-                <!-- Gist信息 -->
-                <div class="gist-info" id="gistInfo">
-                    <strong>公开讨论区：</strong>
-                    <a id="gistLink" target="_blank">加载中...</a>
-                    <span id="gistStatus"></span>
-                </div>
-
+                
                 <div class="stats" id="statsContainer">
                     <!-- 统计数据将通过JavaScript动态生成 -->
                 </div>
@@ -603,10 +597,10 @@
         <div class="modal-counter" id="modalCounter"></div>
     </div>
 
-    <script src="gist-storage.js"></script>
+   <script src="server-storage.js"></script>
     <script>
         // 初始化存储管理器
-        const storageManager = new GistStorage();
+       const storageManager = new ServerStorage();
 
         // 图片查看相关变量
         let currentImages = [];
