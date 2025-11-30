@@ -3,7 +3,7 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 // 处理预检请求
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
@@ -28,6 +28,7 @@ function setupFilePermissions($filename) {
     if (!file_exists($filename)) {
         file_put_contents($filename, '[]');
         $log[] = "创建文件: $filename";
+        chmod($filename, 0666);
     }
     
     // 检查是否可写
@@ -45,7 +46,9 @@ function setupFilePermissions($filename) {
     }
     
     // 记录调试信息
-    file_put_contents($GLOBALS['logFile'], date('Y-m-d H:i:s') . " - " . implode(" | ", $log) . "\n", FILE_APPEND);
+    if (file_exists($GLOBALS['logFile'])) {
+        file_put_contents($GLOBALS['logFile'], date('Y-m-d H:i:s') . " - " . implode(" | ", $log) . "\n", FILE_APPEND);
+    }
     
     return is_writable($filename);
 }
@@ -71,7 +74,7 @@ function getData() {
     }
     
     $data = file_get_contents($dataFile);
-    if ($data === false) {
+    if ($data === false || trim($data) === '') {
         return [];
     }
     
@@ -99,8 +102,21 @@ function saveData($data) {
     return true;
 }
 
-// 处理请求
-$input = json_decode(file_get_contents('php://input'), true);
+// 获取请求数据
+$input = [];
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $inputData = file_get_contents('php://input');
+    if (!empty($inputData)) {
+        $input = json_decode($inputData, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $input = [];
+        }
+    }
+} else {
+    // 对于GET请求，也返回数据
+    $input = ['action' => 'get_all'];
+}
+
 $action = $input['action'] ?? '';
 
 logMessage("请求动作: " . $action);
@@ -371,11 +387,15 @@ try {
             break;
             
         default:
+            // 默认返回所有数据
+            $feedbacks = getData();
             echo json_encode([
-                'success' => false, 
-                'error' => '未知的操作: ' . $action
+                'success' => true,
+                'data' => $feedbacks,
+                'count' => count($feedbacks),
+                'permission_status' => $permissionOk ? 'ok' : 'warning'
             ]);
-            logMessage("错误: 未知的操作: " . $action);
+            logMessage("默认请求完成，返回数据条数: " . count($feedbacks));
     }
 } catch (Exception $e) {
     echo json_encode([
