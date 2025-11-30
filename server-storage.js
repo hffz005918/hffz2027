@@ -15,20 +15,48 @@ class ServerStorage {
         try {
             this.log(`发送请求: ${JSON.stringify(data)}`);
             
+            // 确保数据是有效的 JSON
+            let requestBody;
+            try {
+                requestBody = JSON.stringify(data);
+            } catch (stringifyError) {
+                throw new Error(`数据序列化失败: ${stringifyError.message}`);
+            }
+            
             const response = await fetch(this.serverURL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data)
+                body: requestBody
             });
 
+            this.log(`响应状态: ${response.status} ${response.statusText}`);
+            
             if (!response.ok) {
-                throw new Error(`服务器错误: ${response.status} ${response.statusText}`);
+                // 尝试获取更多错误信息
+                let errorDetail = '';
+                try {
+                    const errorResponse = await response.text();
+                    errorDetail = errorResponse;
+                } catch (e) {
+                    errorDetail = '无法读取错误详情';
+                }
+                
+                throw new Error(`服务器错误: ${response.status} ${response.statusText} - ${errorDetail}`);
             }
 
-            const result = await response.json();
-            this.log(`收到响应: ${JSON.stringify(result)}`);
+            const resultText = await response.text();
+            this.log(`原始响应: ${resultText}`);
+            
+            let result;
+            try {
+                result = JSON.parse(resultText);
+            } catch (parseError) {
+                throw new Error(`响应JSON解析失败: ${parseError.message} - 原始响应: ${resultText}`);
+            }
+            
+            this.log(`解析后的响应: ${JSON.stringify(result)}`);
             
             if (!result.success) {
                 throw new Error(result.error || '服务器返回错误');
@@ -36,7 +64,7 @@ class ServerStorage {
 
             return result;
         } catch (error) {
-            this.log(`请求失败: ${error.message}`);
+            this.log(`❌ 请求失败: ${error.message}`);
             throw error;
         }
     }
