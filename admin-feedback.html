@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>宏方纺织 - 管理员后台</title>
     <style>
-        /* 样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -71,6 +70,16 @@
             border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .login-btn:hover {
+            background: #1a73e8;
+        }
+        
+        .login-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
         }
         
         .admin-panel {
@@ -143,9 +152,19 @@
             display: none;
         }
 
+        .success-message {
+            background: #f6ffed;
+            border-left: 4px solid #52c41a;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            color: #52c41a;
+            display: none;
+        }
+
         .login-status {
             text-align: center;
-            margin-top: 1rem;
+            margin: 1rem 0;
             padding: 10px;
             border-radius: 4px;
             display: none;
@@ -181,11 +200,11 @@
                 <form id="loginForm">
                     <div class="form-group">
                         <label for="username">用户名</label>
-                        <input type="text" id="username" required placeholder="请输入用户名">
+                        <input type="text" id="username" required value="admin">
                     </div>
                     <div class="form-group">
                         <label for="password">密码</label>
-                        <input type="password" id="password" required placeholder="请输入密码">
+                        <input type="password" id="password" required value="123456">
                     </div>
                     <button type="submit" class="login-btn" id="loginBtn">登录</button>
                 </form>
@@ -221,11 +240,11 @@
             
             <div style="margin: 1rem 0;">
                 <button onclick="loadFeedbacks()" style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">刷新数据</button>
-                <button onclick="testConnection()" style="padding: 8px 16px; background: #faad14; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">测试连接</button>
                 <button onclick="addSampleData()" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">添加示例</button>
             </div>
 
             <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
             
             <div id="feedbackList">
                 <div class="loading">点击"刷新数据"加载反馈信息</div>
@@ -240,44 +259,28 @@
 
     <script src="server-storage-get.js"></script>
     <script>
+        // 创建存储实例
         const storage = new ServerStorage();
-        let isLoggedIn = false;
 
-        // 页面功能
+        // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('页面加载完成');
+            console.log('管理员页面加载完成');
+            
+            // 设置自动填充
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = '123456';
+            
+            // 绑定登录表单提交事件
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleLogin();
+            });
             
             // 检查是否已经登录
-            checkLoginStatus();
-            
-            // 登录表单处理
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    handleLogin();
-                });
-            }
-            
-            // 自动填充测试账号
-            setTimeout(() => {
-                const usernameInput = document.getElementById('username');
-                const passwordInput = document.getElementById('password');
-                if (usernameInput && passwordInput) {
-                    usernameInput.value = 'admin';
-                    passwordInput.value = '123456';
-                    console.log('自动填充完成');
-                }
-            }, 100);
-        });
-
-        // 检查登录状态
-        function checkLoginStatus() {
-            const savedLogin = localStorage.getItem('admin_logged_in');
-            if (savedLogin === 'true') {
+            if (localStorage.getItem('admin_logged_in') === 'true') {
                 showAdminPanel();
             }
-        }
+        });
 
         // 处理登录
         async function handleLogin() {
@@ -286,34 +289,39 @@
             const loginBtn = document.getElementById('loginBtn');
             const loginStatus = document.getElementById('loginStatus');
             
-            console.log('登录尝试:', username);
+            console.log('尝试登录:', username);
             
             // 禁用登录按钮
             loginBtn.disabled = true;
             loginBtn.textContent = '登录中...';
-            loginStatus.style.display = 'none';
             
             try {
-                // 简单的认证
+                // 简单的用户名密码验证
                 if (username === 'admin' && password === '123456') {
                     // 测试服务器连接
-                    await testConnection();
+                    const connectionResult = await storage.testConnection();
                     
-                    // 保存登录状态
-                    localStorage.setItem('admin_logged_in', 'true');
-                    isLoggedIn = true;
-                    
-                    showLoginStatus('登录成功！正在加载数据...', 'success');
-                    setTimeout(() => {
-                        showAdminPanel();
-                    }, 1000);
+                    if (connectionResult.success) {
+                        // 保存登录状态
+                        localStorage.setItem('admin_logged_in', 'true');
+                        
+                        // 显示成功消息
+                        showLoginStatus('✅ 登录成功！正在加载数据...', 'success');
+                        
+                        // 延迟显示管理面板，让用户看到成功消息
+                        setTimeout(() => {
+                            showAdminPanel();
+                        }, 1000);
+                    } else {
+                        throw new Error('服务器连接失败');
+                    }
                 } else {
                     throw new Error('用户名或密码错误');
                 }
             } catch (error) {
                 console.error('登录失败:', error);
-                showLoginStatus('登录失败: ' + error.message, 'error');
-            } finally {
+                showLoginStatus('❌ 登录失败: ' + error.message, 'error');
+                
                 // 恢复登录按钮
                 loginBtn.disabled = false;
                 loginBtn.textContent = '登录';
@@ -335,7 +343,7 @@
             document.getElementById('adminPanel').style.display = 'block';
             document.getElementById('loginStatus').style.display = 'none';
             
-            // 自动加载数据
+            // 加载反馈数据
             loadFeedbacks();
         }
 
@@ -353,17 +361,16 @@
             }
         }
 
-        // 测试服务器连接
-        async function testConnection() {
-            try {
-                console.log('测试服务器连接...');
-                const result = await storage.testConnection();
-                showLoginStatus('✅ 服务器连接正常', 'success');
-                return true;
-            } catch (error) {
-                console.error('服务器连接失败:', error);
-                showLoginStatus('❌ 服务器连接失败: ' + error.message, 'error');
-                return false;
+        // 显示成功信息
+        function showSuccess(message) {
+            const successElement = document.getElementById('successMessage');
+            if (successElement) {
+                successElement.textContent = message;
+                successElement.style.display = 'block';
+                
+                setTimeout(() => {
+                    successElement.style.display = 'none';
+                }, 3000);
             }
         }
 
@@ -381,6 +388,8 @@
                 
                 displayFeedbacks(feedbacks);
                 updateStats(feedbacks);
+                
+                showSuccess(`成功加载 ${feedbacks.length} 条反馈`);
             } catch (error) {
                 console.error('加载数据失败:', error);
                 showError('加载失败: ' + error.message);
@@ -393,7 +402,6 @@
 
         // 更新统计信息
         function updateStats(feedbacks) {
-            console.log('更新统计信息...');
             const total = feedbacks.length;
             const pending = feedbacks.filter(f => f.status === 'pending').length;
             const processed = feedbacks.filter(f => f.status === 'processed').length;
@@ -407,22 +415,14 @@
             }).length;
 
             // 更新统计显示
-            const totalElement = document.getElementById('totalFeedbacks');
-            const pendingElement = document.getElementById('pendingFeedbacks');
-            const processedElement = document.getElementById('processedFeedbacks');
-            const todayElement = document.getElementById('todayFeedbacks');
-            
-            if (totalElement) totalElement.textContent = total;
-            if (pendingElement) pendingElement.textContent = pending;
-            if (processedElement) processedElement.textContent = processed;
-            if (todayElement) todayElement.textContent = todayFeedbacks;
-            
-            console.log('统计信息更新完成');
+            document.getElementById('totalFeedbacks').textContent = total;
+            document.getElementById('pendingFeedbacks').textContent = pending;
+            document.getElementById('processedFeedbacks').textContent = processed;
+            document.getElementById('todayFeedbacks').textContent = todayFeedbacks;
         }
 
         // 显示反馈数据
         function displayFeedbacks(feedbacks) {
-            console.log('显示反馈数据...');
             const container = document.getElementById('feedbackList');
             
             if (!container) {
@@ -432,7 +432,6 @@
             
             if (feedbacks.length === 0) {
                 container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">暂无反馈数据</div>';
-                console.log('没有反馈数据可显示');
                 return;
             }
             
@@ -480,7 +479,6 @@
             });
             
             container.innerHTML = html;
-            console.log('反馈数据显示完成');
         }
 
         function getTypeText(type) {
@@ -507,14 +505,19 @@
         async function processFeedback(feedbackId) {
             console.log('处理反馈:', feedbackId);
             try {
-                const newStatus = 'processed'; // 简单处理，直接标记为已处理
-                const result = await storage.updateFeedbackStatus(feedbackId, newStatus);
+                const feedbacks = await storage.getFeedbacks();
+                const feedback = feedbacks.find(f => f.id === feedbackId);
                 
-                if (result.success) {
-                    console.log('状态更新成功');
-                    loadFeedbacks();
-                } else {
-                    throw new Error(result.error);
+                if (feedback) {
+                    const newStatus = feedback.status === 'pending' ? 'processed' : 'pending';
+                    const result = await storage.updateFeedbackStatus(feedbackId, newStatus);
+                    
+                    if (result.success) {
+                        showSuccess(`反馈状态已更新为: ${newStatus === 'pending' ? '待处理' : '已处理'}`);
+                        loadFeedbacks();
+                    } else {
+                        throw new Error(result.error);
+                    }
                 }
             } catch (error) {
                 console.error('处理反馈失败:', error);
@@ -530,7 +533,7 @@
                     const result = await storage.deleteFeedback(feedbackId);
                     
                     if (result.success) {
-                        console.log('删除成功');
+                        showSuccess('反馈删除成功');
                         loadFeedbacks();
                     } else {
                         throw new Error(result.error);
@@ -554,7 +557,7 @@
             try {
                 const result = await storage.saveFeedback(sampleData);
                 if (result.success) {
-                    showLoginStatus('✅ 示例数据添加成功！', 'success');
+                    showSuccess('示例数据添加成功！');
                     loadFeedbacks();
                 } else {
                     throw new Error(result.error);

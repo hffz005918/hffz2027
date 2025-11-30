@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>服务器调试</title>
+</head>
+<body>
+    <h1>服务器连接调试</h1>
+    <button onclick="testConnection()">测试连接</button>
+    <button onclick="testGetData()">测试获取数据</button>
+    <button onclick="testSaveData()">测试保存数据</button>
+    <div id="result" style="margin:20px; padding:10px; border:1px solid #ccc; background:#f9f9f9;"></div>
+
+    <script src="simple-storage.js"></script>
+    <script>
+        const storage = new SimpleStorage();
+        
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h3>测试服务器连接...</h3>';
+            
+            try {
+                const result = await storage.testConnection();
+                resultDiv.innerHTML += `<pre style="color:green">✅ ${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML += `<pre style="color:red">❌ ${error.message}</pre>`;
+            }
+        }
+        
+        async function testGetData() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h3>测试获取数据...</h3>';
+            
+            try {
+                const feedbacks = await storage.getFeedbacks();
+                resultDiv.innerHTML += `<pre style="color:green">✅ 获取到 ${feedbacks.length} 条反馈</pre>`;
+                resultDiv.innerHTML += `<pre>${JSON.stringify(feedbacks, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML += `<pre style="color:red">❌ ${error.message}</pre>`;
+            }
+        }
+        
+        async function testSaveData() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h3>测试保存数据...</h3>';
+            
+            try {
+                const testData = {
+                    employeeName: '测试用户',
+                    type: 'suggestion',
+                    content: '测试数据 - ' + new Date().toLocaleString(),
+                    images: []
+                };
+                
+                const result = await storage.saveFeedback(testData);
+                resultDiv.innerHTML += `<pre style="color:green">✅ ${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML += `<pre style="color:red">❌ ${error.message}</pre>`;
+            }
+        }
+        
+        // 自动测试连接
+        setTimeout(testConnection, 1000);
+    </script>
+</body>
+</html>

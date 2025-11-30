@@ -1,215 +1,224 @@
 <?php
-// server-get.php - 纯GET版本的服务器
+// server-get.php - 员工反馈系统服务器
+// 强制设置响应头为首行
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 
+// 关闭错误显示，避免污染JSON输出
+ini_set('display_errors', 0);
+error_reporting(0);
+
 // 数据文件路径
 $dataFile = __DIR__ . '/feedback_data.json';
-$logFile = __DIR__ . '/server_debug.log';
 
-// 设置错误报告
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-
-// 记录日志
-function logMessage($message) {
-    global $logFile;
-    $timestamp = date('Y-m-d H:i:s');
-    $logEntry = "{$timestamp} - {$message}\n";
-    @file_put_contents($logFile, $logEntry, FILE_APPEND);
+// 简单的响应函数
+function sendResponse($data) {
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
-// 确保文件存在
-function ensureFile($filename) {
-    if (!file_exists($filename)) {
-        file_put_contents($filename, '[]');
-        chmod($filename, 0666);
+// 确保数据文件存在
+function ensureDataFile() {
+    global $dataFile;
+    
+    if (!file_exists($dataFile)) {
+        file_put_contents($dataFile, '[]');
     }
-    return is_writable($filename);
+    
+    return file_exists($dataFile);
 }
 
-// 获取数据
-function getData() {
+// 读取数据
+function readData() {
     global $dataFile;
     
     if (!file_exists($dataFile)) {
         return [];
     }
     
-    $data = file_get_contents($dataFile);
-    if ($data === false || trim($data) === '') {
+    $content = file_get_contents($dataFile);
+    if ($content === false || trim($content) === '') {
         return [];
     }
     
-    $decoded = json_decode($data, true);
-    return is_array($decoded) ? $decoded : [];
+    $data = json_decode($content, true);
+    return is_array($data) ? $data : [];
 }
 
 // 保存数据
 function saveData($data) {
     global $dataFile;
     
-    $jsonData = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    $result = file_put_contents($dataFile, $jsonData);
-    
-    if ($result !== false) {
-        logMessage("数据保存成功，条数: " . count($data));
-        return true;
-    } else {
-        logMessage("数据保存失败");
-        return false;
-    }
+    $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    return file_put_contents($dataFile, $json) !== false;
 }
 
-// 初始化文件
-ensureFile($dataFile);
-ensureFile($logFile);
-
-logMessage("GET请求: " . ($_SERVER['REQUEST_URI'] ?? 'unknown'));
-
-// 获取动作参数
-$action = $_GET['action'] ?? 'get_all';
-
+// 主程序开始
 try {
+    // 确保数据文件存在
+    if (!ensureDataFile()) {
+        sendResponse([
+            'success' => false,
+            'error' => '无法创建数据文件'
+        ]);
+    }
+    
+    // 获取动作参数
+    $action = $_GET['action'] ?? 'get_all';
+    
     switch ($action) {
         case 'get_all':
-            $feedbacks = getData();
-            echo json_encode([
+            $data = readData();
+            sendResponse([
                 'success' => true,
-                'data' => $feedbacks,
-                'count' => count($feedbacks),
-                'timestamp' => date('c')
-            ], JSON_UNESCAPED_UNICODE);
-            logMessage("返回数据: " . count($feedbacks) . " 条反馈");
+                'data' => $data,
+                'count' => count($data)
+            ]);
             break;
             
         case 'save_feedback':
-            $data = $_GET['data'] ?? '';
-            if (empty($data)) {
-                echo json_encode(['success' => false, 'error' => '没有接收到数据']);
-                logMessage("错误: 没有接收到数据");
-                break;
+            $feedbackData = $_GET['data'] ?? '';
+            
+            if (empty($feedbackData)) {
+                sendResponse([
+                    'success' => false,
+                    'error' => '没有接收到数据'
+                ]);
             }
             
-            // 解码数据
-            $decodedData = urldecode($data);
+            // URL解码并解析JSON
+            $decodedData = urldecode($feedbackData);
             $feedback = json_decode($decodedData, true);
             
-            if (!$feedback || !is_array($feedback)) {
-                echo json_encode(['success' => false, 'error' => '数据格式错误: ' . json_last_error_msg()]);
-                logMessage("错误: 数据格式错误");
-                break;
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                sendResponse([
+                    'success' => false,
+                    'error' => '数据格式错误: ' . json_last_error_msg()
+                ]);
             }
             
-            logMessage("接收到反馈数据: " . json_encode($feedback));
+            // 验证必要字段
+            if (empty($feedback['content'])) {
+                sendResponse([
+                    'success' => false,
+                    'error' => '反馈内容不能为空'
+                ]);
+            }
             
-            // 添加必要字段
-            $feedback['id'] = 'feedback_' . time() . '_' . uniqid();
+            // 添加系统字段
+            $feedback['id'] = 'fb_' . time() . '_' . mt_rand(1000, 9999);
             $feedback['timestamp'] = date('c');
             $feedback['status'] = 'pending';
-            $feedback['comments'] = [];
             $feedback['likes'] = 0;
-            $feedback['likedBy'] = [];
             
-            $feedbacks = getData();
-            $feedbacks[] = $feedback;
+            // 读取现有数据并添加新反馈
+            $allData = readData();
+            $allData[] = $feedback;
             
-            if (saveData($feedbacks)) {
-                echo json_encode([
+            if (saveData($allData)) {
+                sendResponse([
                     'success' => true,
                     'id' => $feedback['id'],
-                    'message' => '保存成功',
-                    'debug' => [
-                        'total_feedbacks' => count($feedbacks),
-                        'file_path' => $dataFile
-                    ]
-                ], JSON_UNESCAPED_UNICODE);
-                logMessage("保存成功: " . $feedback['id']);
+                    'message' => '反馈保存成功',
+                    'count' => count($allData)
+                ]);
             } else {
-                echo json_encode(['success' => false, 'error' => '保存到文件失败']);
-                logMessage("错误: 保存到文件失败");
+                sendResponse([
+                    'success' => false,
+                    'error' => '保存失败'
+                ]);
             }
             break;
             
         case 'update_status':
-            $feedbackId = $_GET['id'] ?? '';
+            $id = $_GET['id'] ?? '';
             $status = $_GET['status'] ?? '';
             
-            if (!$feedbackId || !$status) {
-                echo json_encode(['success' => false, 'error' => '参数缺失']);
-                break;
+            if (empty($id) || empty($status)) {
+                sendResponse([
+                    'success' => false,
+                    'error' => '缺少必要参数'
+                ]);
             }
             
-            $feedbacks = getData();
-            $updated = false;
+            $allData = readData();
+            $found = false;
             
-            foreach ($feedbacks as &$fb) {
-                if ($fb['id'] === $feedbackId) {
-                    $fb['status'] = $status;
-                    $updated = true;
-                    logMessage("更新状态: {$feedbackId} -> {$status}");
+            foreach ($allData as &$item) {
+                if ($item['id'] === $id) {
+                    $item['status'] = $status;
+                    $found = true;
                     break;
                 }
             }
             
-            if ($updated && saveData($feedbacks)) {
-                echo json_encode(['success' => true, 'message' => '更新成功']);
+            if ($found && saveData($allData)) {
+                sendResponse([
+                    'success' => true,
+                    'message' => '状态更新成功'
+                ]);
             } else {
-                echo json_encode(['success' => false, 'error' => '更新失败或反馈不存在']);
+                sendResponse([
+                    'success' => false,
+                    'error' => '更新失败'
+                ]);
             }
             break;
             
         case 'delete_feedback':
-            $feedbackId = $_GET['id'] ?? '';
+            $id = $_GET['id'] ?? '';
             
-            if (!$feedbackId) {
-                echo json_encode(['success' => false, 'error' => '参数缺失']);
-                break;
+            if (empty($id)) {
+                sendResponse([
+                    'success' => false,
+                    'error' => '缺少反馈ID'
+                ]);
             }
             
-            $feedbacks = getData();
-            $newFeedbacks = array_filter($feedbacks, function($fb) use ($feedbackId) {
-                return $fb['id'] !== $feedbackId;
+            $allData = readData();
+            $newData = array_filter($allData, function($item) use ($id) {
+                return $item['id'] !== $id;
             });
             
-            if (count($newFeedbacks) < count($feedbacks) && saveData(array_values($newFeedbacks))) {
-                echo json_encode(['success' => true, 'message' => '删除成功']);
-                logMessage("删除成功: " . $feedbackId);
+            if (count($newData) < count($allData) && saveData(array_values($newData))) {
+                sendResponse([
+                    'success' => true,
+                    'message' => '删除成功'
+                ]);
             } else {
-                echo json_encode(['success' => false, 'error' => '删除失败或反馈不存在']);
+                sendResponse([
+                    'success' => false,
+                    'error' => '删除失败'
+                ]);
             }
             break;
             
         case 'test':
-            echo json_encode([
+            sendResponse([
                 'success' => true,
-                'message' => '服务器正常工作',
-                'method' => 'GET',
+                'message' => '服务器连接正常',
                 'timestamp' => date('c'),
-                'file_info' => [
-                    'data_file_exists' => file_exists($dataFile),
-                    'data_file_writable' => is_writable($dataFile),
-                    'data_file_size' => file_exists($dataFile) ? filesize($dataFile) : 0
+                'data_file' => [
+                    'exists' => file_exists($dataFile),
+                    'writable' => is_writable($dataFile),
+                    'size' => file_exists($dataFile) ? filesize($dataFile) : 0
                 ]
             ]);
-            logMessage("测试连接请求");
             break;
             
         default:
-            $feedbacks = getData();
-            echo json_encode([
+            $data = readData();
+            sendResponse([
                 'success' => true,
-                'data' => $feedbacks,
-                'count' => count($feedbacks)
-            ], JSON_UNESCAPED_UNICODE);
+                'data' => $data,
+                'count' => count($data)
+            ]);
     }
+    
 } catch (Exception $e) {
-    echo json_encode([
+    sendResponse([
         'success' => false,
-        'error' => '服务器错误: ' . $e->getMessage()
+        'error' => '服务器异常: ' . $e->getMessage()
     ]);
-    logMessage("异常: " . $e->getMessage());
 }
-
-logMessage("请求完成: " . $action);
 ?>
