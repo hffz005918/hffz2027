@@ -268,30 +268,43 @@
     </div>
 
     <script src="server-storage.js"></script>
-    <script>
-        const storage = new ServerStorage();
+<script>
+    const storage = new ServerStorage();
 
-        // 页面功能
-        document.addEventListener('DOMContentLoaded', function() {
-            // 登录表单处理
-            document.getElementById('loginForm').addEventListener('submit', function(e) {
+    // 页面功能
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('页面加载完成，开始初始化...');
+        
+        // 登录表单处理
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+                console.log('登录表单提交');
                 
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
                 
+                console.log('用户名:', username, '密码:', password);
+                
                 // 简单的认证
                 if (username === 'admin' && password === '123456') {
+                    console.log('登录验证成功，显示管理面板');
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
                     loadFeedbacks();
                 } else {
                     alert('用户名或密码错误！');
+                    console.log('登录验证失败');
                 }
             });
-            
-            // 图片模态框事件
-            const modal = document.getElementById('imageModal');
+        } else {
+            console.error('找不到登录表单元素');
+        }
+        
+        // 图片模态框事件
+        const modal = document.getElementById('imageModal');
+        if (modal) {
             const modalImg = document.getElementById('modalImage');
             const span = document.getElementsByClassName('close')[0];
 
@@ -302,206 +315,255 @@
             modal.onclick = function() {
                 modal.style.display = 'none';
             }
-            
-            // 尝试自动登录（开发时方便测试）
-            setTimeout(() => {
-                document.getElementById('username').value = 'admin';
-                document.getElementById('password').value = '123456';
-            }, 100);
-        });
+        }
+        
+        // 尝试自动填充（开发时方便测试）
+        setTimeout(() => {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            if (usernameInput && passwordInput) {
+                usernameInput.value = 'admin';
+                passwordInput.value = '123456';
+                console.log('自动填充完成');
+            }
+        }, 100);
+    });
 
-        // 显示错误信息
-        function showError(message) {
-            const errorElement = document.getElementById('errorMessage');
+    // 显示错误信息
+    function showError(message) {
+        console.error('显示错误:', message);
+        const errorElement = document.getElementById('errorMessage');
+        if (errorElement) {
             errorElement.textContent = message;
             errorElement.style.display = 'block';
             
             setTimeout(() => {
                 errorElement.style.display = 'none';
             }, 5000);
+        } else {
+            alert(message);
         }
+    }
 
-        // 加载反馈数据
-        async function loadFeedbacks() {
-            try {
-                document.getElementById('feedbackList').innerHTML = '<div class="loading">加载中...</div>';
-                
-                const feedbacks = await storage.getFeedbacks();
-                displayFeedbacks(feedbacks);
-                updateStats(feedbacks);
-            } catch (error) {
-                console.error('加载数据失败:', error);
-                showError('加载失败: ' + error.message);
-                document.getElementById('feedbackList').innerHTML = '<p style="color: red; text-align: center;">加载失败: ' + error.message + '</p>';
-            }
-        }
-
-        // 更新统计信息
-        function updateStats(feedbacks) {
-            const total = feedbacks.length;
-            const pending = feedbacks.filter(f => f.status === 'pending').length;
-            const processed = feedbacks.filter(f => f.status === 'processed').length;
-            
-            // 今日反馈
-            const today = new Date().toDateString();
-            const todayFeedbacks = feedbacks.filter(f => {
-                const feedbackDate = new Date(f.timestamp).toDateString();
-                return feedbackDate === today;
-            }).length;
-
-            document.getElementById('totalFeedbacks').textContent = total;
-            document.getElementById('pendingFeedbacks').textContent = pending;
-            document.getElementById('processedFeedbacks').textContent = processed;
-            document.getElementById('todayFeedbacks').textContent = todayFeedbacks;
-        }
-
-        // 显示反馈数据
-        function displayFeedbacks(feedbacks) {
-            const container = document.getElementById('feedbackList');
-            
-            if (feedbacks.length === 0) {
-                container.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">暂无反馈数据</p>';
-                return;
+    // 加载反馈数据
+    async function loadFeedbacks() {
+        console.log('开始加载反馈数据...');
+        try {
+            const feedbackList = document.getElementById('feedbackList');
+            if (feedbackList) {
+                feedbackList.innerHTML = '<div class="loading">加载中...</div>';
             }
             
-            // 按时间倒序排序
-            feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const feedbacks = await storage.getFeedbacks();
+            console.log('成功获取反馈数据:', feedbacks.length, '条');
             
-            let html = '';
-            feedbacks.forEach(feedback => {
-                const date = new Date(feedback.timestamp);
-                const timeString = date.toLocaleString('zh-CN');
-                const typeText = getTypeText(feedback.type);
-                const typeColor = getTypeColor(feedback.type);
-                
-                html += `
-                    <div class="feedback-item">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap;">
-                            <div>
-                                <span style="background: ${typeColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: white;">
-                                    ${typeText}
-                                </span>
-                                <strong style="margin-left: 8px;">${feedback.employeeName || '匿名用户'}</strong>
-                            </div>
-                            <span style="color: #666; font-size: 0.9rem;">${timeString}</span>
-                        </div>
-                        <div style="margin-bottom: 0.5rem;">
-                            <span style="background: ${feedback.status === 'pending' ? '#fff7e6' : '#f6ffed'}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: ${feedback.status === 'pending' ? '#faad14' : '#52c41a'};">
-                                ${feedback.status === 'pending' ? '待处理' : '已处理'}
+            displayFeedbacks(feedbacks);
+            updateStats(feedbacks);
+        } catch (error) {
+            console.error('加载数据失败:', error);
+            showError('加载失败: ' + error.message);
+            const feedbackList = document.getElementById('feedbackList');
+            if (feedbackList) {
+                feedbackList.innerHTML = '<p style="color: red; text-align: center;">加载失败: ' + error.message + '</p>';
+            }
+        }
+    }
+
+    // 更新统计信息
+    function updateStats(feedbacks) {
+        console.log('更新统计信息...');
+        const total = feedbacks.length;
+        const pending = feedbacks.filter(f => f.status === 'pending').length;
+        const processed = feedbacks.filter(f => f.status === 'processed').length;
+        
+        // 今日反馈
+        const today = new Date().toDateString();
+        const todayFeedbacks = feedbacks.filter(f => {
+            const feedbackDate = new Date(f.timestamp).toDateString();
+            return feedbackDate === today;
+        }).length;
+
+        // 更新统计显示
+        const totalElement = document.getElementById('totalFeedbacks');
+        const pendingElement = document.getElementById('pendingFeedbacks');
+        const processedElement = document.getElementById('processedFeedbacks');
+        const todayElement = document.getElementById('todayFeedbacks');
+        
+        if (totalElement) totalElement.textContent = total;
+        if (pendingElement) pendingElement.textContent = pending;
+        if (processedElement) processedElement.textContent = processed;
+        if (todayElement) todayElement.textContent = todayFeedbacks;
+        
+        console.log('统计信息更新完成');
+    }
+
+    // 显示反馈数据
+    function displayFeedbacks(feedbacks) {
+        console.log('显示反馈数据...');
+        const container = document.getElementById('feedbackList');
+        
+        if (!container) {
+            console.error('找不到反馈列表容器');
+            return;
+        }
+        
+        if (feedbacks.length === 0) {
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">暂无反馈数据</p>';
+            console.log('没有反馈数据可显示');
+            return;
+        }
+        
+        // 按时间倒序排序
+        feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        let html = '';
+        feedbacks.forEach(feedback => {
+            const date = new Date(feedback.timestamp);
+            const timeString = date.toLocaleString('zh-CN');
+            const typeText = getTypeText(feedback.type);
+            const typeColor = getTypeColor(feedback.type);
+            
+            html += `
+                <div class="feedback-item">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <div>
+                            <span style="background: ${typeColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: white;">
+                                ${typeText}
                             </span>
+                            <strong style="margin-left: 8px;">${feedback.employeeName || '匿名用户'}</strong>
                         </div>
-                        <div style="margin-bottom: 1rem; line-height: 1.6; white-space: pre-wrap;">${feedback.content}</div>
-                        
-                        ${feedback.images && feedback.images.length > 0 ? `
-                            <div class="feedback-images">
-                                <div style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">附件图片:</div>
-                                <div class="images-grid">
-                                    ${feedback.images.map((image, index) => `
-                                        <img src="${image.data}" alt="图片" class="thumbnail" onclick="openImageModal('${image.data}')">
-                                    `).join('')}
-                                </div>
+                        <span style="color: #666; font-size: 0.9rem;">${timeString}</span>
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <span style="background: ${feedback.status === 'pending' ? '#fff7e6' : '#f6ffed'}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: ${feedback.status === 'pending' ? '#faad14' : '#52c41a'};">
+                            ${feedback.status === 'pending' ? '待处理' : '已处理'}
+                        </span>
+                    </div>
+                    <div style="margin-bottom: 1rem; line-height: 1.6; white-space: pre-wrap;">${feedback.content}</div>
+                    
+                    ${feedback.images && feedback.images.length > 0 ? `
+                        <div class="feedback-images">
+                            <div style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">附件图片:</div>
+                            <div class="images-grid">
+                                ${feedback.images.map((image, index) => `
+                                    <img src="${image.data}" alt="图片" class="thumbnail" onclick="openImageModal('${image.data}')">
+                                `).join('')}
                             </div>
-                        ` : ''}
-                        
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <button onclick="processFeedback('${feedback.id}')" style="padding: 6px 12px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                ${feedback.status === 'pending' ? '标记处理' : '标记待处理'}
-                            </button>
-                            <button onclick="deleteFeedback('${feedback.id}')" style="padding: 6px 12px; background: #ff4d4f; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                删除
-                            </button>
-                            <div style="flex: 1; text-align: right; color: #666; font-size: 0.9rem;">
-                                👍 ${feedback.likes || 0} | 💬 ${feedback.comments ? feedback.comments.length : 0}
-                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button onclick="processFeedback('${feedback.id}')" style="padding: 6px 12px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            ${feedback.status === 'pending' ? '标记处理' : '标记待处理'}
+                        </button>
+                        <button onclick="deleteFeedback('${feedback.id}')" style="padding: 6px 12px; background: #ff4d4f; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            删除
+                        </button>
+                        <div style="flex: 1; text-align: right; color: #666; font-size: 0.9rem;">
+                            👍 ${feedback.likes || 0} | 💬 ${feedback.comments ? feedback.comments.length : 0}
                         </div>
                     </div>
-                `;
-            });
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        console.log('反馈数据显示完成');
+    }
+
+    function getTypeText(type) {
+        const types = {
+            'suggestion': '意见建议',
+            'problem': '问题反馈',
+            'complaint': '投诉举报',
+            'other': '其他'
+        };
+        return types[type] || '未知';
+    }
+
+    function getTypeColor(type) {
+        const colors = {
+            'suggestion': '#1890ff',
+            'problem': '#faad14',
+            'complaint': '#ff4d4f',
+            'other': '#52c41a'
+        };
+        return colors[type] || '#666';
+    }
+
+    // 处理反馈
+    async function processFeedback(feedbackId) {
+        console.log('处理反馈:', feedbackId);
+        try {
+            const feedbacks = await storage.getFeedbacks();
+            const feedback = feedbacks.find(f => f.id === feedbackId);
             
-            container.innerHTML = html;
-        }
-
-        function getTypeText(type) {
-            const types = {
-                'suggestion': '意见建议',
-                'problem': '问题反馈',
-                'complaint': '投诉举报',
-                'other': '其他'
-            };
-            return types[type] || '未知';
-        }
-
-        function getTypeColor(type) {
-            const colors = {
-                'suggestion': '#1890ff',
-                'problem': '#faad14',
-                'complaint': '#ff4d4f',
-                'other': '#52c41a'
-            };
-            return colors[type] || '#666';
-        }
-
-        // 处理反馈
-        async function processFeedback(feedbackId) {
-            try {
-                const feedbacks = await storage.getFeedbacks();
-                const feedback = feedbacks.find(f => f.id === feedbackId);
+            if (feedback) {
+                const newStatus = feedback.status === 'pending' ? 'processed' : 'pending';
+                const result = await storage.updateFeedbackStatus(feedbackId, newStatus);
                 
-                if (feedback) {
-                    const newStatus = feedback.status === 'pending' ? 'processed' : 'pending';
-                    const result = await storage.updateFeedbackStatus(feedbackId, newStatus);
-                    
-                    if (result.success) {
-                        loadFeedbacks();
-                    } else {
-                        throw new Error(result.error);
-                    }
+                if (result.success) {
+                    console.log('状态更新成功');
+                    loadFeedbacks();
+                } else {
+                    throw new Error(result.error);
+                }
+            }
+        } catch (error) {
+            console.error('处理反馈失败:', error);
+            showError('操作失败: ' + error.message);
+        }
+    }
+
+    // 删除反馈
+    async function deleteFeedback(feedbackId) {
+        console.log('删除反馈:', feedbackId);
+        if (confirm('确定要删除这条反馈吗？此操作不可恢复！')) {
+            try {
+                const result = await storage.deleteFeedback(feedbackId);
+                
+                if (result.success) {
+                    console.log('删除成功');
+                    loadFeedbacks();
+                } else {
+                    throw new Error(result.error);
                 }
             } catch (error) {
-                showError('操作失败: ' + error.message);
+                console.error('删除失败:', error);
+                showError('删除失败: ' + error.message);
             }
         }
+    }
 
-        // 删除反馈
-        async function deleteFeedback(feedbackId) {
-            if (confirm('确定要删除这条反馈吗？此操作不可恢复！')) {
-                try {
-                    const result = await storage.deleteFeedback(feedbackId);
-                    
-                    if (result.success) {
-                        loadFeedbacks();
-                    } else {
-                        throw new Error(result.error);
-                    }
-                } catch (error) {
-                    showError('删除失败: ' + error.message);
-                }
-            }
-        }
-
-        // 打开图片模态框
-        function openImageModal(imageSrc) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
+    // 打开图片模态框
+    function openImageModal(imageSrc) {
+        console.log('打开图片:', imageSrc);
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        if (modal && modalImg) {
             modal.style.display = 'block';
             modalImg.src = imageSrc;
         }
+    }
 
-        // 导出数据
-        async function exportData() {
-            try {
-                const feedbacks = await storage.getFeedbacks();
-                const dataStr = JSON.stringify(feedbacks, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(dataBlob);
-                link.download = `feedback_data_${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-            } catch (error) {
-                showError('导出失败: ' + error.message);
-            }
+    // 导出数据
+    async function exportData() {
+        console.log('导出数据...');
+        try {
+            const feedbacks = await storage.getFeedbacks();
+            const dataStr = JSON.stringify(feedbacks, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `feedback_data_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            console.log('导出完成');
+        } catch (error) {
+            console.error('导出失败:', error);
+            showError('导出失败: ' + error.message);
         }
-    </script>
+    }
+</script>
 </body>
 </html>
