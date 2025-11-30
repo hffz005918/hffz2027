@@ -19,7 +19,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -78,7 +78,7 @@
         
         .feedback-item {
             background: #f8f9fa;
-            padding: 1rem;
+            padding: 1.5rem;
             margin-bottom: 1rem;
             border-radius: 8px;
             border-left: 4px solid #1890ff;
@@ -97,6 +97,97 @@
             text-decoration: none;
             border-radius: 6px;
             margin: 0 10px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1890ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .feedback-images {
+            margin: 1rem 0;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 0.5rem;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            margin-top: 2%;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .error-message {
+            background: #fff2f0;
+            border-left: 4px solid #ff4d4f;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            color: #ff4d4f;
+            display: none;
         }
     </style>
 </head>
@@ -122,19 +213,45 @@
                     </div>
                     <button type="submit" class="login-btn">登录</button>
                 </form>
+                <p style="text-align: center; margin-top: 1rem; color: #666; font-size: 0.9rem;">
+                    默认账号: admin / 密码: 123456
+                </p>
             </div>
         </div>
         
         <!-- 管理面板 -->
         <div id="adminPanel" class="admin-panel">
             <h2>反馈数据管理</h2>
-            <div style="margin: 1rem 0;">
-                <button onclick="loadFeedbacks()" style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">刷新数据</button>
-                <button onclick="addSampleData()" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">添加示例</button>
+            
+            <!-- 统计信息 -->
+            <div class="stats-container" id="statsContainer">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalFeedbacks">0</div>
+                    <div class="stat-label">总反馈数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingFeedbacks">0</div>
+                    <div class="stat-label">待处理</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="processedFeedbacks">0</div>
+                    <div class="stat-label">已处理</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="todayFeedbacks">0</div>
+                    <div class="stat-label">今日反馈</div>
+                </div>
             </div>
             
+            <div style="margin: 1rem 0;">
+                <button onclick="loadFeedbacks()" style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">刷新数据</button>
+                <button onclick="exportData()" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">导出数据</button>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+            
             <div id="feedbackList">
-                <p style="text-align: center; padding: 2rem; color: #666;">暂无数据</p>
+                <div class="loading">加载中...</div>
             </div>
             
             <div class="nav-links">
@@ -144,83 +261,15 @@
         </div>
     </div>
 
+    <!-- 图片预览模态框 -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+
+    <script src="server-storage.js"></script>
     <script>
-        // 统一的存储管理器 - 与员工反馈页面保持一致
-        class FeedbackStorage {
-            constructor() {
-                this.storageKey = 'employeeFeedbacks';
-            }
-
-            async getFeedbacks() {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        console.log('获取到反馈数据:', feedbacks);
-                        resolve(feedbacks);
-                    } catch (error) {
-                        console.error('获取数据失败:', error);
-                        resolve([]);
-                    }
-                });
-            }
-
-            async saveFeedback(feedbackData) {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        
-                        // 添加必要字段
-                        feedbackData.id = 'feedback_' + Date.now();
-                        feedbackData.timestamp = new Date().toISOString();
-                        feedbackData.status = feedbackData.status || 'pending';
-                        feedbackData.likes = feedbackData.likes || 0;
-                        feedbackData.comments = feedbackData.comments || [];
-                        
-                        feedbacks.push(feedbackData);
-                        localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
-                        
-                        resolve({ success: true, id: feedbackData.id });
-                    } catch (error) {
-                        resolve({ success: false, error: error.message });
-                    }
-                });
-            }
-
-            async updateFeedbackStatus(feedbackId, status) {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        const feedback = feedbacks.find(f => f.id === feedbackId);
-                        
-                        if (feedback) {
-                            feedback.status = status;
-                            localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
-                            resolve({ success: true });
-                        } else {
-                            resolve({ success: false, error: '反馈不存在' });
-                        }
-                    } catch (error) {
-                        resolve({ success: false, error: error.message });
-                    }
-                });
-            }
-
-            async deleteFeedback(feedbackId) {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        const newFeedbacks = feedbacks.filter(f => f.id !== feedbackId);
-                        
-                        localStorage.setItem(this.storageKey, JSON.stringify(newFeedbacks));
-                        resolve({ success: true });
-                    } catch (error) {
-                        resolve({ success: false, error: error.message });
-                    }
-                });
-            }
-        }
-
-        const storage = new FeedbackStorage();
+        const storage = new ServerStorage();
 
         // 页面功能
         document.addEventListener('DOMContentLoaded', function() {
@@ -241,6 +290,19 @@
                 }
             });
             
+            // 图片模态框事件
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            const span = document.getElementsByClassName('close')[0];
+
+            span.onclick = function() {
+                modal.style.display = 'none';
+            }
+
+            modal.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
             // 尝试自动登录（开发时方便测试）
             setTimeout(() => {
                 document.getElementById('username').value = 'admin';
@@ -248,15 +310,49 @@
             }, 100);
         });
 
+        // 显示错误信息
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+
         // 加载反馈数据
         async function loadFeedbacks() {
             try {
+                document.getElementById('feedbackList').innerHTML = '<div class="loading">加载中...</div>';
+                
                 const feedbacks = await storage.getFeedbacks();
                 displayFeedbacks(feedbacks);
+                updateStats(feedbacks);
             } catch (error) {
                 console.error('加载数据失败:', error);
-                document.getElementById('feedbackList').innerHTML = '<p style="color: red;">加载失败: ' + error.message + '</p>';
+                showError('加载失败: ' + error.message);
+                document.getElementById('feedbackList').innerHTML = '<p style="color: red; text-align: center;">加载失败: ' + error.message + '</p>';
             }
+        }
+
+        // 更新统计信息
+        function updateStats(feedbacks) {
+            const total = feedbacks.length;
+            const pending = feedbacks.filter(f => f.status === 'pending').length;
+            const processed = feedbacks.filter(f => f.status === 'processed').length;
+            
+            // 今日反馈
+            const today = new Date().toDateString();
+            const todayFeedbacks = feedbacks.filter(f => {
+                const feedbackDate = new Date(f.timestamp).toDateString();
+                return feedbackDate === today;
+            }).length;
+
+            document.getElementById('totalFeedbacks').textContent = total;
+            document.getElementById('pendingFeedbacks').textContent = pending;
+            document.getElementById('processedFeedbacks').textContent = processed;
+            document.getElementById('todayFeedbacks').textContent = todayFeedbacks;
         }
 
         // 显示反馈数据
@@ -268,45 +364,55 @@
                 return;
             }
             
+            // 按时间倒序排序
+            feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
             let html = '';
             feedbacks.forEach(feedback => {
                 const date = new Date(feedback.timestamp);
                 const timeString = date.toLocaleString('zh-CN');
+                const typeText = getTypeText(feedback.type);
+                const typeColor = getTypeColor(feedback.type);
                 
                 html += `
                     <div class="feedback-item">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <strong>${feedback.employeeName || '匿名用户'}</strong>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                            <div>
+                                <span style="background: ${typeColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: white;">
+                                    ${typeText}
+                                </span>
+                                <strong style="margin-left: 8px;">${feedback.employeeName || '匿名用户'}</strong>
+                            </div>
                             <span style="color: #666; font-size: 0.9rem;">${timeString}</span>
                         </div>
                         <div style="margin-bottom: 0.5rem;">
-                            <span style="background: #e6f7ff; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">
-                                ${getTypeText(feedback.type)}
-                            </span>
-                            <span style="margin-left: 8px; background: ${feedback.status === 'pending' ? '#fff7e6' : '#f6ffed'}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">
+                            <span style="background: ${feedback.status === 'pending' ? '#fff7e6' : '#f6ffed'}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: ${feedback.status === 'pending' ? '#faad14' : '#52c41a'};">
                                 ${feedback.status === 'pending' ? '待处理' : '已处理'}
                             </span>
                         </div>
-                        <div style="margin-bottom: 1rem;">${feedback.content}</div>
+                        <div style="margin-bottom: 1rem; line-height: 1.6; white-space: pre-wrap;">${feedback.content}</div>
                         
                         ${feedback.images && feedback.images.length > 0 ? `
-                            <div style="margin-bottom: 1rem;">
-                                <div style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">附件图片 (${feedback.images.length}张):</div>
-                                <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            <div class="feedback-images">
+                                <div style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">附件图片:</div>
+                                <div class="images-grid">
                                     ${feedback.images.map((image, index) => `
-                                        <img src="${image.data}" alt="图片" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                                        <img src="${image.data}" alt="图片" class="thumbnail" onclick="openImageModal('${image.data}')">
                                     `).join('')}
                                 </div>
                             </div>
                         ` : ''}
                         
-                        <div>
-                            <button onclick="processFeedback('${feedback.id}')" style="padding: 4px 8px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button onclick="processFeedback('${feedback.id}')" style="padding: 6px 12px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                 ${feedback.status === 'pending' ? '标记处理' : '标记待处理'}
                             </button>
-                            <button onclick="deleteFeedback('${feedback.id}')" style="padding: 4px 8px; background: #ff4d4f; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            <button onclick="deleteFeedback('${feedback.id}')" style="padding: 6px 12px; background: #ff4d4f; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                 删除
                             </button>
+                            <div style="flex: 1; text-align: right; color: #666; font-size: 0.9rem;">
+                                👍 ${feedback.likes || 0} | 💬 ${feedback.comments ? feedback.comments.length : 0}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -325,6 +431,16 @@
             return types[type] || '未知';
         }
 
+        function getTypeColor(type) {
+            const colors = {
+                'suggestion': '#1890ff',
+                'problem': '#faad14',
+                'complaint': '#ff4d4f',
+                'other': '#52c41a'
+            };
+            return colors[type] || '#666';
+        }
+
         // 处理反馈
         async function processFeedback(feedbackId) {
             try {
@@ -333,41 +449,57 @@
                 
                 if (feedback) {
                     const newStatus = feedback.status === 'pending' ? 'processed' : 'pending';
-                    await storage.updateFeedbackStatus(feedbackId, newStatus);
-                    loadFeedbacks();
+                    const result = await storage.updateFeedbackStatus(feedbackId, newStatus);
+                    
+                    if (result.success) {
+                        loadFeedbacks();
+                    } else {
+                        throw new Error(result.error);
+                    }
                 }
             } catch (error) {
-                alert('操作失败: ' + error.message);
+                showError('操作失败: ' + error.message);
             }
         }
 
         // 删除反馈
         async function deleteFeedback(feedbackId) {
-            if (confirm('确定要删除这条反馈吗？')) {
+            if (confirm('确定要删除这条反馈吗？此操作不可恢复！')) {
                 try {
-                    await storage.deleteFeedback(feedbackId);
-                    loadFeedbacks();
+                    const result = await storage.deleteFeedback(feedbackId);
+                    
+                    if (result.success) {
+                        loadFeedbacks();
+                    } else {
+                        throw new Error(result.error);
+                    }
                 } catch (error) {
-                    alert('删除失败: ' + error.message);
+                    showError('删除失败: ' + error.message);
                 }
             }
         }
 
-        // 添加示例数据
-        async function addSampleData() {
-            const sampleData = {
-                employeeName: '测试用户',
-                type: 'suggestion',
-                content: '这是一个测试反馈，用于演示系统功能。建议改善食堂伙食质量。',
-                status: 'pending'
-            };
+        // 打开图片模态框
+        function openImageModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+        }
 
+        // 导出数据
+        async function exportData() {
             try {
-                await storage.saveFeedback(sampleData);
-                loadFeedbacks();
-                alert('示例数据添加成功！');
+                const feedbacks = await storage.getFeedbacks();
+                const dataStr = JSON.stringify(feedbacks, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `feedback_data_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
             } catch (error) {
-                alert('添加失败: ' + error.message);
+                showError('导出失败: ' + error.message);
             }
         }
     </script>
