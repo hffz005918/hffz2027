@@ -151,10 +151,26 @@
             text-align: center;
             padding: 2rem;
             color: var(--success-color);
+            background: #f6ffed;
+            border-radius: 8px;
+            border: 1px solid #b7eb8f;
+            margin-bottom: 1.5rem;
         }
         
         .success-message h2 {
             margin-bottom: 1rem;
+            color: var(--success-color);
+        }
+        
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .countdown {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.2rem;
         }
         
         /* 图片上传样式 */
@@ -264,22 +280,90 @@
             font-size: 0.85rem;
         }
 
-        .gist-link {
-            background: #e6f7ff;
+        .feedback-list {
+            margin-top: 2rem;
+        }
+
+        .feedback-item {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             border-left: 4px solid var(--primary-color);
-            padding: 1rem;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .feedback-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .type-suggestion { background: #e6f7ff; color: var(--primary-color); }
+        .type-problem { background: #fff7e6; color: var(--warning-color); }
+        .type-complaint { background: #fff2f0; color: var(--error-color); }
+        .type-other { background: #f6ffed; color: var(--success-color); }
+
+        .feedback-time {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .feedback-content {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .feedback-images {
             margin: 1rem 0;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 0.5rem;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
             border-radius: 4px;
         }
 
-        .gist-link a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
+        .feedback-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
 
-        .gist-link a:hover {
-            text-decoration: underline;
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .error-message {
+            background: #fff2f0;
+            border-left: 4px solid var(--error-color);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            color: var(--error-color);
+            display: none;
         }
 
         @media (max-width: 768px) {
@@ -328,12 +412,14 @@
         
         <div class="feedback-card">
             <div class="anonymous-notice">
-                <strong>公开讨论：</strong>您的反馈将与其他同事共享，大家可以一起讨论和提出建议。
+                <strong>温馨提示：</strong>您的反馈将帮助我们不断改进工作环境和流程。
             </div>
 
             <div class="storage-notice">
-                <strong>实时同步：</strong>所有反馈实时同步，所有员工都可以查看和评论。
+                <strong>实时同步：</strong>所有反馈将实时保存，管理员会及时查看和处理。
             </div>
+
+            <div class="error-message" id="errorMessage"></div>
             
             <form id="feedbackForm">
                 <div class="form-group">
@@ -342,7 +428,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="feedbackType">反馈类型</label>
+                    <label for="feedbackType">反馈类型 <span style="color: var(--error-color);">*</span></label>
                     <select id="feedbackType" required>
                         <option value="">请选择反馈类型</option>
                         <option value="suggestion">意见建议</option>
@@ -353,7 +439,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="feedbackContent">反馈内容</label>
+                    <label for="feedbackContent">反馈内容 <span style="color: var(--error-color);">*</span></label>
                     <textarea 
                         id="feedbackContent" 
                         placeholder="请详细描述您的反馈内容..." 
@@ -382,10 +468,10 @@
             </form>
             
             <div class="success-message" id="successMessage">
+                <div class="success-icon">✅</div>
                 <h2>感谢您的反馈！</h2>
-                <p>您的意见已成功提交，其他同事可以看到并参与讨论。</p>
-              
-                <p>页面将在 <span id="countdown">5</span> 秒后返回首页</p>
+                <p>您的意见已成功提交，我们会认真考虑并尽快处理。</p>
+                <p>页面将在 <span class="countdown" id="countdown">5</span> 秒后自动刷新</p>
             </div>
         </div>
 
@@ -393,19 +479,73 @@
         <div class="feedback-card">
             <h2 style="margin-bottom: 1rem;">最新反馈</h2>
             <div id="feedbacksList">
-                <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-                    加载中...
-                </div>
+                <div class="loading">加载中...</div>
             </div>
         </div>
         
         <a href="index.html" class="back-link">返回首页</a>
     </div>
 
-    <script src="gist-storage.js"></script>
     <script>
-        // 初始化存储管理器
-        const storageManager = new GistStorage();
+        // 模拟服务器存储 - 在实际应用中应替换为真实的服务器API调用
+        class FeedbackStorage {
+            constructor() {
+                this.storageKey = 'employeeFeedbacks';
+            }
+
+            // 获取所有反馈
+            getFeedbacks() {
+                return new Promise((resolve) => {
+                    try {
+                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+                        resolve(feedbacks);
+                    } catch (error) {
+                        console.error('获取反馈数据失败:', error);
+                        resolve([]);
+                    }
+                });
+            }
+
+            // 保存反馈
+            saveFeedback(feedbackData) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        // 模拟网络延迟
+                        setTimeout(() => {
+                            try {
+                                const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+                                
+                                // 添加ID和时间戳
+                                feedbackData.id = 'feedback_' + Date.now();
+                                feedbackData.timestamp = new Date().toISOString();
+                                feedbackData.status = 'pending';
+                                feedbackData.likes = 0;
+                                feedbackData.comments = [];
+                                
+                                feedbacks.push(feedbackData);
+                                localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
+                                
+                                resolve({
+                                    success: true,
+                                    id: feedbackData.id,
+                                    message: '反馈提交成功'
+                                });
+                            } catch (error) {
+                                reject({
+                                    success: false,
+                                    error: '保存数据失败: ' + error.message
+                                });
+                            }
+                        }, 1000);
+                    } catch (error) {
+                        reject({
+                            success: false,
+                            error: '保存失败: ' + error.message
+                        });
+                    }
+                });
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const feedbackForm = document.getElementById('feedbackForm');
@@ -418,10 +558,10 @@
             const fileInput = document.getElementById('fileInput');
             const imagePreview = document.getElementById('imagePreview');
             const imageCount = document.getElementById('imageCount');
-            const gistLinkContainer = document.getElementById('gistLinkContainer');
-            const gistLink = document.getElementById('gistLink');
             const feedbacksList = document.getElementById('feedbacksList');
+            const errorMessage = document.getElementById('errorMessage');
             
+            const storage = new FeedbackStorage();
             let selectedImages = [];
             const MAX_IMAGES = 3;
             const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -474,7 +614,7 @@
                 const remainingSlots = MAX_IMAGES - selectedImages.length;
                 
                 if (files.length > remainingSlots) {
-                    alert(`最多只能上传 ${MAX_IMAGES} 张图片，您已选择 ${selectedImages.length} 张`);
+                    showError(`最多只能上传 ${MAX_IMAGES} 张图片，您已选择 ${selectedImages.length} 张`);
                     return;
                 }
 
@@ -482,12 +622,12 @@
                     if (selectedImages.length >= MAX_IMAGES) break;
 
                     if (!file.type.startsWith('image/')) {
-                        alert('请选择图片文件');
+                        showError('请选择图片文件');
                         continue;
                     }
 
                     if (file.size > MAX_FILE_SIZE) {
-                        alert(`文件 ${file.name} 大小超过 5MB 限制`);
+                        showError(`文件 ${file.name} 大小超过 5MB 限制`);
                         continue;
                     }
 
@@ -546,36 +686,40 @@
                 }
             }
 
-            // 保存反馈函数
-            async function saveFeedback(feedbackData) {
-                console.log('开始保存反馈...');
+            // 显示错误信息
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
                 
-                try {
-                    const result = await storageManager.saveFeedback(feedbackData);
+                // 3秒后自动隐藏错误信息
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 3000);
+            }
+
+            // 显示成功信息
+            function showSuccess() {
+                feedbackForm.style.display = 'none';
+                successMessage.style.display = 'block';
+                
+                let countdown = 5;
+                countdownElement.textContent = countdown;
+                
+                const countdownInterval = setInterval(function() {
+                    countdown--;
+                    countdownElement.textContent = countdown;
                     
-                    if (result.success) {
-                        console.log('✅ 保存成功，ID:', result.id);
-                        // 显示Gist链接
-                        if (result.gistUrl) {
-                            gistLink.href = result.gistUrl;
-                            gistLink.textContent = result.gistUrl;
-                            gistLinkContainer.style.display = 'block';
-                        }
-                        return true;
-                    } else {
-                        throw new Error(result.error || '保存失败');
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        location.reload(); // 刷新页面显示最新反馈
                     }
-                } catch (error) {
-                    console.error('保存失败:', error);
-                    alert('提交失败: ' + error.message);
-                    return false;
-                }
+                }, 1000);
             }
 
             // 加载反馈列表
             async function loadFeedbacks() {
                 try {
-                    const feedbacks = await storageManager.getFeedbacks();
+                    const feedbacks = await storage.getFeedbacks();
                     displayFeedbacks(feedbacks);
                 } catch (error) {
                     feedbacksList.innerHTML = `
@@ -620,27 +764,31 @@
                     const timeString = date.toLocaleString('zh-CN');
                     
                     html += `
-                        <div class="feedback-item" style="border-left: 4px solid var(--primary-color); padding: 1rem; margin-bottom: 1rem; background: white; border-radius: 8px;">
-                            <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 0.5rem;">
+                        <div class="feedback-item">
+                            <div class="feedback-header">
                                 <div>
-                                    <span class="feedback-type ${typeClass}" style="padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">${typeText}</span>
+                                    <span class="feedback-type ${typeClass}">${typeText}</span>
                                     <strong style="margin-left: 8px;">${feedback.employeeName || '匿名同事'}</strong>
                                 </div>
-                                <div style="color: var(--text-secondary); font-size: 0.8rem;">${timeString}</div>
+                                <div class="feedback-time">${timeString}</div>
                             </div>
-                            <div style="margin-bottom: 0.5rem;">${feedback.content}</div>
+                            <div class="feedback-content">${feedback.content}</div>
                             
                             ${feedback.images && feedback.images.length > 0 ? `
-                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 5px; margin: 0.5rem 0;">
-                                    ${feedback.images.map((image, index) => `
-                                        <img src="${image.data}" alt="图片" style="width: 100%; height: 60px; object-fit: cover; border-radius: 4px;">
-                                    `).join('')}
+                                <div class="feedback-images">
+                                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">附件图片:</div>
+                                    <div class="images-grid">
+                                        ${feedback.images.map((image, index) => `
+                                            <img src="${image.data}" alt="图片" class="thumbnail">
+                                        `).join('')}
+                                    </div>
                                 </div>
                             ` : ''}
                             
-                            <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-secondary);">
+                            <div class="feedback-stats">
                                 <span>👍 ${feedback.likes || 0}</span>
                                 <span>💬 ${feedback.comments ? feedback.comments.length : 0}</span>
+                                <span>${feedback.status === 'processed' ? '✅ 已处理' : '⏳ 待处理'}</span>
                             </div>
                         </div>
                     `;
@@ -653,8 +801,24 @@
             feedbackForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                console.log('开始提交表单...');
+                // 隐藏之前的错误信息
+                errorMessage.style.display = 'none';
                 
+                // 表单验证
+                const typeSelected = document.getElementById('feedbackType').value !== '';
+                const contentFilled = feedbackContent.value.trim().length > 0;
+                
+                if (!typeSelected) {
+                    showError('请选择反馈类型');
+                    return;
+                }
+                
+                if (!contentFilled) {
+                    showError('请填写反馈内容');
+                    return;
+                }
+                
+                // 禁用提交按钮
                 submitBtn.disabled = true;
                 submitBtn.textContent = '提交中...';
                 
@@ -663,38 +827,19 @@
                         employeeName: document.getElementById('employeeName').value.trim(),
                         type: document.getElementById('feedbackType').value,
                         content: feedbackContent.value.trim(),
-                        images: selectedImages,
-                        timestamp: new Date().toISOString(),
-                        status: 'pending'
+                        images: selectedImages
                     };
                     
-                    console.log('收集到的数据:', feedbackData);
+                    const result = await storage.saveFeedback(feedbackData);
                     
-                    const saved = await saveFeedback(feedbackData);
-                    
-                    if (saved) {
-                        console.log('✅ 提交成功！');
-                        feedbackForm.style.display = 'none';
-                        successMessage.style.display = 'block';
-                        
-                        // 重新加载反馈列表
-                        loadFeedbacks();
-                        
-                        let countdown = 5;
-                        const countdownInterval = setInterval(function() {
-                            countdown--;
-                            countdownElement.textContent = countdown;
-                            
-                            if (countdown <= 0) {
-                                clearInterval(countdownInterval);
-                                window.location.href = 'index.html';
-                            }
-                        }, 1000);
+                    if (result.success) {
+                        showSuccess();
                     } else {
-                        throw new Error('保存失败');
+                        throw new Error(result.error);
                     }
                 } catch (error) {
-                    console.error('提交过程出错:', error);
+                    console.error('提交失败:', error);
+                    showError('提交失败: ' + error.message);
                     submitBtn.disabled = false;
                     submitBtn.textContent = '提交反馈';
                 }
