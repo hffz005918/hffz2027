@@ -98,6 +98,45 @@
             border-radius: 6px;
             margin: 0 10px;
         }
+
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .status-success {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+
+        .status-error {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+
+        .server-status {
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .server-online {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+
+        .server-offline {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
     </style>
 </head>
 <body>
@@ -128,9 +167,14 @@
         <!-- 管理面板 -->
         <div id="adminPanel" class="admin-panel">
             <h2>反馈数据管理</h2>
+            
+            <div id="serverStatus" class="server-status" style="display: none;"></div>
+            <div id="statusMessage" class="status-message" style="display: none;"></div>
+            
             <div style="margin: 1rem 0;">
                 <button onclick="loadFeedbacks()" style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">刷新数据</button>
                 <button onclick="addSampleData()" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">添加示例</button>
+                <button onclick="exportData()" style="padding: 8px 16px; background: #722ed1; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">导出数据</button>
             </div>
             
             <div id="feedbackList">
@@ -145,82 +189,111 @@
     </div>
 
     <script>
-        // 统一的存储管理器 - 与员工反馈页面保持一致
-        class FeedbackStorage {
+        // 服务器存储管理器
+        class ServerStorage {
             constructor() {
-                this.storageKey = 'employeeFeedbacks';
+                this.serverURL = 'server.php';
+                this.debug = true;
             }
 
+            log(message) {
+                if (this.debug) {
+                    console.log('🔍 ServerStorage:', message);
+                }
+            }
+
+            async request(data = {}) {
+                try {
+                    this.log(`发送请求: ${JSON.stringify(data)}`);
+                    
+                    const response = await fetch(this.serverURL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`服务器错误: ${response.status} ${response.statusText}`);
+                    }
+
+                    const result = await response.json();
+                    this.log(`收到响应: ${JSON.stringify(result)}`);
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || '服务器返回错误');
+                    }
+
+                    return result;
+                } catch (error) {
+                    this.log(`请求失败: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            // 获取所有反馈
             async getFeedbacks() {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        console.log('获取到反馈数据:', feedbacks);
-                        resolve(feedbacks);
-                    } catch (error) {
-                        console.error('获取数据失败:', error);
-                        resolve([]);
-                    }
-                });
+                try {
+                    this.log('从服务器获取反馈数据...');
+                    
+                    const result = await this.request({
+                        action: 'get_all'
+                    });
+
+                    this.log(`获取到 ${result.data.length} 条反馈`);
+                    return Array.isArray(result.data) ? result.data : [];
+                } catch (error) {
+                    this.log(`❌ 获取数据失败: ${error.message}`);
+                    throw error;
+                }
             }
 
-            async saveFeedback(feedbackData) {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        
-                        // 添加必要字段
-                        feedbackData.id = 'feedback_' + Date.now();
-                        feedbackData.timestamp = new Date().toISOString();
-                        feedbackData.status = feedbackData.status || 'pending';
-                        feedbackData.likes = feedbackData.likes || 0;
-                        feedbackData.comments = feedbackData.comments || [];
-                        
-                        feedbacks.push(feedbackData);
-                        localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
-                        
-                        resolve({ success: true, id: feedbackData.id });
-                    } catch (error) {
-                        resolve({ success: false, error: error.message });
-                    }
-                });
-            }
-
+            // 更新反馈状态
             async updateFeedbackStatus(feedbackId, status) {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        const feedback = feedbacks.find(f => f.id === feedbackId);
-                        
-                        if (feedback) {
-                            feedback.status = status;
-                            localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
-                            resolve({ success: true });
-                        } else {
-                            resolve({ success: false, error: '反馈不存在' });
-                        }
-                    } catch (error) {
-                        resolve({ success: false, error: error.message });
-                    }
-                });
+                try {
+                    await this.request({
+                        action: 'update_status',
+                        feedbackId: feedbackId,
+                        status: status
+                    });
+
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
             }
 
+            // 删除反馈
             async deleteFeedback(feedbackId) {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        const newFeedbacks = feedbacks.filter(f => f.id !== feedbackId);
-                        
-                        localStorage.setItem(this.storageKey, JSON.stringify(newFeedbacks));
-                        resolve({ success: true });
-                    } catch (error) {
-                        resolve({ success: false, error: error.message });
-                    }
-                });
+                try {
+                    await this.request({
+                        action: 'delete_feedback',
+                        feedbackId: feedbackId
+                    });
+
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+
+            // 保存反馈（用于添加示例数据）
+            async saveFeedback(feedbackData) {
+                try {
+                    const result = await this.request({
+                        action: 'save_feedback',
+                        feedback: feedbackData
+                    });
+
+                    return { success: true, id: result.id };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
             }
         }
 
-        const storage = new FeedbackStorage();
+        const storage = new ServerStorage();
 
         // 页面功能
         document.addEventListener('DOMContentLoaded', function() {
@@ -235,6 +308,7 @@
                 if (username === 'admin' && password === '123456') {
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
+                    checkServerStatus();
                     loadFeedbacks();
                 } else {
                     alert('用户名或密码错误！');
@@ -248,14 +322,46 @@
             }, 100);
         });
 
+        // 检查服务器状态
+        async function checkServerStatus() {
+            const serverStatus = document.getElementById('serverStatus');
+            try {
+                await storage.getFeedbacks();
+                serverStatus.textContent = '✅ 服务器连接正常';
+                serverStatus.className = 'server-status server-online';
+                serverStatus.style.display = 'block';
+            } catch (error) {
+                serverStatus.textContent = '❌ 服务器连接失败，请检查网络连接';
+                serverStatus.className = 'server-status server-offline';
+                serverStatus.style.display = 'block';
+            }
+        }
+
+        // 显示状态消息
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type}`;
+            statusEl.style.display = 'block';
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
         // 加载反馈数据
         async function loadFeedbacks() {
             try {
+                document.getElementById('feedbackList').innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">加载中...</p>';
                 const feedbacks = await storage.getFeedbacks();
                 displayFeedbacks(feedbacks);
+                showStatus(`数据加载成功，共 ${feedbacks.length} 条反馈`, 'success');
             } catch (error) {
                 console.error('加载数据失败:', error);
-                document.getElementById('feedbackList').innerHTML = '<p style="color: red;">加载失败: ' + error.message + '</p>';
+                document.getElementById('feedbackList').innerHTML = 
+                    '<p style="color: red; text-align: center; padding: 2rem;">加载失败: ' + error.message + '</p>';
+                showStatus('数据加载失败: ' + error.message, 'error');
             }
         }
 
@@ -287,7 +393,7 @@
                                 ${feedback.status === 'pending' ? '待处理' : '已处理'}
                             </span>
                         </div>
-                        <div style="margin-bottom: 1rem;">${feedback.content}</div>
+                        <div style="margin-bottom: 1rem; white-space: pre-wrap;">${feedback.content}</div>
                         
                         ${feedback.images && feedback.images.length > 0 ? `
                             <div style="margin-bottom: 1rem;">
@@ -333,11 +439,17 @@
                 
                 if (feedback) {
                     const newStatus = feedback.status === 'pending' ? 'processed' : 'pending';
-                    await storage.updateFeedbackStatus(feedbackId, newStatus);
-                    loadFeedbacks();
+                    const result = await storage.updateFeedbackStatus(feedbackId, newStatus);
+                    
+                    if (result.success) {
+                        showStatus(`反馈状态已更新为: ${newStatus === 'pending' ? '待处理' : '已处理'}`, 'success');
+                        loadFeedbacks();
+                    } else {
+                        throw new Error(result.error);
+                    }
                 }
             } catch (error) {
-                alert('操作失败: ' + error.message);
+                showStatus('操作失败: ' + error.message, 'error');
             }
         }
 
@@ -345,10 +457,16 @@
         async function deleteFeedback(feedbackId) {
             if (confirm('确定要删除这条反馈吗？')) {
                 try {
-                    await storage.deleteFeedback(feedbackId);
-                    loadFeedbacks();
+                    const result = await storage.deleteFeedback(feedbackId);
+                    
+                    if (result.success) {
+                        showStatus('反馈删除成功', 'success');
+                        loadFeedbacks();
+                    } else {
+                        throw new Error(result.error);
+                    }
                 } catch (error) {
-                    alert('删除失败: ' + error.message);
+                    showStatus('删除失败: ' + error.message, 'error');
                 }
             }
         }
@@ -363,12 +481,34 @@
             };
 
             try {
-                await storage.saveFeedback(sampleData);
-                loadFeedbacks();
-                alert('示例数据添加成功！');
+                const result = await storage.saveFeedback(sampleData);
+                
+                if (result.success) {
+                    showStatus('示例数据添加成功！', 'success');
+                    loadFeedbacks();
+                } else {
+                    throw new Error(result.error);
+                }
             } catch (error) {
-                alert('添加失败: ' + error.message);
+                showStatus('添加失败: ' + error.message, 'error');
             }
+        }
+
+        // 导出数据
+        function exportData() {
+            storage.getFeedbacks().then(feedbacks => {
+                const dataStr = JSON.stringify(feedbacks, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = 'feedback_data_' + new Date().toISOString().split('T')[0] + '.json';
+                link.click();
+                
+                showStatus('数据导出成功', 'success');
+            }).catch(error => {
+                showStatus('导出失败: ' + error.message, 'error');
+            });
         }
     </script>
 </body>
