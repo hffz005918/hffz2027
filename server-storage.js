@@ -1,4 +1,4 @@
-// server-storage.js - 简化的服务器存储管理器
+// server-storage.js - 支持 GET 和 POST 的服务器存储管理器
 class ServerStorage {
     constructor() {
         this.serverURL = 'server.php';
@@ -15,26 +15,36 @@ class ServerStorage {
         try {
             this.log(`发送请求: ${JSON.stringify(data)}`);
             
-            // 确保数据是有效的 JSON
-            let requestBody;
-            try {
-                requestBody = JSON.stringify(data);
-            } catch (stringifyError) {
-                throw new Error(`数据序列化失败: ${stringifyError.message}`);
-            }
+            const action = data.action || 'get_all';
             
-            const response = await fetch(this.serverURL, {
-                method: 'POST',
+            // 对于获取数据使用 GET 请求，对于修改数据使用 POST 请求
+            const useGet = action === 'get_all';
+            
+            let url = this.serverURL;
+            let options = {
+                method: useGet ? 'GET' : 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                body: requestBody
-            });
+                }
+            };
+            
+            if (useGet) {
+                // GET 请求通过 URL 参数传递
+                const params = new URLSearchParams();
+                params.append('action', action);
+                url += '?' + params.toString();
+            } else {
+                // POST 请求通过 body 传递
+                options.body = JSON.stringify(data);
+            }
+            
+            this.log(`请求URL: ${url}, 方法: ${options.method}`);
+            
+            const response = await fetch(url, options);
 
             this.log(`响应状态: ${response.status} ${response.statusText}`);
             
             if (!response.ok) {
-                // 尝试获取更多错误信息
                 let errorDetail = '';
                 try {
                     const errorResponse = await response.text();
@@ -69,7 +79,7 @@ class ServerStorage {
         }
     }
 
-    // 获取所有反馈
+    // 获取所有反馈 - 使用 GET
     async getFeedbacks() {
         try {
             this.log('从服务器获取反馈数据...');
@@ -86,7 +96,7 @@ class ServerStorage {
         }
     }
 
-    // 保存反馈
+    // 保存反馈 - 使用 POST
     async saveFeedback(feedbackData) {
         try {
             this.log('保存反馈到服务器...');
@@ -108,7 +118,7 @@ class ServerStorage {
         }
     }
 
-    // 添加评论
+    // 其他方法保持不变...
     async addComment(feedbackId, commentData) {
         try {
             const result = await this.request({
@@ -123,7 +133,6 @@ class ServerStorage {
         }
     }
 
-    // 更新反馈状态
     async updateFeedbackStatus(feedbackId, status) {
         try {
             await this.request({
@@ -138,7 +147,6 @@ class ServerStorage {
         }
     }
 
-    // 删除反馈
     async deleteFeedback(feedbackId) {
         try {
             await this.request({
@@ -152,7 +160,6 @@ class ServerStorage {
         }
     }
 
-    // 点赞反馈
     async likeFeedback(feedbackId, userId) {
         try {
             await this.request({
