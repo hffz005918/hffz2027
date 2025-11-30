@@ -1,13 +1,8 @@
 <?php
-// server.php - 完整的服务器端存储方案
-
-// 设置错误报告
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-header('Content-Type: application/json');
+// server.php - 完整的员工反馈系统服务器端
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
 // 处理预检请求
@@ -20,15 +15,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 $dataFile = __DIR__ . '/feedback_data.json';
 $logFile = __DIR__ . '/server_debug.log';
 
-// 确保日志目录可写
-if (!file_exists($logFile)) {
-    file_put_contents($logFile, '');
-    chmod($logFile, 0666);
-}
+// 设置错误报告
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // 生产环境设置为 0
 
 // 记录请求信息
 function logMessage($message) {
-    file_put_contents($GLOBALS['logFile'], date('Y-m-d H:i:s') . " - " . $message . "\n", FILE_APPEND);
+    global $logFile;
+    $timestamp = date('Y-m-d H:i:s');
+    $logEntry = "{$timestamp} - {$message}\n";
+    file_put_contents($logFile, $logEntry, FILE_APPEND);
 }
 
 // 自动权限检查和设置函数
@@ -37,9 +33,13 @@ function setupFilePermissions($filename) {
     
     // 如果文件不存在，创建它
     if (!file_exists($filename)) {
-        file_put_contents($filename, '[]');
-        $log[] = "创建文件: $filename";
-        chmod($filename, 0666);
+        if (file_put_contents($filename, '[]') !== false) {
+            $log[] = "创建文件: {$filename}";
+            chmod($filename, 0666);
+        } else {
+            $log[] = "❌ 文件创建失败: {$filename}";
+            return false;
+        }
     }
     
     // 检查是否可写
@@ -51,17 +51,18 @@ function setupFilePermissions($filename) {
             $log[] = "✅ 权限修复成功";
         } else {
             $log[] = "❌ 权限修复失败";
+            return false;
         }
     } else {
         $log[] = "✅ 文件可写，权限正常";
     }
     
     // 记录调试信息
-    if (file_exists($GLOBALS['logFile'])) {
-        file_put_contents($GLOBALS['logFile'], date('Y-m-d H:i:s') . " - " . implode(" | ", $log) . "\n", FILE_APPEND);
+    foreach ($log as $logMessage) {
+        logMessage($logMessage);
     }
     
-    return is_writable($filename);
+    return true;
 }
 
 // 在每次请求开始时自动检查权限
@@ -70,42 +71,12 @@ logMessage("请求方法: " . $_SERVER['REQUEST_METHOD']);
 logMessage("请求URI: " . ($_SERVER['REQUEST_URI'] ?? 'unknown'));
 
 // 执行权限检查
-$permissionOk = setupFilePermissions($dataFile);
+$dataFilePermissionOk = setupFilePermissions($dataFile);
+$logFilePermissionOk = setupFilePermissions($logFile);
 
-if (!$permissionOk) {
-    logMessage("⚠️ 警告: 文件权限可能有问题");
+if (!$dataFilePermissionOk) {
+    logMessage("⚠️ 警告: 数据文件权限可能有问题");
 }
-
-// 获取请求数据
-$input = [];
-$inputData = '';
-
-try {
-    // 支持 GET 和 POST 请求
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $inputData = file_get_contents('php://input');
-        logMessage("原始输入数据: " . $inputData);
-        
-        if (!empty($inputData)) {
-            $input = json_decode($inputData, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                logMessage("JSON 解析错误: " . json_last_error_msg());
-                $input = [];
-            }
-        }
-    } else if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-        // 对于GET请求，从查询参数获取action
-        $input['action'] = $_GET['action'] ?? 'get_all';
-        logMessage("GET请求动作: " . $input['action']);
-    }
-} catch (Exception $e) {
-    logMessage("获取输入数据异常: " . $e->getMessage());
-}
-
-$action = $input['action'] ?? '';
-
-logMessage("请求动作: " . $action);
-logMessage("请求数据: " . json_encode($input));
 
 // 数据操作函数
 function getData() {
@@ -121,7 +92,12 @@ function getData() {
     }
     
     $decoded = json_decode($data, true);
-    return $decoded ?: [];
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        logMessage("JSON 解析错误: " . json_last_error_msg());
+        return [];
+    }
+    
+    return is_array($decoded) ? $decoded : [];
 }
 
 function saveData($data) {
@@ -133,7 +109,13 @@ function saveData($data) {
         return false;
     }
     
-    $result = file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    $jsonData = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    if ($jsonData === false) {
+        logMessage("❌ JSON 编码失败");
+        return false;
+    }
+    
+    $result = file_put_contents($dataFile, $jsonData, LOCK_EX);
     
     if ($result === false) {
         logMessage("❌ 文件写入失败");
@@ -144,6 +126,46 @@ function saveData($data) {
     return true;
 }
 
+// 获取请求数据
+$input = [];
+$action = '';
+
+try {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $inputData = file_get_contents('php://input');
+        logMessage("原始输入数据长度: " . strlen($inputData));
+        
+        if (!empty($inputData)) {
+            $input = json_decode($inputData, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $errorMsg = "JSON 解析错误: " . json_last_error_msg();
+                logMessage($errorMsg);
+                throw new Exception($errorMsg);
+            }
+        }
+        $action = $input['action'] ?? '';
+    } else if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+        // 对于GET请求，从查询参数获取action
+        $action = $_GET['action'] ?? 'get_all';
+        $input['action'] = $action;
+        
+        // 对于GET请求的保存操作，从参数获取数据
+        if ($action === 'save_feedback' && isset($_GET['data'])) {
+            $input['feedback'] = json_decode($_GET['data'], true);
+        }
+    }
+} catch (Exception $e) {
+    logMessage("获取输入数据异常: " . $e->getMessage());
+    echo json_encode([
+        'success' => false, 
+        'error' => '数据解析失败: ' . $e->getMessage()
+    ]);
+    exit;
+}
+
+logMessage("请求动作: " . $action);
+logMessage("请求数据: " . json_encode($input, JSON_UNESCAPED_UNICODE));
+
 try {
     switch ($action) {
         case 'get_all':
@@ -152,25 +174,30 @@ try {
                 'success' => true,
                 'data' => $feedbacks,
                 'count' => count($feedbacks),
-                'permission_status' => $permissionOk ? 'ok' : 'warning'
-            ]);
+                'permission_status' => $dataFilePermissionOk ? 'ok' : 'warning',
+                'timestamp' => date('c')
+            ], JSON_UNESCAPED_UNICODE);
             logMessage("GET_ALL请求完成，返回数据条数: " . count($feedbacks));
             break;
             
         case 'save_feedback':
             $feedback = $input['feedback'] ?? null;
             
-            if (!$feedback) {
-                echo json_encode([
+            if (!$feedback || !is_array($feedback)) {
+                $errorResponse = [
                     'success' => false, 
-                    'error' => '没有接收到反馈数据',
-                    'debug_input' => $input
-                ]);
-                logMessage("错误: 没有接收到反馈数据");
+                    'error' => '没有接收到有效的反馈数据',
+                    'debug' => [
+                        'received_feedback' => $feedback,
+                        'input_keys' => array_keys($input)
+                    ]
+                ];
+                echo json_encode($errorResponse, JSON_UNESCAPED_UNICODE);
+                logMessage("错误: 没有接收到有效的反馈数据");
                 break;
             }
             
-            logMessage("接收到反馈数据: " . json_encode($feedback));
+            logMessage("接收到反馈数据，类型: " . ($feedback['type'] ?? 'unknown'));
             
             // 添加必要字段
             if (!isset($feedback['id'])) {
@@ -204,24 +231,26 @@ try {
             $saved = saveData($feedbacks);
             
             if ($saved) {
-                echo json_encode([
+                $successResponse = [
                     'success' => true,
                     'id' => $feedback['id'],
-                    'message' => '保存成功',
+                    'message' => '反馈提交成功',
                     'debug' => [
                         'total_feedbacks' => count($feedbacks),
                         'file_path' => $dataFile,
                         'file_exists' => file_exists($dataFile),
-                        'file_writable' => is_writable($dataFile)
+                        'file_writable' => is_writable($dataFile),
+                        'file_size' => file_exists($dataFile) ? filesize($dataFile) : 0
                     ]
-                ]);
+                ];
+                echo json_encode($successResponse, JSON_UNESCAPED_UNICODE);
                 logMessage("✅ 反馈保存成功，ID: " . $feedback['id']);
                 
                 // 验证数据确实保存了
                 $verifyData = getData();
                 logMessage("验证保存: 文件现在包含 " . count($verifyData) . " 条数据");
             } else {
-                echo json_encode([
+                $errorResponse = [
                     'success' => false,
                     'error' => '保存到文件失败，请检查文件权限',
                     'debug' => [
@@ -230,12 +259,235 @@ try {
                         'file_writable' => is_writable($dataFile),
                         'last_error' => error_get_last()
                     ]
-                ]);
+                ];
+                echo json_encode($errorResponse, JSON_UNESCAPED_UNICODE);
                 logMessage("❌ 反馈保存失败");
             }
             break;
             
-        // ... 其他操作保持不变 ...
+        case 'add_comment':
+            $feedbackId = $input['feedbackId'] ?? '';
+            $comment = $input['comment'] ?? null;
+            
+            if (!$feedbackId || !$comment || !is_array($comment)) {
+                echo json_encode([
+                    'success' => false, 
+                    'error' => '缺少必要参数或参数格式错误'
+                ], JSON_UNESCAPED_UNICODE);
+                break;
+            }
+            
+            $feedbacks = getData();
+            $found = false;
+            
+            foreach ($feedbacks as &$feedback) {
+                if ($feedback['id'] === $feedbackId) {
+                    if (!isset($feedback['comments'])) {
+                        $feedback['comments'] = [];
+                    }
+                    
+                    $comment['id'] = 'comment_' . uniqid();
+                    $comment['timestamp'] = date('c');
+                    
+                    $feedback['comments'][] = $comment;
+                    $found = true;
+                    break;
+                }
+            }
+            
+            if ($found) {
+                $saved = saveData($feedbacks);
+                if ($saved) {
+                    echo json_encode([
+                        'success' => true,
+                        'commentId' => $comment['id'],
+                        'message' => '评论添加成功'
+                    ], JSON_UNESCAPED_UNICODE);
+                    logMessage("✅ 评论添加成功，反馈ID: " . $feedbackId);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'error' => '保存失败'
+                    ], JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => '反馈不存在'
+                ], JSON_UNESCAPED_UNICODE);
+            }
+            break;
+            
+        case 'update_status':
+            $feedbackId = $input['feedbackId'] ?? '';
+            $status = $input['status'] ?? '';
+            
+            if (!$feedbackId || !$status) {
+                echo json_encode([
+                    'success' => false, 
+                    'error' => '缺少必要参数'
+                ], JSON_UNESCAPED_UNICODE);
+                break;
+            }
+            
+            $feedbacks = getData();
+            $found = false;
+            
+            foreach ($feedbacks as &$feedback) {
+                if ($feedback['id'] === $feedbackId) {
+                    $feedback['status'] = $status;
+                    $found = true;
+                    logMessage("更新反馈状态: {$feedbackId} -> {$status}");
+                    break;
+                }
+            }
+            
+            if ($found) {
+                $saved = saveData($feedbacks);
+                if ($saved) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => '状态更新成功'
+                    ], JSON_UNESCAPED_UNICODE);
+                    logMessage("✅ 状态更新成功，反馈ID: " . $feedbackId . " -> " . $status);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'error' => '保存失败'
+                    ], JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => '反馈不存在'
+                ], JSON_UNESCAPED_UNICODE);
+            }
+            break;
+            
+        case 'delete_feedback':
+            $feedbackId = $input['feedbackId'] ?? '';
+            
+            if (!$feedbackId) {
+                echo json_encode([
+                    'success' => false, 
+                    'error' => '缺少反馈ID'
+                ], JSON_UNESCAPED_UNICODE);
+                break;
+            }
+            
+            $feedbacks = getData();
+            $newFeedbacks = array_filter($feedbacks, function($feedback) use ($feedbackId) {
+                return $feedback['id'] !== $feedbackId;
+            });
+            
+            if (count($newFeedbacks) < count($feedbacks)) {
+                $saved = saveData(array_values($newFeedbacks));
+                if ($saved) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => '删除成功',
+                        'deleted_id' => $feedbackId
+                    ], JSON_UNESCAPED_UNICODE);
+                    logMessage("✅ 删除成功，反馈ID: " . $feedbackId);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'error' => '保存失败'
+                    ], JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => '反馈不存在'
+                ], JSON_UNESCAPED_UNICODE);
+            }
+            break;
+            
+        case 'like_feedback':
+            $feedbackId = $input['feedbackId'] ?? '';
+            $userId = $input['userId'] ?? '';
+            
+            if (!$feedbackId) {
+                echo json_encode([
+                    'success' => false, 
+                    'error' => '缺少反馈ID'
+                ], JSON_UNESCAPED_UNICODE);
+                break;
+            }
+            
+            $feedbacks = getData();
+            $found = false;
+            
+            foreach ($feedbacks as &$feedback) {
+                if ($feedback['id'] === $feedbackId) {
+                    if (!isset($feedback['likes'])) {
+                        $feedback['likes'] = 0;
+                    }
+                    if (!isset($feedback['likedBy'])) {
+                        $feedback['likedBy'] = [];
+                    }
+                    
+                    // 检查用户是否已经点赞
+                    if ($userId && !in_array($userId, $feedback['likedBy'])) {
+                        $feedback['likes']++;
+                        $feedback['likedBy'][] = $userId;
+                        logMessage("用户 {$userId} 点赞反馈 {$feedbackId}");
+                    } elseif (!$userId) {
+                        // 如果没有用户ID，直接增加点赞数
+                        $feedback['likes']++;
+                        logMessage("匿名点赞反馈 {$feedbackId}");
+                    }
+                    
+                    $found = true;
+                    break;
+                }
+            }
+            
+            if ($found) {
+                $saved = saveData($feedbacks);
+                if ($saved) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => '点赞成功',
+                        'likes' => $feedbacks[array_search($feedbackId, array_column($feedbacks, 'id'))]['likes'] ?? 0
+                    ], JSON_UNESCAPED_UNICODE);
+                    logMessage("✅ 点赞成功，反馈ID: " . $feedbackId);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'error' => '保存失败'
+                    ], JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => '反馈不存在'
+                ], JSON_UNESCAPED_UNICODE);
+            }
+            break;
+            
+        case 'test_connection':
+            // 测试连接接口
+            echo json_encode([
+                'success' => true,
+                'message' => '服务器连接正常',
+                'server_time' => date('c'),
+                'php_version' => PHP_VERSION,
+                'file_permissions' => [
+                    'data_file' => [
+                        'exists' => file_exists($dataFile),
+                        'writable' => is_writable($dataFile),
+                        'size' => file_exists($dataFile) ? filesize($dataFile) : 0
+                    ],
+                    'log_file' => [
+                        'exists' => file_exists($logFile),
+                        'writable' => is_writable($logFile),
+                        'size' => file_exists($logFile) ? filesize($logFile) : 0
+                    ]
+                ]
+            ], JSON_UNESCAPED_UNICODE);
+            logMessage("测试连接请求");
+            break;
             
         default:
             // 默认返回所有数据
@@ -244,16 +496,23 @@ try {
                 'success' => true,
                 'data' => $feedbacks,
                 'count' => count($feedbacks),
-                'permission_status' => $permissionOk ? 'ok' : 'warning'
-            ]);
+                'permission_status' => $dataFilePermissionOk ? 'ok' : 'warning',
+                'server_info' => [
+                    'version' => '1.0',
+                    'timestamp' => date('c')
+                ]
+            ], JSON_UNESCAPED_UNICODE);
             logMessage("默认请求完成，返回数据条数: " . count($feedbacks));
     }
 } catch (Exception $e) {
-    echo json_encode([
+    $errorResponse = [
         'success' => false, 
-        'error' => '服务器异常: ' . $e->getMessage()
-    ]);
+        'error' => '服务器异常: ' . $e->getMessage(),
+        'trace' => $e->getTraceAsString()
+    ];
+    echo json_encode($errorResponse, JSON_UNESCAPED_UNICODE);
     logMessage("异常: " . $e->getMessage());
+    logMessage("堆栈跟踪: " . $e->getTraceAsString());
 }
 
 logMessage("=== 请求处理完成 ===\n");
