@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -366,26 +367,6 @@
             display: none;
         }
 
-        .server-status {
-            padding: 0.5rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
-            text-align: center;
-            font-size: 0.85rem;
-        }
-
-        .server-online {
-            background: #f6ffed;
-            border: 1px solid #b7eb8f;
-            color: var(--success-color);
-        }
-
-        .server-offline {
-            background: #fff2f0;
-            border: 1px solid #ffccc7;
-            color: var(--error-color);
-        }
-
         @media (max-width: 768px) {
             .feedback-card {
                 padding: 1.5rem;
@@ -436,10 +417,9 @@
             </div>
 
             <div class="storage-notice">
-                <strong>实时同步：</strong>所有反馈将实时保存到服务器，管理员会及时查看和处理。
+                <strong>实时同步：</strong>所有反馈将实时保存，管理员会及时查看和处理。
             </div>
 
-            <div id="serverStatus" class="server-status" style="display: none;"></div>
             <div class="error-message" id="errorMessage"></div>
             
             <form id="feedbackForm">
@@ -508,86 +488,63 @@
     </div>
 
     <script>
-        // 服务器存储管理器
-        class ServerStorage {
+        // 模拟服务器存储 - 在实际应用中应替换为真实的服务器API调用
+        class FeedbackStorage {
             constructor() {
-                this.serverURL = 'server.php';
-                this.debug = true;
-            }
-
-            log(message) {
-                if (this.debug) {
-                    console.log('🔍 ServerStorage:', message);
-                }
-            }
-
-            async request(data = {}) {
-                try {
-                    this.log(`发送请求: ${JSON.stringify(data)}`);
-                    
-                    const response = await fetch(this.serverURL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`服务器错误: ${response.status} ${response.statusText}`);
-                    }
-
-                    const result = await response.json();
-                    this.log(`收到响应: ${JSON.stringify(result)}`);
-                    
-                    if (!result.success) {
-                        throw new Error(result.error || '服务器返回错误');
-                    }
-
-                    return result;
-                } catch (error) {
-                    this.log(`请求失败: ${error.message}`);
-                    throw error;
-                }
+                this.storageKey = 'employeeFeedbacks';
             }
 
             // 获取所有反馈
-            async getFeedbacks() {
-                try {
-                    this.log('从服务器获取反馈数据...');
-                    
-                    const result = await this.request({
-                        action: 'get_all'
-                    });
-
-                    this.log(`获取到 ${result.data.length} 条反馈`);
-                    return Array.isArray(result.data) ? result.data : [];
-                } catch (error) {
-                    this.log(`❌ 获取数据失败: ${error.message}`);
-                    throw error;
-                }
+            getFeedbacks() {
+                return new Promise((resolve) => {
+                    try {
+                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+                        resolve(feedbacks);
+                    } catch (error) {
+                        console.error('获取反馈数据失败:', error);
+                        resolve([]);
+                    }
+                });
             }
 
             // 保存反馈
-            async saveFeedback(feedbackData) {
-                try {
-                    this.log('保存反馈到服务器...');
-                    
-                    const result = await this.request({
-                        action: 'save_feedback',
-                        feedback: feedbackData
-                    });
-
-                    this.log('✅ 反馈保存成功');
-                    return { 
-                        success: true, 
-                        id: result.id,
-                        message: result.message
-                    };
-                } catch (error) {
-                    this.log(`❌ 保存失败: ${error.message}`);
-                    return { success: false, error: error.message };
-                }
+            saveFeedback(feedbackData) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        // 模拟网络延迟
+                        setTimeout(() => {
+                            try {
+                                const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+                                
+                                // 添加ID和时间戳
+                                feedbackData.id = 'feedback_' + Date.now();
+                                feedbackData.timestamp = new Date().toISOString();
+                                feedbackData.status = 'pending';
+                                feedbackData.likes = 0;
+                                feedbackData.comments = [];
+                                
+                                feedbacks.push(feedbackData);
+                                localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
+                                
+                                resolve({
+                                    success: true,
+                                    id: feedbackData.id,
+                                    message: '反馈提交成功'
+                                });
+                            } catch (error) {
+                                reject({
+                                    success: false,
+                                    error: '保存数据失败: ' + error.message
+                                });
+                            }
+                        }, 1000);
+                    } catch (error) {
+                        reject({
+                            success: false,
+                            error: '保存失败: ' + error.message
+                        });
+                    }
+                });
             }
         }
 
@@ -604,15 +561,11 @@
             const imageCount = document.getElementById('imageCount');
             const feedbacksList = document.getElementById('feedbacksList');
             const errorMessage = document.getElementById('errorMessage');
-            const serverStatus = document.getElementById('serverStatus');
             
-            const storage = new ServerStorage();
+            const storage = new FeedbackStorage();
             let selectedImages = [];
             const MAX_IMAGES = 3;
             const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
-            // 检查服务器状态
-            checkServerStatus();
 
             // 加载反馈列表
             loadFeedbacks();
@@ -731,20 +684,6 @@
                     imageCount.className = 'image-count warning';
                 } else {
                     imageCount.className = 'image-count';
-                }
-            }
-
-            // 检查服务器状态
-            async function checkServerStatus() {
-                try {
-                    await storage.getFeedbacks();
-                    serverStatus.textContent = '✅ 服务器连接正常';
-                    serverStatus.className = 'server-status server-online';
-                    serverStatus.style.display = 'block';
-                } catch (error) {
-                    serverStatus.textContent = '❌ 服务器连接失败，请检查网络连接';
-                    serverStatus.className = 'server-status server-offline';
-                    serverStatus.style.display = 'block';
                 }
             }
 

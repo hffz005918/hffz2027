@@ -1,13 +1,22 @@
 <?php
-// server.php - 完整的服务器端存储方案
+// server.php - 修复405错误的版本
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
 // 处理预检请求
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
+    exit(0);
+}
+
+// 允许GET和POST方法
+if ($_SERVER['REQUEST_METHOD'] != 'POST' && $_SERVER['REQUEST_METHOD'] != 'GET') {
+    echo json_encode([
+        'success' => false,
+        'error' => '方法不允许，仅支持GET和POST请求'
+    ]);
     exit(0);
 }
 
@@ -17,7 +26,10 @@ $logFile = __DIR__ . '/server_debug.log';
 
 // 记录请求信息
 function logMessage($message) {
-    file_put_contents($GLOBALS['logFile'], date('Y-m-d H:i:s') . " - " . $message . "\n", FILE_APPEND);
+    global $logFile;
+    if (file_exists($logFile)) {
+        file_put_contents($logFile, date('Y-m-d H:i:s') . " - " . $message . "\n", FILE_APPEND);
+    }
 }
 
 // 自动权限检查和设置函数
@@ -28,7 +40,7 @@ function setupFilePermissions($filename) {
     if (!file_exists($filename)) {
         file_put_contents($filename, '[]');
         $log[] = "创建文件: $filename";
-        chmod($filename, 0666);
+        @chmod($filename, 0666);
     }
     
     // 检查是否可写
@@ -36,7 +48,7 @@ function setupFilePermissions($filename) {
         $log[] = "文件不可写，尝试修复权限...";
         
         // 尝试更改权限
-        if (chmod($filename, 0666)) {
+        if (@chmod($filename, 0666)) {
             $log[] = "✅ 权限修复成功";
         } else {
             $log[] = "❌ 权限修复失败";
@@ -46,9 +58,7 @@ function setupFilePermissions($filename) {
     }
     
     // 记录调试信息
-    if (file_exists($GLOBALS['logFile'])) {
-        file_put_contents($GLOBALS['logFile'], date('Y-m-d H:i:s') . " - " . implode(" | ", $log) . "\n", FILE_APPEND);
-    }
+    logMessage(implode(" | ", $log));
     
     return is_writable($filename);
 }
@@ -113,11 +123,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 } else {
-    // 对于GET请求，也返回数据
-    $input = ['action' => 'get_all'];
+    // 对于GET请求，使用查询参数
+    $input = $_GET;
 }
 
-$action = $input['action'] ?? '';
+$action = $input['action'] ?? 'get_all';
 
 logMessage("请求动作: " . $action);
 logMessage("请求数据: " . json_encode($input));
@@ -190,59 +200,6 @@ try {
             }
             break;
             
-        case 'add_comment':
-            $feedbackId = $input['feedbackId'] ?? '';
-            $comment = $input['comment'] ?? null;
-            
-            if (!$feedbackId || !$comment) {
-                echo json_encode([
-                    'success' => false, 
-                    'error' => '缺少必要参数'
-                ]);
-                break;
-            }
-            
-            $feedbacks = getData();
-            $found = false;
-            
-            foreach ($feedbacks as &$feedback) {
-                if ($feedback['id'] === $feedbackId) {
-                    if (!isset($feedback['comments'])) {
-                        $feedback['comments'] = [];
-                    }
-                    
-                    $comment['id'] = 'comment_' . uniqid();
-                    $comment['timestamp'] = date('c');
-                    
-                    $feedback['comments'][] = $comment;
-                    $found = true;
-                    break;
-                }
-            }
-            
-            if ($found) {
-                $saved = saveData($feedbacks);
-                if ($saved) {
-                    echo json_encode([
-                        'success' => true,
-                        'commentId' => $comment['id'],
-                        'message' => '评论添加成功'
-                    ]);
-                    logMessage("✅ 评论添加成功，反馈ID: " . $feedbackId);
-                } else {
-                    echo json_encode([
-                        'success' => false,
-                        'error' => '保存失败'
-                    ]);
-                }
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'error' => '反馈不存在'
-                ]);
-            }
-            break;
-            
         case 'update_status':
             $feedbackId = $input['feedbackId'] ?? '';
             $status = $input['status'] ?? '';
@@ -312,66 +269,6 @@ try {
                         'message' => '删除成功'
                     ]);
                     logMessage("✅ 删除成功，反馈ID: " . $feedbackId);
-                } else {
-                    echo json_encode([
-                        'success' => false,
-                        'error' => '保存失败'
-                    ]);
-                }
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'error' => '反馈不存在'
-                ]);
-            }
-            break;
-            
-        case 'like_feedback':
-            $feedbackId = $input['feedbackId'] ?? '';
-            $userId = $input['userId'] ?? '';
-            
-            if (!$feedbackId) {
-                echo json_encode([
-                    'success' => false, 
-                    'error' => '缺少反馈ID'
-                ]);
-                break;
-            }
-            
-            $feedbacks = getData();
-            $found = false;
-            
-            foreach ($feedbacks as &$feedback) {
-                if ($feedback['id'] === $feedbackId) {
-                    if (!isset($feedback['likes'])) {
-                        $feedback['likes'] = 0;
-                    }
-                    if (!isset($feedback['likedBy'])) {
-                        $feedback['likedBy'] = [];
-                    }
-                    
-                    // 检查用户是否已经点赞
-                    if ($userId && !in_array($userId, $feedback['likedBy'])) {
-                        $feedback['likes']++;
-                        $feedback['likedBy'][] = $userId;
-                    } elseif (!$userId) {
-                        // 如果没有用户ID，直接增加点赞数
-                        $feedback['likes']++;
-                    }
-                    
-                    $found = true;
-                    break;
-                }
-            }
-            
-            if ($found) {
-                $saved = saveData($feedbacks);
-                if ($saved) {
-                    echo json_encode([
-                        'success' => true,
-                        'message' => '点赞成功'
-                    ]);
-                    logMessage("✅ 点赞成功，反馈ID: " . $feedbackId);
                 } else {
                     echo json_encode([
                         'success' => false,
