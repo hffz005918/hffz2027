@@ -257,10 +257,31 @@
         </div>
     </div>
 
-    <script src="server-storage-get.js"></script>
-    <script>
-        // 创建存储实例
-        const storage = new ServerStorage();
+    <script src="direct-storage.js"></script>
+
+<script>
+    const storage = new DirectStorage();
+    
+    // 修改测试连接函数
+    async function testConnection() {
+        try {
+            const loginStatus = document.getElementById('loginStatus');
+            loginStatus.innerHTML = '正在测试服务器连接...';
+            loginStatus.className = 'login-status';
+            loginStatus.style.display = 'block';
+            
+            const result = await storage.testConnection();
+            loginStatus.innerHTML = `✅ 服务器连接正常 (使用: ${result.serverFile})`;
+            loginStatus.className = 'login-status login-success';
+            return true;
+        } catch (error) {
+            const loginStatus = document.getElementById('loginStatus');
+            loginStatus.innerHTML = `❌ 服务器连接失败: ${error.message}`;
+            loginStatus.className = 'login-status login-error';
+            return false;
+        }
+    }
+</script>
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
