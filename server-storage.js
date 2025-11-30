@@ -1,3 +1,4 @@
+// server-storage.js - 服务器存储管理器
 class ServerStorage {
     constructor() {
         this.serverURL = 'server.php';
@@ -12,6 +13,8 @@ class ServerStorage {
 
     async request(data = {}) {
         try {
+            this.log(`发送请求: ${JSON.stringify(data)}`);
+            
             const response = await fetch(this.serverURL, {
                 method: 'POST',
                 headers: {
@@ -25,6 +28,7 @@ class ServerStorage {
             }
 
             const result = await response.json();
+            this.log(`收到响应: ${JSON.stringify(result)}`);
             
             if (!result.success) {
                 throw new Error(result.error || '服务器返回错误');
@@ -42,23 +46,16 @@ class ServerStorage {
         try {
             this.log('保存反馈到服务器...');
             
-            // 确保有ID和时间戳
-            if (!feedbackData.id) {
-                feedbackData.id = 'feedback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            }
-            if (!feedbackData.timestamp) {
-                feedbackData.timestamp = new Date().toISOString();
-            }
-            
             const result = await this.request({
-                action: 'save',
+                action: 'save_feedback',
                 feedback: feedbackData
             });
 
             this.log('✅ 反馈保存成功');
             return { 
                 success: true, 
-                id: feedbackData.id
+                id: result.id,
+                message: result.message
             };
         } catch (error) {
             this.log(`❌ 保存失败: ${error.message}`);
@@ -72,14 +69,14 @@ class ServerStorage {
             this.log('从服务器获取反馈数据...');
             
             const result = await this.request({
-                action: 'get'
+                action: 'get_all'
             });
 
             this.log(`获取到 ${result.data.length} 条反馈`);
             return Array.isArray(result.data) ? result.data : [];
         } catch (error) {
             this.log(`❌ 获取数据失败: ${error.message}`);
-            return [];
+            throw error;
         }
     }
 
@@ -92,7 +89,7 @@ class ServerStorage {
                 comment: commentData
             });
 
-            return { success: true, commentId: commentData.id };
+            return { success: true, commentId: result.commentId };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -117,7 +114,7 @@ class ServerStorage {
     async deleteFeedback(feedbackId) {
         try {
             await this.request({
-                action: 'delete',
+                action: 'delete_feedback',
                 feedbackId: feedbackId
             });
 
@@ -131,7 +128,7 @@ class ServerStorage {
     async likeFeedback(feedbackId, userId) {
         try {
             await this.request({
-                action: 'like',
+                action: 'like_feedback',
                 feedbackId: feedbackId,
                 userId: userId
             });
