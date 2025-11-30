@@ -148,218 +148,231 @@
     </div>
 
     <script>
-        // 简单的存储管理器 - 使用localStorage作为后备
-        class SimpleStorage {
-            constructor() {
-                this.storageKey = 'hongfang_feedbacks';
-            }
-
-            async getFeedbacks() {
-                return new Promise((resolve) => {
-                    try {
-                        const data = localStorage.getItem(this.storageKey);
-                        const feedbacks = data ? JSON.parse(data) : [];
-                        console.log('获取到反馈数据:', feedbacks);
-                        resolve(feedbacks);
-                    } catch (error) {
-                        console.error('获取数据失败:', error);
-                        resolve([]);
-                    }
-                });
-            }
-
-            async saveFeedback(feedbackData) {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        
-                        // 添加必要字段
-                        feedbackData.id = 'feedback_' + Date.now();
-                        feedbackData.timestamp = new Date().toISOString();
-                        feedbackData.status = feedbackData.status || 'pending';
-                        
-                        feedbacks.push(feedbackData);
-                        localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
-                        
-                        resolve({ success: true, id: feedbackData.id });
-                    } catch (error) {
-                        resolve({ success: false, error: error.message });
-                    }
-                });
-            }
-
-            async updateFeedbackStatus(feedbackId, status) {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        const feedback = feedbacks.find(f => f.id === feedbackId);
-                        
-                        if (feedback) {
-                            feedback.status = status;
-                            localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
-                            resolve({ success: true });
-                        } else {
-                            resolve({ success: false, error: '反馈不存在' });
-                        }
-                    } catch (error) {
-                        resolve({ success: false, error: error.message });
-                    }
-                });
-            }
-
-            async deleteFeedback(feedbackId) {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        const newFeedbacks = feedbacks.filter(f => f.id !== feedbackId);
-                        
-                        localStorage.setItem(this.storageKey, JSON.stringify(newFeedbacks));
-                        resolve({ success: true });
-                    } catch (error) {
-                        resolve({ success: false, error: error.message });
-                    }
-                });
-            }
+      // 统一的存储管理器 - 与员工反馈页面保持一致
+    class FeedbackStorage {
+        constructor() {
+            this.storageKey = 'employeeFeedbacks';
         }
 
-        const storage = new SimpleStorage();
-
-        // 页面功能
-        document.addEventListener('DOMContentLoaded', function() {
-            // 登录表单处理
-            document.getElementById('loginForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                
-                // 简单的认证
-                if (username === 'admin' && password === '123456') {
-                    document.getElementById('loginSection').style.display = 'none';
-                    document.getElementById('adminPanel').style.display = 'block';
-                    loadFeedbacks();
-                } else {
-                    alert('用户名或密码错误！');
-                }
-            });
-            
-            // 尝试自动登录（开发时方便测试）
-            setTimeout(() => {
-                document.getElementById('username').value = 'admin';
-                document.getElementById('password').value = '123456';
-            }, 100);
-        });
-
-        // 加载反馈数据
-        async function loadFeedbacks() {
-            try {
-                const feedbacks = await storage.getFeedbacks();
-                displayFeedbacks(feedbacks);
-            } catch (error) {
-                console.error('加载数据失败:', error);
-                document.getElementById('feedbackList').innerHTML = '<p style="color: red;">加载失败: ' + error.message + '</p>';
-            }
-        }
-
-        // 显示反馈数据
-        function displayFeedbacks(feedbacks) {
-            const container = document.getElementById('feedbackList');
-            
-            if (feedbacks.length === 0) {
-                container.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">暂无反馈数据</p>';
-                return;
-            }
-            
-            let html = '';
-            feedbacks.forEach(feedback => {
-                const date = new Date(feedback.timestamp);
-                const timeString = date.toLocaleString('zh-CN');
-                
-                html += `
-                    <div class="feedback-item">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <strong>${feedback.employeeName || '匿名用户'}</strong>
-                            <span style="color: #666; font-size: 0.9rem;">${timeString}</span>
-                        </div>
-                        <div style="margin-bottom: 0.5rem;">
-                            <span style="background: #e6f7ff; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">
-                                ${getTypeText(feedback.type)}
-                            </span>
-                            <span style="margin-left: 8px; background: ${feedback.status === 'pending' ? '#fff7e6' : '#f6ffed'}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">
-                                ${feedback.status === 'pending' ? '待处理' : '已处理'}
-                            </span>
-                        </div>
-                        <div style="margin-bottom: 1rem;">${feedback.content}</div>
-                        <div>
-                            <button onclick="processFeedback('${feedback.id}')" style="padding: 4px 8px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">
-                                ${feedback.status === 'pending' ? '标记处理' : '标记待处理'}
-                            </button>
-                            <button onclick="deleteFeedback('${feedback.id}')" style="padding: 4px 8px; background: #ff4d4f; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                删除
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-
-        function getTypeText(type) {
-            const types = {
-                'suggestion': '意见建议',
-                'problem': '问题反馈',
-                'complaint': '投诉举报',
-                'other': '其他'
-            };
-            return types[type] || '未知';
-        }
-
-        // 处理反馈
-        async function processFeedback(feedbackId) {
-            try {
-                const feedbacks = await storage.getFeedbacks();
-                const feedback = feedbacks.find(f => f.id === feedbackId);
-                
-                if (feedback) {
-                    const newStatus = feedback.status === 'pending' ? 'processed' : 'pending';
-                    await storage.updateFeedbackStatus(feedbackId, newStatus);
-                    loadFeedbacks();
-                }
-            } catch (error) {
-                alert('操作失败: ' + error.message);
-            }
-        }
-
-        // 删除反馈
-        async function deleteFeedback(feedbackId) {
-            if (confirm('确定要删除这条反馈吗？')) {
+        async getFeedbacks() {
+            return new Promise((resolve) => {
                 try {
-                    await storage.deleteFeedback(feedbackId);
-                    loadFeedbacks();
+                    const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+                    console.log('获取到反馈数据:', feedbacks);
+                    resolve(feedbacks);
                 } catch (error) {
-                    alert('删除失败: ' + error.message);
+                    console.error('获取数据失败:', error);
+                    resolve([]);
                 }
-            }
+            });
         }
 
-        // 添加示例数据
-        async function addSampleData() {
-            const sampleData = {
-                employeeName: '测试用户',
-                type: 'suggestion',
-                content: '这是一个测试反馈，用于演示系统功能。建议改善食堂伙食质量。',
-                status: 'pending'
-            };
+        async saveFeedback(feedbackData) {
+            return new Promise((resolve) => {
+                try {
+                    const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+                    
+                    // 添加必要字段
+                    feedbackData.id = 'feedback_' + Date.now();
+                    feedbackData.timestamp = new Date().toISOString();
+                    feedbackData.status = feedbackData.status || 'pending';
+                    feedbackData.likes = feedbackData.likes || 0;
+                    feedbackData.comments = feedbackData.comments || [];
+                    
+                    feedbacks.push(feedbackData);
+                    localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
+                    
+                    resolve({ success: true, id: feedbackData.id });
+                } catch (error) {
+                    resolve({ success: false, error: error.message });
+                }
+            });
+        }
 
-            try {
-                await storage.saveFeedback(sampleData);
+        async updateFeedbackStatus(feedbackId, status) {
+            return new Promise((resolve) => {
+                try {
+                    const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+                    const feedback = feedbacks.find(f => f.id === feedbackId);
+                    
+                    if (feedback) {
+                        feedback.status = status;
+                        localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
+                        resolve({ success: true });
+                    } else {
+                        resolve({ success: false, error: '反馈不存在' });
+                    }
+                } catch (error) {
+                    resolve({ success: false, error: error.message });
+                }
+            });
+        }
+
+        async deleteFeedback(feedbackId) {
+            return new Promise((resolve) => {
+                try {
+                    const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+                    const newFeedbacks = feedbacks.filter(f => f.id !== feedbackId);
+                    
+                    localStorage.setItem(this.storageKey, JSON.stringify(newFeedbacks));
+                    resolve({ success: true });
+                } catch (error) {
+                    resolve({ success: false, error: error.message });
+                }
+            });
+        }
+    }
+
+    const storage = new FeedbackStorage();
+
+    // 页面功能
+    document.addEventListener('DOMContentLoaded', function() {
+        // 登录表单处理
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // 简单的认证
+            if (username === 'admin' && password === '123456') {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
                 loadFeedbacks();
-                alert('示例数据添加成功！');
+            } else {
+                alert('用户名或密码错误！');
+            }
+        });
+        
+        // 尝试自动登录（开发时方便测试）
+        setTimeout(() => {
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = '123456';
+        }, 100);
+    });
+
+    // 加载反馈数据
+    async function loadFeedbacks() {
+        try {
+            const feedbacks = await storage.getFeedbacks();
+            displayFeedbacks(feedbacks);
+        } catch (error) {
+            console.error('加载数据失败:', error);
+            document.getElementById('feedbackList').innerHTML = '<p style="color: red;">加载失败: ' + error.message + '</p>';
+        }
+    }
+
+    // 显示反馈数据
+    function displayFeedbacks(feedbacks) {
+        const container = document.getElementById('feedbackList');
+        
+        if (feedbacks.length === 0) {
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">暂无反馈数据</p>';
+            return;
+        }
+        
+        let html = '';
+        feedbacks.forEach(feedback => {
+            const date = new Date(feedback.timestamp);
+            const timeString = date.toLocaleString('zh-CN');
+            
+            html += `
+                <div class="feedback-item">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong>${feedback.employeeName || '匿名用户'}</strong>
+                        <span style="color: #666; font-size: 0.9rem;">${timeString}</span>
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <span style="background: #e6f7ff; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">
+                            ${getTypeText(feedback.type)}
+                        </span>
+                        <span style="margin-left: 8px; background: ${feedback.status === 'pending' ? '#fff7e6' : '#f6ffed'}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">
+                            ${feedback.status === 'pending' ? '待处理' : '已处理'}
+                        </span>
+                    </div>
+                    <div style="margin-bottom: 1rem;">${feedback.content}</div>
+                    
+                    ${feedback.images && feedback.images.length > 0 ? `
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">附件图片 (${feedback.images.length}张):</div>
+                            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                ${feedback.images.map((image, index) => `
+                                    <img src="${image.data}" alt="图片" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div>
+                        <button onclick="processFeedback('${feedback.id}')" style="padding: 4px 8px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                            ${feedback.status === 'pending' ? '标记处理' : '标记待处理'}
+                        </button>
+                        <button onclick="deleteFeedback('${feedback.id}')" style="padding: 4px 8px; background: #ff4d4f; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            删除
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function getTypeText(type) {
+        const types = {
+            'suggestion': '意见建议',
+            'problem': '问题反馈',
+            'complaint': '投诉举报',
+            'other': '其他'
+        };
+        return types[type] || '未知';
+    }
+
+    // 处理反馈
+    async function processFeedback(feedbackId) {
+        try {
+            const feedbacks = await storage.getFeedbacks();
+            const feedback = feedbacks.find(f => f.id === feedbackId);
+            
+            if (feedback) {
+                const newStatus = feedback.status === 'pending' ? 'processed' : 'pending';
+                await storage.updateFeedbackStatus(feedbackId, newStatus);
+                loadFeedbacks();
+            }
+        } catch (error) {
+            alert('操作失败: ' + error.message);
+        }
+    }
+
+    // 删除反馈
+    async function deleteFeedback(feedbackId) {
+        if (confirm('确定要删除这条反馈吗？')) {
+            try {
+                await storage.deleteFeedback(feedbackId);
+                loadFeedbacks();
             } catch (error) {
-                alert('添加失败: ' + error.message);
+                alert('删除失败: ' + error.message);
             }
         }
-    </script>
+    }
+
+    // 添加示例数据
+    async function addSampleData() {
+        const sampleData = {
+            employeeName: '测试用户',
+            type: 'suggestion',
+            content: '这是一个测试反馈，用于演示系统功能。建议改善食堂伙食质量。',
+            status: 'pending'
+        };
+
+        try {
+            await storage.saveFeedback(sampleData);
+            loadFeedbacks();
+            alert('示例数据添加成功！');
+        } catch (error) {
+            alert('添加失败: ' + error.message);
+        }
+    }
+</script>
 </body>
 </html>
