@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -367,6 +366,26 @@
             display: none;
         }
 
+        .server-status {
+            background: #f0f8ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .server-status.connected {
+            background: #f6ffed;
+            border-left-color: var(--success-color);
+        }
+
+        .server-status.error {
+            background: #fff2f0;
+            border-left-color: var(--error-color);
+        }
+
         @media (max-width: 768px) {
             .feedback-card {
                 padding: 1.5rem;
@@ -391,7 +410,7 @@
             }
             
             .header h1 {
-                font-size: 1.5rem;
+                fontSize: 1.5rem;
             }
             
             .upload-area {
@@ -412,6 +431,9 @@
         </div>
         
         <div class="feedback-card">
+            <!-- 服务器状态显示 -->
+            <div class="server-status" id="serverStatus"></div>
+
             <div class="anonymous-notice">
                 <strong>温馨提示：</strong>您的反馈将帮助我们不断改进工作环境和流程。
             </div>
@@ -485,70 +507,17 @@
         </div>
         
         <a href="index.html" class="back-link">返回首页</a>
+        <a href="admin-feedback.html" class="back-link" style="margin-top: 0.5rem;">管理员入口</a>
     </div>
 
+    <script src="server-storage-get.js"></script>
     <script>
-        // 模拟服务器存储 - 在实际应用中应替换为真实的服务器API调用
-        class FeedbackStorage {
-            constructor() {
-                this.storageKey = 'employeeFeedbacks';
-            }
-
-            // 获取所有反馈
-            getFeedbacks() {
-                return new Promise((resolve) => {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                        resolve(feedbacks);
-                    } catch (error) {
-                        console.error('获取反馈数据失败:', error);
-                        resolve([]);
-                    }
-                });
-            }
-
-            // 保存反馈
-            saveFeedback(feedbackData) {
-                return new Promise((resolve, reject) => {
-                    try {
-                        // 模拟网络延迟
-                        setTimeout(() => {
-                            try {
-                                const feedbacks = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-                                
-                                // 添加ID和时间戳
-                                feedbackData.id = 'feedback_' + Date.now();
-                                feedbackData.timestamp = new Date().toISOString();
-                                feedbackData.status = 'pending';
-                                feedbackData.likes = 0;
-                                feedbackData.comments = [];
-                                
-                                feedbacks.push(feedbackData);
-                                localStorage.setItem(this.storageKey, JSON.stringify(feedbacks));
-                                
-                                resolve({
-                                    success: true,
-                                    id: feedbackData.id,
-                                    message: '反馈提交成功'
-                                });
-                            } catch (error) {
-                                reject({
-                                    success: false,
-                                    error: '保存数据失败: ' + error.message
-                                });
-                            }
-                        }, 1000);
-                    } catch (error) {
-                        reject({
-                            success: false,
-                            error: '保存失败: ' + error.message
-                        });
-                    }
-                });
-            }
-        }
+        // 使用服务器存储
+        const storage = new ServerStorage();
 
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('员工反馈页面初始化');
+            
             const feedbackForm = document.getElementById('feedbackForm');
             const feedbackContent = document.getElementById('feedbackContent');
             const charCount = document.getElementById('charCount');
@@ -561,11 +530,14 @@
             const imageCount = document.getElementById('imageCount');
             const feedbacksList = document.getElementById('feedbacksList');
             const errorMessage = document.getElementById('errorMessage');
+            const serverStatus = document.getElementById('serverStatus');
             
-            const storage = new FeedbackStorage();
             let selectedImages = [];
             const MAX_IMAGES = 3;
             const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+            // 测试服务器连接
+            testServerConnection();
 
             // 加载反馈列表
             loadFeedbacks();
@@ -687,8 +659,27 @@
                 }
             }
 
+            // 测试服务器连接
+            async function testServerConnection() {
+                try {
+                    serverStatus.textContent = '正在连接服务器...';
+                    serverStatus.className = 'server-status';
+                    serverStatus.style.display = 'block';
+                    
+                    await storage.testConnection();
+                    
+                    serverStatus.textContent = '✅ 服务器连接正常，可以提交反馈';
+                    serverStatus.className = 'server-status connected';
+                } catch (error) {
+                    console.error('服务器连接失败:', error);
+                    serverStatus.textContent = '❌ 服务器连接失败，请检查网络连接或联系管理员';
+                    serverStatus.className = 'server-status error';
+                }
+            }
+
             // 显示错误信息
             function showError(message) {
+                console.error('显示错误:', message);
                 errorMessage.textContent = message;
                 errorMessage.style.display = 'block';
                 
@@ -723,6 +714,7 @@
                     const feedbacks = await storage.getFeedbacks();
                     displayFeedbacks(feedbacks);
                 } catch (error) {
+                    console.error('加载反馈列表失败:', error);
                     feedbacksList.innerHTML = `
                         <div style="text-align: center; padding: 2rem; color: var(--error-color);">
                             加载失败: ${error.message}
@@ -742,11 +734,12 @@
                     return;
                 }
 
-                // 按时间倒序排序
+                // 按时间倒序排序，只显示最新的5条
                 feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                const recentFeedbacks = feedbacks.slice(0, 5);
                 
                 let html = '';
-                feedbacks.forEach(feedback => {
+                recentFeedbacks.forEach(feedback => {
                     const typeText = {
                         'suggestion': '意见建议',
                         'problem': '问题反馈',
@@ -787,9 +780,8 @@
                             ` : ''}
                             
                             <div class="feedback-stats">
+                                <span>状态: ${feedback.status === 'processed' ? '✅ 已处理' : '⏳ 待处理'}</span>
                                 <span>👍 ${feedback.likes || 0}</span>
-                                <span>💬 ${feedback.comments ? feedback.comments.length : 0}</span>
-                                <span>${feedback.status === 'processed' ? '✅ 已处理' : '⏳ 待处理'}</span>
                             </div>
                         </div>
                     `;
@@ -831,9 +823,12 @@
                         images: selectedImages
                     };
                     
+                    console.log('准备提交反馈数据:', feedbackData);
+                    
                     const result = await storage.saveFeedback(feedbackData);
                     
                     if (result.success) {
+                        console.log('反馈提交成功，ID:', result.id);
                         showSuccess();
                     } else {
                         throw new Error(result.error);
