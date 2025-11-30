@@ -386,6 +386,16 @@
             border-left-color: var(--error-color);
         }
 
+        .debug-info {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .feedback-card {
                 padding: 1.5rem;
@@ -410,7 +420,7 @@
             }
             
             .header h1 {
-                fontSize: 1.5rem;
+                font-size: 1.5rem;
             }
             
             .upload-area {
@@ -434,12 +444,15 @@
             <!-- 服务器状态显示 -->
             <div class="server-status" id="serverStatus"></div>
 
+            <!-- 调试信息（开发时使用） -->
+            <div class="debug-info" id="debugInfo"></div>
+
             <div class="anonymous-notice">
                 <strong>温馨提示：</strong>您的反馈将帮助我们不断改进工作环境和流程。
             </div>
 
             <div class="storage-notice">
-                <strong>实时同步：</strong>所有反馈将实时保存，管理员会及时查看和处理。
+                <strong>实时同步：</strong>所有反馈将实时保存到服务器，管理员会及时查看和处理。
             </div>
 
             <div class="error-message" id="errorMessage"></div>
@@ -493,7 +506,8 @@
             <div class="success-message" id="successMessage">
                 <div class="success-icon">✅</div>
                 <h2>感谢您的反馈！</h2>
-                <p>您的意见已成功提交，我们会认真考虑并尽快处理。</p>
+                <p>您的意见已成功提交到服务器，我们会认真考虑并尽快处理。</p>
+                <p>反馈ID: <span id="feedbackId"></span></p>
                 <p>页面将在 <span class="countdown" id="countdown">5</span> 秒后自动刷新</p>
             </div>
         </div>
@@ -524,6 +538,7 @@
             const submitBtn = document.getElementById('submitBtn');
             const successMessage = document.getElementById('successMessage');
             const countdownElement = document.getElementById('countdown');
+            const feedbackIdElement = document.getElementById('feedbackId');
             const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
             const imagePreview = document.getElementById('imagePreview');
@@ -531,6 +546,7 @@
             const feedbacksList = document.getElementById('feedbacksList');
             const errorMessage = document.getElementById('errorMessage');
             const serverStatus = document.getElementById('serverStatus');
+            const debugInfo = document.getElementById('debugInfo');
             
             let selectedImages = [];
             const MAX_IMAGES = 3;
@@ -666,14 +682,22 @@
                     serverStatus.className = 'server-status';
                     serverStatus.style.display = 'block';
                     
-                    await storage.testConnection();
+                    const result = await storage.testConnection();
                     
                     serverStatus.textContent = '✅ 服务器连接正常，可以提交反馈';
                     serverStatus.className = 'server-status connected';
+                    
+                    // 显示调试信息
+                    debugInfo.innerHTML = `服务器状态: 正常 | 时间: ${new Date().toLocaleString()}`;
+                    debugInfo.style.display = 'block';
+                    
                 } catch (error) {
                     console.error('服务器连接失败:', error);
                     serverStatus.textContent = '❌ 服务器连接失败，请检查网络连接或联系管理员';
                     serverStatus.className = 'server-status error';
+                    
+                    debugInfo.innerHTML = `服务器状态: 失败 | 错误: ${error.message}`;
+                    debugInfo.style.display = 'block';
                 }
             }
 
@@ -683,16 +707,24 @@
                 errorMessage.textContent = message;
                 errorMessage.style.display = 'block';
                 
-                // 3秒后自动隐藏错误信息
+                // 5秒后自动隐藏错误信息
                 setTimeout(() => {
                     errorMessage.style.display = 'none';
-                }, 3000);
+                }, 5000);
             }
 
             // 显示成功信息
-            function showSuccess() {
+            function showSuccess(feedbackId) {
+                console.log('显示成功消息，反馈ID:', feedbackId);
+                
+                // 隐藏表单，显示成功消息
                 feedbackForm.style.display = 'none';
                 successMessage.style.display = 'block';
+                
+                // 显示反馈ID
+                if (feedbackIdElement && feedbackId) {
+                    feedbackIdElement.textContent = feedbackId;
+                }
                 
                 let countdown = 5;
                 countdownElement.textContent = countdown;
@@ -711,7 +743,9 @@
             // 加载反馈列表
             async function loadFeedbacks() {
                 try {
+                    console.log('开始加载反馈列表...');
                     const feedbacks = await storage.getFeedbacks();
+                    console.log('成功获取反馈数据:', feedbacks.length, '条');
                     displayFeedbacks(feedbacks);
                 } catch (error) {
                     console.error('加载反馈列表失败:', error);
@@ -770,7 +804,7 @@
                             
                             ${feedback.images && feedback.images.length > 0 ? `
                                 <div class="feedback-images">
-                                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">附件图片:</div>
+                                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">附件图片 (${feedback.images.length}张):</div>
                                     <div class="images-grid">
                                         ${feedback.images.map((image, index) => `
                                             <img src="${image.data}" alt="图片" class="thumbnail">
@@ -782,6 +816,7 @@
                             <div class="feedback-stats">
                                 <span>状态: ${feedback.status === 'processed' ? '✅ 已处理' : '⏳ 待处理'}</span>
                                 <span>👍 ${feedback.likes || 0}</span>
+                                <span>ID: ${feedback.id || '未知'}</span>
                             </div>
                         </div>
                     `;
@@ -790,9 +825,11 @@
                 feedbacksList.innerHTML = html;
             }
 
-            // 表单提交
+            // 表单提交 - 确保数据保存到服务器
             feedbackForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                
+                console.log('开始提交反馈...');
                 
                 // 隐藏之前的错误信息
                 errorMessage.style.display = 'none';
@@ -816,6 +853,7 @@
                 submitBtn.textContent = '提交中...';
                 
                 try {
+                    // 准备反馈数据
                     const feedbackData = {
                         employeeName: document.getElementById('employeeName').value.trim(),
                         type: document.getElementById('feedbackType').value,
@@ -823,18 +861,26 @@
                         images: selectedImages
                     };
                     
-                    console.log('准备提交反馈数据:', feedbackData);
+                    console.log('准备提交的反馈数据:', feedbackData);
                     
+                    // 显示调试信息
+                    debugInfo.innerHTML += `<br>正在提交数据到服务器...`;
+                    
+                    // 保存到服务器
                     const result = await storage.saveFeedback(feedbackData);
                     
+                    console.log('服务器返回结果:', result);
+                    
                     if (result.success) {
-                        console.log('反馈提交成功，ID:', result.id);
-                        showSuccess();
+                        console.log('✅ 反馈提交成功，ID:', result.id);
+                        debugInfo.innerHTML += `<br>✅ 保存成功! 反馈ID: ${result.id}`;
+                        showSuccess(result.id);
                     } else {
-                        throw new Error(result.error);
+                        throw new Error(result.error || '保存失败');
                     }
                 } catch (error) {
-                    console.error('提交失败:', error);
+                    console.error('❌ 提交失败:', error);
+                    debugInfo.innerHTML += `<br>❌ 保存失败: ${error.message}`;
                     showError('提交失败: ' + error.message);
                     submitBtn.disabled = false;
                     submitBtn.textContent = '提交反馈';
