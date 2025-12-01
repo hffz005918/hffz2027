@@ -22,7 +22,7 @@
     <meta name="renderer" content="webkit">
     
     <!-- SEO优化 -->
-    <meta name="description" content="宏方纺织员工服务平台，提供宿舍管理、费用查询、员工反馈等服务">
+    <meta name="description" content="宏方纺织员工服务平台，提供宿舍管理、费用查询等服务">
     
     <title>员工服务系统 - 宏方纺织</title>
 
@@ -32,7 +32,6 @@
             --secondary-color: #1a73e8;
             --admin-color: #722ed1;
             --success-color: #52c41a;
-            --feedback-color: #fa8c16;
             --card-bg: rgba(255, 255, 255, 0.95);
             --text-light: #ffffff;
             --text-dark: #333333;
@@ -174,11 +173,11 @@
         }
 
         .nav-card.feedback {
-            border-top: 4px solid var(--feedback-color);
+            border-top: 4px solid #fa8c16;
         }
 
         .nav-card.feedback h2 {
-            color: var(--feedback-color);
+            color: #fa8c16;
         }
 
         .nav-card.admin {
@@ -195,18 +194,6 @@
             top: 10px;
             right: 10px;
             background: var(--admin-color);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-
-        .feature-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--feedback-color);
             color: white;
             padding: 4px 8px;
             border-radius: 12px;
@@ -414,14 +401,13 @@
                 <p id="fee-desc">水电费用查询与缴纳服务</p>
             </div>
             
-            <!-- 员工反馈系统 -->
+            <!-- 员工反馈 -->
             <div class="nav-card feedback" 
                  role="button" 
                  tabindex="0"
                  data-href="feedback.html"
                  aria-labelledby="feedback-title"
                  aria-describedby="feedback-desc">
-                <div class="feature-badge">新功能</div>
                 <h2 id="feedback-title">员工反馈</h2>
                 <p id="feedback-desc">意见建议与问题匿名反馈</p>
             </div>
