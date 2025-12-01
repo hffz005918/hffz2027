@@ -1,0 +1,2325 @@
+[
+  {
+    "id": "024826",
+    "name": "刘凤群",
+    "room": "201",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 9.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 22.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 118.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 24.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 22.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 67.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 24.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "190918",
+    "name": "花开红",
+    "room": "202",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 13.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 75.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 108.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 48.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "245540",
+    "name": "郑爱平",
+    "room": "203",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 191.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 65.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 49.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 61.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 90.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 290.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 332.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 170.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 117.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 48.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "093311",
+    "name": "汪志勇",
+    "room": "205",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 100.0
+          },
+          {
+            "month": 3,
+            "electricity": 26.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 31.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 5,
+            "electricity": 35.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 6,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 7,
+            "electricity": 131.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 8,
+            "electricity": 223.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 9,
+            "electricity": 144.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 10,
+            "electricity": 74.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 11,
+            "electricity": 35.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "070636",
+    "name": "卢兴武",
+    "room": "206",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 53.0,
+            "water": 0.0,
+            "rent": 100.0
+          },
+          {
+            "month": 3,
+            "electricity": 51.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 71.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 5,
+            "electricity": 75.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 6,
+            "electricity": 60.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 7,
+            "electricity": 107.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 8,
+            "electricity": 149.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 9,
+            "electricity": 85.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 10,
+            "electricity": 63.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 11,
+            "electricity": 43.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "150613",
+    "name": "卢海金",
+    "room": "208",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 3.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 8.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 86.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 169.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 194.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 90.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 47.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "200613",
+    "name": "卢小良",
+    "room": "208",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 3.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 8.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 86.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 169.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 194.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 90.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 47.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "152735",
+    "name": "朱江恒",
+    "room": "212",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 68.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 156.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 124.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 108.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 201.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 270.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 323.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 254.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 238.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 144.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "112711",
+    "name": "王磊",
+    "room": "211",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 75.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 175.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 228.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 277.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 233.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 171.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 19.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "032713",
+    "name": "王刚岭",
+    "room": "211",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 75.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 175.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 228.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 277.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 233.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 171.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 19.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "152751",
+    "name": "朱凯",
+    "room": "212",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 68.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 156.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 124.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 108.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 201.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 270.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 323.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 254.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 238.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 144.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "022931",
+    "name": "李德发",
+    "room": "310",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 35.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 5,
+            "electricity": 23.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 6,
+            "electricity": 28.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 7,
+            "electricity": 46.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 8,
+            "electricity": 116.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 9,
+            "electricity": 39.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 10,
+            "electricity": 24.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 11,
+            "electricity": 24.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "142713",
+    "name": "朱涛",
+    "room": "204",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 55.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 9.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 21.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 74.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 178.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 204.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 137.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 46.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 13.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "112710",
+    "name": "朱浪",
+    "room": "204",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 9.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 21.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 74.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 178.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 204.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 137.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 46.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 13.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "182719",
+    "name": "陆雪星",
+    "room": "216",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 11.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 19.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 22.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 51.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 135.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 277.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 272.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 291.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 170.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 41.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "183272",
+    "name": "陇正海",
+    "room": "303",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 8.0,
+            "water": 0.0,
+            "rent": 100.0
+          },
+          {
+            "month": 3,
+            "electricity": 61.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "057212",
+    "name": "农尚留",
+    "room": "315",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 10.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 17.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 9.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 2.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 20.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 25.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 21.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 10.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "082733",
+    "name": "朱勇",
+    "room": "215",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 166.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 206.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 339.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 518.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 570.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 456.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 202.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 124.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "123751",
+    "name": "田松江",
+    "room": "309",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 21.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 17.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 28.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 78.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 156.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 275.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 254.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 152.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 34.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "232971",
+    "name": "王昌国",
+    "room": "210",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 32.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 5,
+            "electricity": 58.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 6,
+            "electricity": 75.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 7,
+            "electricity": 59.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 8,
+            "electricity": 68.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 9,
+            "electricity": 59.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 10,
+            "electricity": 65.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 11,
+            "electricity": 46.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "182893",
+    "name": "单文华",
+    "room": "304",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 100.0
+          },
+          {
+            "month": 3,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 4,
+            "electricity": 38.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 5,
+            "electricity": 41.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 6,
+            "electricity": 62.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 7,
+            "electricity": 163.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 8,
+            "electricity": 261.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 9,
+            "electricity": 152.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 10,
+            "electricity": 55.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 11,
+            "electricity": 45.0,
+            "water": 0.0,
+            "rent": 200.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "04326X",
+    "name": "李永美",
+    "room": "305",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 3,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 13.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 211.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 218.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 145.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 60.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "154177",
+    "name": "张吉先",
+    "room": "307",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 4,
+            "electricity": 8.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 20.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 27.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 228.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 273.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "111814",
+    "name": "潘克平",
+    "room": "307",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 3.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 8.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 20.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 27.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 228.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 273.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 32.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 31.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 19.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "021917",
+    "name": "郑祖名",
+    "room": "207",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 42.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 21.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 33.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 66.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 78.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 75.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 37.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "252914",
+    "name": "周训普",
+    "room": "207",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 42.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 14.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 21.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 33.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 66.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 78.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 75.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 37.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "015234",
+    "name": "陈小付",
+    "room": "311",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 48.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 59.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 51.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 54.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 68.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 168.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 252.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 122.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 63.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 60.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "210013",
+    "name": "陈朝华",
+    "room": "311",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 48.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 59.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 51.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 54.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 68.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 168.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 252.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 122.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 63.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 60.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "312914",
+    "name": "王建辉",
+    "room": "312",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 161.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 122.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 100.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 143.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 207.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 434.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 611.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 387.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 245.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 137.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "055258",
+    "name": "陈朝敏",
+    "room": "316",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 55.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 89.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 72.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 90.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 117.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 295.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 414.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 258.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 180.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 51.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "032935",
+    "name": "王建丛",
+    "room": "308",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 2,
+            "electricity": 24.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 3,
+            "electricity": 29.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 4,
+            "electricity": 28.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 52.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 48.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 263.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 342.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 219.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 129.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 45.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "019399",
+    "name": "罗宁",
+    "room": "315",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 4,
+            "electricity": 0.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 5,
+            "electricity": 2.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 6,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 7,
+            "electricity": 20.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 8,
+            "electricity": 25.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 9,
+            "electricity": 21.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 10.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "101330",
+    "name": "宏方纺织",
+    "room": "888",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 1,
+            "electricity": 300.0,
+            "water": 400.0,
+            "rent": 500.0
+          },
+          {
+            "month": 2,
+            "electricity": 300.0,
+            "water": 400.0,
+            "rent": 500.0
+          },
+          {
+            "month": 3,
+            "electricity": 300.0,
+            "water": 400.0,
+            "rent": 500.0
+          },
+          {
+            "month": 4,
+            "electricity": 300.0,
+            "water": 400.0,
+            "rent": 500.0
+          },
+          {
+            "month": 5,
+            "electricity": 300.0,
+            "water": 400.0,
+            "rent": 500.0
+          },
+          {
+            "month": 6,
+            "electricity": 300.0,
+            "water": 400.0,
+            "rent": 500.0
+          },
+          {
+            "month": 7,
+            "electricity": 1000.0,
+            "water": 1000.0,
+            "rent": 1000.0
+          },
+          {
+            "month": 8,
+            "electricity": 300.0,
+            "water": 400.0,
+            "rent": 500.0
+          },
+          {
+            "month": 9,
+            "electricity": 300.0,
+            "water": 400.0,
+            "rent": 500.0
+          },
+          {
+            "month": 10,
+            "electricity": 300.0,
+            "water": 400.0,
+            "rent": 500.0
+          },
+          {
+            "month": 11,
+            "electricity": 300.0,
+            "water": 400.0,
+            "rent": 500.0
+          },
+          {
+            "month": 12,
+            "electricity": 500.0,
+            "water": 800.0,
+            "rent": 1200.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "270631",
+    "name": "卢小战",
+    "room": "208",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 9,
+            "electricity": 21.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 47.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "045237",
+    "name": "罗土心",
+    "room": "315",
+    "yearly_data": {
+      "2025": {
+        "monthly": [
+          {
+            "month": 9,
+            "electricity": 63.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 10,
+            "electricity": 47.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 28.0,
+            "water": 0.0,
+            "rent": 0.0
+          }
+        ]
+      }
+    }
+  }
+]
