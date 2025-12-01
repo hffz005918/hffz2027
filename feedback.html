@@ -173,189 +173,35 @@
             font-size: 1.2rem;
         }
         
-        /* 图片上传样式 */
-        .image-upload-section {
-            margin-bottom: 1.5rem;
-        }
-        
-        .upload-area {
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #fafafa;
-        }
-        
-        .upload-area:hover {
-            border-color: var(--primary-color);
-            background: #f0f8ff;
-        }
-        
-        .upload-area.drag-over {
-            border-color: var(--primary-color);
-            background: #e6f7ff;
-        }
-        
-        .upload-icon {
-            font-size: 3rem;
-            color: #ccc;
-            margin-bottom: 1rem;
-        }
-        
-        .upload-text {
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-        }
-        
-        .upload-hint {
-            font-size: 0.8rem;
-            color: #999;
-        }
-        
-        .file-input {
-            display: none;
-        }
-        
-        .image-preview {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            margin-top: 1rem;
-        }
-        
-        .preview-item {
-            position: relative;
-            border-radius: 6px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .preview-image {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            display: block;
-        }
-        
-        .preview-remove {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(255, 0, 0, 0.7);
+        .issue-link {
+            display: inline-block;
+            margin: 1rem 0;
+            padding: 8px 16px;
+            background: var(--primary-color);
             color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            text-decoration: none;
+            border-radius: 6px;
         }
         
-        .image-count {
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 0.5rem;
-        }
-        
-        .image-count.warning {
-            color: var(--warning-color);
-        }
-        
-        .image-count.error {
-            color: var(--error-color);
-        }
-
-        .storage-notice {
-            background: #f6ffed;
-            border-left: 4px solid var(--success-color);
+        .server-status {
+            background: #f0f8ff;
+            border-left: 4px solid var(--primary-color);
             padding: 0.8rem;
             margin-bottom: 1rem;
             border-radius: 4px;
             font-size: 0.85rem;
         }
-
-        .feedback-list {
-            margin-top: 2rem;
+        
+        .server-status.connected {
+            background: #f6ffed;
+            border-left-color: var(--success-color);
         }
-
-        .feedback-item {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid var(--primary-color);
+        
+        .server-status.error {
+            background: #fff2f0;
+            border-left-color: var(--error-color);
         }
-
-        .feedback-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .feedback-type {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .type-suggestion { background: #e6f7ff; color: var(--primary-color); }
-        .type-problem { background: #fff7e6; color: var(--warning-color); }
-        .type-complaint { background: #fff2f0; color: var(--error-color); }
-        .type-other { background: #f6ffed; color: var(--success-color); }
-
-        .feedback-time {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .feedback-content {
-            margin-bottom: 1rem;
-            line-height: 1.6;
-            white-space: pre-wrap;
-        }
-
-        .feedback-images {
-            margin: 1rem 0;
-        }
-
-        .images-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
-            margin-top: 0.5rem;
-        }
-
-        .thumbnail {
-            width: 100%;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        .feedback-stats {
-            display: flex;
-            gap: 1rem;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-secondary);
-        }
-
+        
         .error-message {
             background: #fff2f0;
             border-left: 4px solid var(--error-color);
@@ -365,70 +211,10 @@
             color: var(--error-color);
             display: none;
         }
-
-        .server-status {
-            background: #f0f8ff;
-            border-left: 4px solid var(--primary-color);
-            padding: 0.8rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            display: none;
-        }
-
-        .server-status.connected {
-            background: #f6ffed;
-            border-left-color: var(--success-color);
-        }
-
-        .server-status.error {
-            background: #fff2f0;
-            border-left-color: var(--error-color);
-        }
-
-        .debug-info {
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            display: none;
-        }
-
+        
         @media (max-width: 768px) {
             .feedback-card {
                 padding: 1.5rem;
-            }
-            
-            .header h1 {
-                font-size: 1.7rem;
-            }
-            
-            .upload-area {
-                padding: 1.5rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            body {
-                padding: 15px;
-            }
-            
-            .feedback-card {
-                padding: 1.2rem;
-            }
-            
-            .header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .upload-area {
-                padding: 1rem;
-            }
-            
-            .image-preview {
-                grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
@@ -441,18 +227,13 @@
         </div>
         
         <div class="feedback-card">
-            <!-- 服务器状态显示 -->
-            <div class="server-status" id="serverStatus"></div>
-
-            <!-- 调试信息（开发时使用） -->
-            <div class="debug-info" id="debugInfo"></div>
-
-            <div class="anonymous-notice">
-                <strong>温馨提示：</strong>您的反馈将帮助我们不断改进工作环境和流程。
+            <!-- 服务器状态 -->
+            <div class="server-status" id="serverStatus">
+                正在测试服务器连接...
             </div>
 
-            <div class="storage-notice">
-                <strong>实时同步：</strong>所有反馈将实时保存到服务器，管理员会及时查看和处理。
+            <div class="anonymous-notice">
+                <strong>温馨提示：</strong>您的反馈将直接提交到 GitHub Issues，管理员会及时查看和处理。
             </div>
 
             <div class="error-message" id="errorMessage"></div>
@@ -467,10 +248,10 @@
                     <label for="feedbackType">反馈类型 <span style="color: var(--error-color);">*</span></label>
                     <select id="feedbackType" required>
                         <option value="">请选择反馈类型</option>
-                        <option value="suggestion">意见建议</option>
-                        <option value="problem">问题反馈</option>
-                        <option value="complaint">投诉举报</option>
-                        <option value="other">其他</option>
+                        <option value="suggestion">💡 意见建议</option>
+                        <option value="problem">🐛 问题反馈</option>
+                        <option value="complaint">⚠️ 投诉举报</option>
+                        <option value="other">📄 其他</option>
                     </select>
                 </div>
                 
@@ -487,36 +268,16 @@
                     </div>
                 </div>
                 
-                <!-- 图片上传区域 -->
-                <div class="form-group image-upload-section">
-                    <label>上传图片（可选，最多3张）</label>
-                    <div class="upload-area" id="uploadArea">
-                        <div class="upload-icon">📷</div>
-                        <div class="upload-text">点击或拖拽图片到此处上传</div>
-                        <div class="upload-hint">支持 JPG、PNG 格式，单张图片不超过 5MB</div>
-                        <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
-                    </div>
-                    <div class="image-preview" id="imagePreview"></div>
-                    <div class="image-count" id="imageCount">已选择 0/3 张图片</div>
-                </div>
-                
-                <button type="submit" class="submit-btn" id="submitBtn">提交反馈</button>
+                <button type="submit" class="submit-btn" id="submitBtn">提交反馈到 GitHub</button>
             </form>
             
             <div class="success-message" id="successMessage">
                 <div class="success-icon">✅</div>
-                <h2>感谢您的反馈！</h2>
-                <p>您的意见已成功提交到服务器，我们会认真考虑并尽快处理。</p>
-                <p>反馈ID: <span id="feedbackId"></span></p>
+                <h2>反馈提交成功！</h2>
+                <p>您的反馈已成功提交到 GitHub Issues</p>
+                <p>反馈ID: <strong id="feedbackId"></strong></p>
+                <a href="#" target="_blank" class="issue-link" id="issueLink">查看 Issue</a>
                 <p>页面将在 <span class="countdown" id="countdown">5</span> 秒后自动刷新</p>
-            </div>
-        </div>
-
-        <!-- 反馈列表 -->
-        <div class="feedback-card">
-            <h2 style="margin-bottom: 1rem;">最新反馈</h2>
-            <div id="feedbacksList">
-                <div class="loading">加载中...</div>
             </div>
         </div>
         
@@ -524,14 +285,16 @@
         <a href="admin-feedback.html" class="back-link" style="margin-top: 0.5rem;">管理员入口</a>
     </div>
 
-    <script src="server-storage-get.js"></script>
+    <!-- 引入配置文件 -->
+    <script src="config.js"></script>
+    <!-- 引入 GitHub Issues 存储 -->
+    <script src="github-issues-storage.js"></script>
+    
     <script>
-        // 使用服务器存储
-        const storage = new SmartStorage();
-
         document.addEventListener('DOMContentLoaded', function() {
             console.log('员工反馈页面初始化');
             
+            const storage = new GitHubIssuesStorage();
             const feedbackForm = document.getElementById('feedbackForm');
             const feedbackContent = document.getElementById('feedbackContent');
             const charCount = document.getElementById('charCount');
@@ -539,24 +302,12 @@
             const successMessage = document.getElementById('successMessage');
             const countdownElement = document.getElementById('countdown');
             const feedbackIdElement = document.getElementById('feedbackId');
-            const uploadArea = document.getElementById('uploadArea');
-            const fileInput = document.getElementById('fileInput');
-            const imagePreview = document.getElementById('imagePreview');
-            const imageCount = document.getElementById('imageCount');
-            const feedbacksList = document.getElementById('feedbacksList');
+            const issueLink = document.getElementById('issueLink');
             const errorMessage = document.getElementById('errorMessage');
             const serverStatus = document.getElementById('serverStatus');
-            const debugInfo = document.getElementById('debugInfo');
-            
-            let selectedImages = [];
-            const MAX_IMAGES = 3;
-            const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
             // 测试服务器连接
             testServerConnection();
-
-            // 加载反馈列表
-            loadFeedbacks();
 
             // 字符计数
             feedbackContent.addEventListener('input', function() {
@@ -570,163 +321,32 @@
                 }
             });
 
-            // 图片上传功能
-            uploadArea.addEventListener('click', function() {
-                fileInput.click();
-            });
-
-            fileInput.addEventListener('change', handleFileSelect);
-
-            // 拖拽功能
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                uploadArea.classList.add('drag-over');
-            });
-
-            uploadArea.addEventListener('dragleave', function() {
-                uploadArea.classList.remove('drag-over');
-            });
-
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                uploadArea.classList.remove('drag-over');
-                const files = e.dataTransfer.files;
-                handleFiles(files);
-            });
-
-            function handleFileSelect(e) {
-                const files = e.target.files;
-                handleFiles(files);
-            }
-
-            function handleFiles(files) {
-                const remainingSlots = MAX_IMAGES - selectedImages.length;
-                
-                if (files.length > remainingSlots) {
-                    showError(`最多只能上传 ${MAX_IMAGES} 张图片，您已选择 ${selectedImages.length} 张`);
-                    return;
-                }
-
-                for (let file of files) {
-                    if (selectedImages.length >= MAX_IMAGES) break;
-
-                    if (!file.type.startsWith('image/')) {
-                        showError('请选择图片文件');
-                        continue;
-                    }
-
-                    if (file.size > MAX_FILE_SIZE) {
-                        showError(`文件 ${file.name} 大小超过 5MB 限制`);
-                        continue;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        selectedImages.push({
-                            name: file.name,
-                            data: e.target.result,
-                            type: file.type
-                        });
-                        updateImagePreview();
-                        updateImageCount();
-                    };
-                    reader.readAsDataURL(file);
-                }
-
-                fileInput.value = '';
-            }
-
-            function updateImagePreview() {
-                imagePreview.innerHTML = '';
-                selectedImages.forEach((image, index) => {
-                    const previewItem = document.createElement('div');
-                    previewItem.className = 'preview-item';
-                    
-                    const img = document.createElement('img');
-                    img.src = image.data;
-                    img.alt = image.name;
-                    img.className = 'preview-image';
-                    
-                    const removeBtn = document.createElement('button');
-                    removeBtn.className = 'preview-remove';
-                    removeBtn.innerHTML = '×';
-                    removeBtn.onclick = function() {
-                        selectedImages.splice(index, 1);
-                        updateImagePreview();
-                        updateImageCount();
-                    };
-                    
-                    previewItem.appendChild(img);
-                    previewItem.appendChild(removeBtn);
-                    imagePreview.appendChild(previewItem);
-                });
-            }
-
-            function updateImageCount() {
-                const count = selectedImages.length;
-                imageCount.textContent = `已选择 ${count}/${MAX_IMAGES} 张图片`;
-                
-                if (count === MAX_IMAGES) {
-                    imageCount.className = 'image-count error';
-                } else if (count >= MAX_IMAGES - 1) {
-                    imageCount.className = 'image-count warning';
-                } else {
-                    imageCount.className = 'image-count';
-                }
-            }
-
-            // 测试服务器连接
-            async function testServerConnection() {
-                try {
-                    serverStatus.textContent = '正在连接服务器...';
-                    serverStatus.className = 'server-status';
-                    serverStatus.style.display = 'block';
-                    
-                    const result = await storage.testConnection();
-                    
-                    serverStatus.textContent = '✅ 服务器连接正常，可以提交反馈';
-                    serverStatus.className = 'server-status connected';
-                    
-                    // 显示调试信息
-                    debugInfo.innerHTML = `服务器状态: 正常 | 时间: ${new Date().toLocaleString()}`;
-                    debugInfo.style.display = 'block';
-                    
-                } catch (error) {
-                    console.error('服务器连接失败:', error);
-                    serverStatus.textContent = '❌ 服务器连接失败，请检查网络连接或联系管理员';
-                    serverStatus.className = 'server-status error';
-                    
-                    debugInfo.innerHTML = `服务器状态: 失败 | 错误: ${error.message}`;
-                    debugInfo.style.display = 'block';
-                }
-            }
-
             // 显示错误信息
             function showError(message) {
                 console.error('显示错误:', message);
                 errorMessage.textContent = message;
                 errorMessage.style.display = 'block';
                 
-                // 5秒后自动隐藏错误信息
                 setTimeout(() => {
                     errorMessage.style.display = 'none';
                 }, 5000);
             }
 
             // 显示成功信息
-            function showSuccess(feedbackId) {
-                console.log('显示成功消息，反馈ID:', feedbackId);
+            function showSuccess(result) {
+                console.log('显示成功消息:', result);
                 
                 // 隐藏表单，显示成功消息
                 feedbackForm.style.display = 'none';
                 successMessage.style.display = 'block';
                 
-                // 显示反馈ID
-                if (feedbackIdElement && feedbackId) {
-                    feedbackIdElement.textContent = feedbackId;
-                }
+                // 显示反馈信息
+                feedbackIdElement.textContent = `Issue #${result.issueNumber}`;
+                issueLink.href = result.issueUrl;
+                issueLink.textContent = `查看 Issue #${result.issueNumber}`;
                 
-                let countdown = 5;
+                // 倒计时刷新
+                let countdown = CONFIG.SYSTEM.AUTO_REFRESH_TIME;
                 countdownElement.textContent = countdown;
                 
                 const countdownInterval = setInterval(function() {
@@ -735,97 +355,33 @@
                     
                     if (countdown <= 0) {
                         clearInterval(countdownInterval);
-                        location.reload(); // 刷新页面显示最新反馈
+                        location.reload();
                     }
                 }, 1000);
             }
 
-            // 加载反馈列表
-            async function loadFeedbacks() {
+            // 测试服务器连接
+            async function testServerConnection() {
                 try {
-                    console.log('开始加载反馈列表...');
-                    const feedbacks = await storage.getFeedbacks();
-                    console.log('成功获取反馈数据:', feedbacks.length, '条');
-                    displayFeedbacks(feedbacks);
+                    serverStatus.textContent = '正在连接 GitHub...';
+                    serverStatus.className = 'server-status';
+                    
+                    const result = await storage.testConnection();
+                    
+                    if (result.success) {
+                        serverStatus.textContent = `✅ ${result.message}`;
+                        serverStatus.className = 'server-status connected';
+                    } else {
+                        throw new Error(result.error);
+                    }
                 } catch (error) {
-                    console.error('加载反馈列表失败:', error);
-                    feedbacksList.innerHTML = `
-                        <div style="text-align: center; padding: 2rem; color: var(--error-color);">
-                            加载失败: ${error.message}
-                        </div>
-                    `;
+                    console.error('服务器连接测试失败:', error);
+                    serverStatus.textContent = `❌ 连接失败: ${error.message}`;
+                    serverStatus.className = 'server-status error';
                 }
             }
 
-            // 显示反馈列表
-            function displayFeedbacks(feedbacks) {
-                if (feedbacks.length === 0) {
-                    feedbacksList.innerHTML = `
-                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-                            暂无反馈，成为第一个发言的人吧！
-                        </div>
-                    `;
-                    return;
-                }
-
-                // 按时间倒序排序，只显示最新的5条
-                feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                const recentFeedbacks = feedbacks.slice(0, 5);
-                
-                let html = '';
-                recentFeedbacks.forEach(feedback => {
-                    const typeText = {
-                        'suggestion': '意见建议',
-                        'problem': '问题反馈',
-                        'complaint': '投诉举报',
-                        'other': '其他'
-                    }[feedback.type];
-                    
-                    const typeClass = {
-                        'suggestion': 'type-suggestion',
-                        'problem': 'type-problem',
-                        'complaint': 'type-complaint',
-                        'other': 'type-other'
-                    }[feedback.type];
-                    
-                    const date = new Date(feedback.timestamp);
-                    const timeString = date.toLocaleString('zh-CN');
-                    
-                    html += `
-                        <div class="feedback-item">
-                            <div class="feedback-header">
-                                <div>
-                                    <span class="feedback-type ${typeClass}">${typeText}</span>
-                                    <strong style="margin-left: 8px;">${feedback.employeeName || '匿名同事'}</strong>
-                                </div>
-                                <div class="feedback-time">${timeString}</div>
-                            </div>
-                            <div class="feedback-content">${feedback.content}</div>
-                            
-                            ${feedback.images && feedback.images.length > 0 ? `
-                                <div class="feedback-images">
-                                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">附件图片 (${feedback.images.length}张):</div>
-                                    <div class="images-grid">
-                                        ${feedback.images.map((image, index) => `
-                                            <img src="${image.data}" alt="图片" class="thumbnail">
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            ` : ''}
-                            
-                            <div class="feedback-stats">
-                                <span>状态: ${feedback.status === 'processed' ? '✅ 已处理' : '⏳ 待处理'}</span>
-                                <span>👍 ${feedback.likes || 0}</span>
-                                <span>ID: ${feedback.id || '未知'}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                feedbacksList.innerHTML = html;
-            }
-
-            // 表单提交 - 确保数据保存到服务器
+            // 表单提交
             feedbackForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
@@ -857,33 +413,26 @@
                     const feedbackData = {
                         employeeName: document.getElementById('employeeName').value.trim(),
                         type: document.getElementById('feedbackType').value,
-                        content: feedbackContent.value.trim(),
-                        images: selectedImages
+                        content: feedbackContent.value.trim()
                     };
                     
-                    console.log('准备提交的反馈数据:', feedbackData);
+                    console.log('提交的反馈数据:', feedbackData);
                     
-                    // 显示调试信息
-                    debugInfo.innerHTML += `<br>正在提交数据到服务器...`;
-                    
-                    // 保存到服务器
+                    // 保存到 GitHub Issues
                     const result = await storage.saveFeedback(feedbackData);
                     
-                    console.log('服务器返回结果:', result);
+                    console.log('GitHub 返回结果:', result);
                     
                     if (result.success) {
-                        console.log('✅ 反馈提交成功，ID:', result.id);
-                        debugInfo.innerHTML += `<br>✅ 保存成功! 反馈ID: ${result.id}`;
-                        showSuccess(result.id);
+                        showSuccess(result);
                     } else {
-                        throw new Error(result.error || '保存失败');
+                        throw new Error(result.error || '提交失败');
                     }
                 } catch (error) {
-                    console.error('❌ 提交失败:', error);
-                    debugInfo.innerHTML += `<br>❌ 保存失败: ${error.message}`;
+                    console.error('提交失败:', error);
                     showError('提交失败: ' + error.message);
                     submitBtn.disabled = false;
-                    submitBtn.textContent = '提交反馈';
+                    submitBtn.textContent = '提交反馈到 GitHub';
                 }
             });
             
@@ -894,9 +443,6 @@
                 
                 submitBtn.disabled = !(typeSelected && contentFilled);
             });
-
-            // 初始化图片计数
-            updateImageCount();
         });
     </script>
 </body>

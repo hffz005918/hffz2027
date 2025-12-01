@@ -37,55 +37,38 @@
             margin-bottom: 0.5rem;
         }
         
-        .login-form {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-        
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: #1890ff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .login-btn:hover {
-            background: #1a73e8;
-        }
-        
-        .login-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
         .admin-panel {
             display: none;
         }
         
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-left: 4px solid #1890ff;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1890ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
         .feedback-item {
             background: #f8f9fa;
             padding: 1.5rem;
@@ -93,7 +76,7 @@
             border-radius: 8px;
             border-left: 4px solid #1890ff;
         }
-        
+
         .nav-links {
             text-align: center;
             margin-top: 2rem;
@@ -109,49 +92,6 @@
             margin: 0 10px;
         }
 
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #1890ff;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
-        }
-
-        .error-message {
-            background: #fff2f0;
-            border-left: 4px solid #ff4d4f;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
-            color: #ff4d4f;
-            display: none;
-        }
-
         .success-message {
             background: #f6ffed;
             border-left: 4px solid #52c41a;
@@ -162,24 +102,15 @@
             display: none;
         }
 
-        .login-status {
-            text-align: center;
-            margin: 1rem 0;
-            padding: 10px;
+        .github-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #333;
+            color: white;
+            text-decoration: none;
             border-radius: 4px;
-            display: none;
-        }
-
-        .login-success {
-            background: #f6ffed;
-            border: 1px solid #b7eb8f;
-            color: #52c41a;
-        }
-
-        .login-error {
-            background: #fff2f0;
-            border: 1px solid #ffccc7;
-            color: #ff4d4f;
+            margin-left: 10px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -187,38 +118,13 @@
     <div class="container">
         <div class="header">
             <h1>宏方纺织 - 管理员后台</h1>
-            <p>员工反馈管理系统</p>
-        </div>
-        
-        <!-- 登录状态提示 -->
-        <div id="loginStatus" class="login-status"></div>
-        
-        <!-- 登录区域 -->
-        <div id="loginSection">
-            <div class="login-form">
-                <h2 style="text-align: center; margin-bottom: 1.5rem;">管理员登录</h2>
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="username">用户名</label>
-                        <input type="text" id="username" required value="admin">
-                    </div>
-                    <div class="form-group">
-                        <label for="password">密码</label>
-                        <input type="password" id="password" required value="123456">
-                    </div>
-                    <button type="submit" class="login-btn" id="loginBtn">登录</button>
-                </form>
-                <p style="text-align: center; margin-top: 1rem; color: #666; font-size: 0.9rem;">
-                    默认账号: admin / 密码: 123456
-                </p>
-            </div>
+            <p>GitHub Issues 反馈管理系统</p>
         </div>
         
         <!-- 管理面板 -->
         <div id="adminPanel" class="admin-panel">
             <h2>反馈数据管理</h2>
             
-            <!-- 统计信息 -->
             <div class="stats-container" id="statsContainer">
                 <div class="stat-card">
                     <div class="stat-number" id="totalFeedbacks">0</div>
@@ -239,11 +145,14 @@
             </div>
             
             <div style="margin: 1rem 0;">
-                <button onclick="loadFeedbacks()" style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">刷新数据</button>
-                <button onclick="addSampleData()" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">添加示例</button>
+                <button onclick="loadFeedbacks()" style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    刷新数据
+                </button>
+                <a href="#" id="githubRepoLink" target="_blank" class="github-link">
+                    前往 GitHub 管理
+                </a>
             </div>
 
-            <div class="error-message" id="errorMessage"></div>
             <div class="success-message" id="successMessage"></div>
             
             <div id="feedbackList">
@@ -255,136 +164,42 @@
                 <a href="feedback.html" class="nav-link">员工反馈页面</a>
             </div>
         </div>
+
+        <div id="loginSection">
+            <div style="text-align: center; padding: 3rem;">
+                <h2>GitHub Issues 管理系统</h2>
+                <p>反馈数据直接存储在 GitHub Issues 中</p>
+                <button onclick="showAdminPanel()" style="padding: 12px 24px; background: #1890ff; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 1rem;">
+                    进入管理面板
+                </button>
+            </div>
+        </div>
     </div>
 
-    <script src="super-storage.js"></script>
+    <!-- 引入配置文件 -->
+    <script src="config.js"></script>
+    <!-- 引入 GitHub Issues 存储 -->
+    <script src="github-issues-storage.js"></script>
+    
     <script>
-        // 使用超强健壮的存储管理器
-        const storage = new SuperStorage();
+        const storage = new GitHubIssuesStorage();
 
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('管理员页面加载完成');
-            
-            // 设置自动填充
-            document.getElementById('username').value = 'admin';
-            document.getElementById('password').value = '123456';
-            
-            // 绑定登录表单提交事件
-            document.getElementById('loginForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleLogin();
-            });
-            
-            // 检查是否已经登录
-            if (localStorage.getItem('admin_logged_in') === 'true') {
-                showAdminPanel();
-            }
-        });
+        // 设置 GitHub 仓库链接
+        document.getElementById('githubRepoLink').href = `https://github.com/${CONFIG.GITHUB.REPO}/issues?q=label:${CONFIG.GITHUB.LABEL}`;
 
-        // 处理登录
-        async function handleLogin() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            const loginStatus = document.getElementById('loginStatus');
-            
-            console.log('尝试登录:', username);
-            
-            // 禁用登录按钮
-            loginBtn.disabled = true;
-            loginBtn.textContent = '登录中...';
-            
-            try {
-                // 简单的用户名密码验证
-                if (username === 'admin' && password === '123456') {
-                    // 测试服务器连接
-                    const connectionResult = await storage.testConnection();
-                    
-                    if (connectionResult.success) {
-                        // 保存登录状态
-                        localStorage.setItem('admin_logged_in', 'true');
-                        
-                        // 显示成功消息
-                        showLoginStatus('✅ 登录成功！正在加载数据...', 'success');
-                        
-                        // 延迟显示管理面板，让用户看到成功消息
-                        setTimeout(() => {
-                            showAdminPanel();
-                        }, 1000);
-                    } else {
-                        throw new Error('服务器连接失败: ' + connectionResult.error);
-                    }
-                } else {
-                    throw new Error('用户名或密码错误');
-                }
-            } catch (error) {
-                console.error('登录失败:', error);
-                showLoginStatus('❌ 登录失败: ' + error.message, 'error');
-                
-                // 恢复登录按钮
-                loginBtn.disabled = false;
-                loginBtn.textContent = '登录';
-            }
-        }
-
-        // 显示登录状态
-        function showLoginStatus(message, type) {
-            const loginStatus = document.getElementById('loginStatus');
-            loginStatus.textContent = message;
-            loginStatus.className = `login-status ${type === 'success' ? 'login-success' : 'login-error'}`;
-            loginStatus.style.display = 'block';
-        }
-
-        // 显示管理面板
         function showAdminPanel() {
-            console.log('显示管理面板');
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
-            document.getElementById('loginStatus').style.display = 'none';
-            
-            // 加载反馈数据
             loadFeedbacks();
         }
 
-        // 显示错误信息
-        function showError(message) {
-            console.error('显示错误:', message);
-            const errorElement = document.getElementById('errorMessage');
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-                
-                setTimeout(() => {
-                    errorElement.style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        // 显示成功信息
-        function showSuccess(message) {
-            const successElement = document.getElementById('successMessage');
-            if (successElement) {
-                successElement.textContent = message;
-                successElement.style.display = 'block';
-                
-                setTimeout(() => {
-                    successElement.style.display = 'none';
-                }, 3000);
-            }
-        }
-
-        // 加载反馈数据
         async function loadFeedbacks() {
-            console.log('开始加载反馈数据...');
             try {
                 const feedbackList = document.getElementById('feedbackList');
-                if (feedbackList) {
-                    feedbackList.innerHTML = '<div class="loading">加载中...</div>';
-                }
+                feedbackList.innerHTML = '<div style="text-align: center; padding: 2rem;">加载中...</div>';
                 
                 const feedbacks = await storage.getFeedbacks();
-                console.log('成功获取反馈数据:', feedbacks.length, '条');
+                console.log('获取到的反馈:', feedbacks);
                 
                 displayFeedbacks(feedbacks);
                 updateStats(feedbacks);
@@ -392,15 +207,11 @@
                 showSuccess(`成功加载 ${feedbacks.length} 条反馈`);
             } catch (error) {
                 console.error('加载数据失败:', error);
-                showError('加载失败: ' + error.message);
                 const feedbackList = document.getElementById('feedbackList');
-                if (feedbackList) {
-                    feedbackList.innerHTML = '<div style="text-align: center; padding: 2rem; color: #ff4d4f;">加载失败: ' + error.message + '</div>';
-                }
+                feedbackList.innerHTML = `<div style="text-align: center; padding: 2rem; color: #ff4d4f;">加载失败: ${error.message}</div>`;
             }
         }
 
-        // 更新统计信息
         function updateStats(feedbacks) {
             const total = feedbacks.length;
             const pending = feedbacks.filter(f => f.status === 'pending').length;
@@ -409,26 +220,18 @@
             // 今日反馈
             const today = new Date().toDateString();
             const todayFeedbacks = feedbacks.filter(f => {
-                if (!f.timestamp) return false;
                 const feedbackDate = new Date(f.timestamp).toDateString();
                 return feedbackDate === today;
             }).length;
 
-            // 更新统计显示
             document.getElementById('totalFeedbacks').textContent = total;
             document.getElementById('pendingFeedbacks').textContent = pending;
             document.getElementById('processedFeedbacks').textContent = processed;
             document.getElementById('todayFeedbacks').textContent = todayFeedbacks;
         }
 
-        // 显示反馈数据
         function displayFeedbacks(feedbacks) {
             const container = document.getElementById('feedbackList');
-            
-            if (!container) {
-                console.error('找不到反馈列表容器');
-                return;
-            }
             
             if (feedbacks.length === 0) {
                 container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">暂无反馈数据</div>';
@@ -452,7 +255,7 @@
                                 <span style="background: ${typeColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: white;">
                                     ${typeText}
                                 </span>
-                                <strong style="margin-left: 8px;">${feedback.employeeName || '匿名用户'}</strong>
+                                <strong style="margin-left: 8px;">${feedback.employeeName}</strong>
                             </div>
                             <span style="color: #666; font-size: 0.9rem;">${timeString}</span>
                         </div>
@@ -460,18 +263,16 @@
                             <span style="background: ${feedback.status === 'pending' ? '#fff7e6' : '#f6ffed'}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: ${feedback.status === 'pending' ? '#faad14' : '#52c41a'};">
                                 ${feedback.status === 'pending' ? '待处理' : '已处理'}
                             </span>
+                            <span style="margin-left: 8px; font-size: 0.8rem; color: #666;">Issue #${feedback.id}</span>
                         </div>
                         <div style="margin-bottom: 1rem; line-height: 1.6; white-space: pre-wrap;">${feedback.content}</div>
                         
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <button onclick="processFeedback('${feedback.id}')" style="padding: 6px 12px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                ${feedback.status === 'pending' ? '标记处理' : '标记待处理'}
-                            </button>
-                            <button onclick="deleteFeedback('${feedback.id}')" style="padding: 6px 12px; background: #ff4d4f; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                删除
-                            </button>
+                            <a href="${feedback.issueUrl}" target="_blank" class="github-link">
+                                在 GitHub 处理
+                            </a>
                             <div style="flex: 1; text-align: right; color: #666; font-size: 0.9rem;">
-                                👍 ${feedback.likes || 0} 
+                                📅 ${new Date(feedback.timestamp).toLocaleDateString('zh-CN')}
                             </div>
                         </div>
                     </div>
@@ -501,66 +302,20 @@
             return colors[type] || '#666';
         }
 
-        // 处理反馈
-        async function processFeedback(feedbackId) {
-            console.log('处理反馈:', feedbackId);
-            try {
-                const newStatus = 'processed';
-                const result = await storage.updateFeedbackStatus(feedbackId, newStatus);
-                
-                if (result.success) {
-                    showSuccess('反馈状态已更新为: 已处理');
-                    loadFeedbacks();
-                } else {
-                    throw new Error(result.error);
-                }
-            } catch (error) {
-                console.error('处理反馈失败:', error);
-                showError('操作失败: ' + error.message);
-            }
+        function showSuccess(message) {
+            const successElement = document.getElementById('successMessage');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            
+            setTimeout(() => {
+                successElement.style.display = 'none';
+            }, 3000);
         }
 
-        // 删除反馈
-        async function deleteFeedback(feedbackId) {
-            console.log('删除反馈:', feedbackId);
-            if (confirm('确定要删除这条反馈吗？此操作不可恢复！')) {
-                try {
-                    const result = await storage.deleteFeedback(feedbackId);
-                    
-                    if (result.success) {
-                        showSuccess('反馈删除成功');
-                        loadFeedbacks();
-                    } else {
-                        throw new Error(result.error);
-                    }
-                } catch (error) {
-                    console.error('删除失败:', error);
-                    showError('删除失败: ' + error.message);
-                }
-            }
-        }
-
-        // 添加示例数据
-        async function addSampleData() {
-            const sampleData = {
-                employeeName: '示例用户',
-                type: 'suggestion',
-                content: '这是一个示例反馈，用于测试系统功能。建议改善工作环境和提高工作效率。\n\n测试时间：' + new Date().toLocaleString(),
-                images: []
-            };
-
-            try {
-                const result = await storage.saveFeedback(sampleData);
-                if (result.success) {
-                    showSuccess('示例数据添加成功！');
-                    loadFeedbacks();
-                } else {
-                    throw new Error(result.error);
-                }
-            } catch (error) {
-                showError('添加失败: ' + error.message);
-            }
-        }
+        // 自动显示管理面板（简化登录）
+        document.addEventListener('DOMContentLoaded', function() {
+            showAdminPanel();
+        });
     </script>
 </body>
 </html>
