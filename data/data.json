@@ -59,6 +59,12 @@
             "electricity": 67.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 24.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -122,6 +128,12 @@
           {
             "month": 10,
             "electricity": 14.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 5.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -189,6 +201,12 @@
             "electricity": 117.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 48.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -252,6 +270,12 @@
           {
             "month": 10,
             "electricity": 74.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 11,
+            "electricity": 35.0,
             "water": 0.0,
             "rent": 200.0
           }
@@ -319,6 +343,12 @@
             "electricity": 63.0,
             "water": 0.0,
             "rent": 200.0
+          },
+          {
+            "month": 11,
+            "electricity": 43.0,
+            "water": 0.0,
+            "rent": 200.0
           }
         ]
       }
@@ -382,6 +412,12 @@
           {
             "month": 10,
             "electricity": 47.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 4.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -449,6 +485,12 @@
             "electricity": 47.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 4.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -512,6 +554,12 @@
           {
             "month": 10,
             "electricity": 238.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 144.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -579,6 +627,12 @@
             "electricity": 171.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 19.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -642,6 +696,12 @@
           {
             "month": 10,
             "electricity": 171.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 19.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -709,6 +769,12 @@
             "electricity": 238.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 144.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -771,6 +837,12 @@
           },
           {
             "month": 10,
+            "electricity": 24.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 11,
             "electricity": 24.0,
             "water": 0.0,
             "rent": 200.0
@@ -839,6 +911,12 @@
             "electricity": 46.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 13.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -904,6 +982,12 @@
             "electricity": 46.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 13.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -967,6 +1051,12 @@
           {
             "month": 10,
             "electricity": 170.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 41.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -1063,6 +1153,12 @@
             "electricity": 16.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 10.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -1126,6 +1222,12 @@
           {
             "month": 10,
             "electricity": 202.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 124.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -1193,6 +1295,12 @@
             "electricity": 152.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 34.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -1256,6 +1364,12 @@
           {
             "month": 10,
             "electricity": 65.0,
+            "water": 0.0,
+            "rent": 200.0
+          },
+          {
+            "month": 11,
+            "electricity": 46.0,
             "water": 0.0,
             "rent": 200.0
           }
@@ -1323,6 +1437,12 @@
             "electricity": 55.0,
             "water": 0.0,
             "rent": 200.0
+          },
+          {
+            "month": 11,
+            "electricity": 45.0,
+            "water": 0.0,
+            "rent": 200.0
           }
         ]
       }
@@ -1380,6 +1500,12 @@
           {
             "month": 10,
             "electricity": 60.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 14.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -1488,6 +1614,12 @@
             "electricity": 31.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 19.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -1551,6 +1683,12 @@
           {
             "month": 10,
             "electricity": 37.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 6.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -1618,6 +1756,12 @@
             "electricity": 37.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 6.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -1681,6 +1825,12 @@
           {
             "month": 10,
             "electricity": 63.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 60.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -1748,6 +1898,12 @@
             "electricity": 63.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 60.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -1811,6 +1967,12 @@
           {
             "month": 10,
             "electricity": 245.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 137.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -1878,6 +2040,12 @@
             "electricity": 180.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 51.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -1943,6 +2111,12 @@
             "electricity": 129.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 45.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -1994,6 +2168,12 @@
           {
             "month": 10,
             "electricity": 16.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 10.0,
             "water": 0.0,
             "rent": 0.0
           }
@@ -2076,9 +2256,9 @@
           },
           {
             "month": 12,
-            "electricity": 300.0,
-            "water": 400.0,
-            "rent": 500.0
+            "electricity": 500.0,
+            "water": 800.0,
+            "rent": 1200.0
           }
         ]
       }
@@ -2102,6 +2282,12 @@
             "electricity": 47.0,
             "water": 0.0,
             "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 5.0,
+            "water": 0.0,
+            "rent": 0.0
           }
         ]
       }
@@ -2123,6 +2309,12 @@
           {
             "month": 10,
             "electricity": 47.0,
+            "water": 0.0,
+            "rent": 0.0
+          },
+          {
+            "month": 11,
+            "electricity": 28.0,
             "water": 0.0,
             "rent": 0.0
           }
