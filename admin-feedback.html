@@ -72,6 +72,12 @@
             border-radius: 8px;
             text-align: center;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         .stat-number {
@@ -80,15 +86,28 @@
             margin-bottom: 0.5rem;
         }
         
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .stat-total { color: var(--primary-color); }
         .stat-pending { color: var(--warning-color); }
         .stat-processed { color: var(--success-color); }
-        .stat-total { color: var(--primary-color); }
+        .stat-suggestion { color: #1890ff; }
+        .stat-problem { color: #faad14; }
+        .stat-complaint { color: #ff4d4f; }
+        .stat-other { color: #52c41a; }
         
         .filters {
             display: flex;
             gap: 1rem;
             margin-bottom: 1.5rem;
             flex-wrap: wrap;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
         }
         
         .filter-select {
@@ -96,6 +115,7 @@
             border: 1px solid #ddd;
             border-radius: 6px;
             background: white;
+            min-width: 150px;
         }
         
         .feedback-list {
@@ -109,6 +129,11 @@
             padding: 1.5rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             border-left: 4px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+        
+        .feedback-item:hover {
+            transform: translateX(5px);
         }
         
         .feedback-header {
@@ -141,12 +166,18 @@
             margin-bottom: 1rem;
             line-height: 1.6;
             white-space: pre-wrap;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
         }
         
         .feedback-actions {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
         }
         
         .action-btn {
@@ -155,31 +186,44 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.85rem;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s, transform 0.2s;
         }
         
         .action-btn:hover {
-            opacity: 0.8;
+            opacity: 0.9;
+            transform: scale(1.05);
         }
         
         .btn-process { background: var(--success-color); color: white; }
         .btn-delete { background: var(--error-color); color: white; }
         .btn-pending { background: var(--warning-color); color: white; }
+        .btn-view { background: var(--primary-color); color: white; }
         
         .status-badge {
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 0.8rem;
             font-weight: bold;
+            margin-left: 8px;
         }
         
         .status-pending { background: #fff7e6; color: var(--warning-color); }
         .status-processed { background: #f6ffed; color: var(--success-color); }
         
+        .employee-info {
+            background: #f0f8ff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
         .empty-state {
             text-align: center;
             padding: 3rem;
             color: var(--text-secondary);
+            background: #f8f9fa;
+            border-radius: 8px;
         }
         
         .login-form {
@@ -371,93 +415,76 @@
             font-size: 1rem;
         }
 
-        /* 数据管理样式 */
-        .data-management {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-        }
-
-        .data-buttons {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .gist-info {
-            background: #e6f7ff;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .gist-info a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .gist-info a:hover {
-            text-decoration: underline;
-        }
-
-        /* 评论样式 */
-        .comments-section {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        .comment-form {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .comment-input {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .comment-submit {
-            padding: 8px 16px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .comment-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .comment-item {
-            padding: 0.5rem;
-            margin-bottom: 0.5rem;
-            background: white;
-            border-radius: 4px;
-            border-left: 3px solid var(--primary-color);
-        }
-
-        .comment-header {
+        /* 控制面板 */
+        .control-panel {
             display: flex;
             justify-content: space-between;
-            font-size: 0.8rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* 加载指示器 */
+        .loading {
+            text-align: center;
+            padding: 2rem;
             color: var(--text-secondary);
-            margin-bottom: 0.25rem;
         }
 
-        .comment-content {
-            font-size: 0.9rem;
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
         }
 
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 通知消息 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--error-color);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        /* 响应式设计 */
         @media (max-width: 768px) {
             .admin-card {
                 padding: 1.5rem;
@@ -491,19 +518,42 @@
             .thumbnail {
                 height: 80px;
             }
+
+            .control-panel {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 480px) {
-            .filters {
-                flex-direction: column;
-            }
-            
-            .filter-select {
-                width: 100%;
+            .stats {
+                grid-template-columns: 1fr;
             }
             
             .images-grid {
                 grid-template-columns: repeat(3, 1fr);
+            }
+
+            .feedback-actions {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
             }
         }
     </style>
@@ -515,71 +565,101 @@
             <p>宏方纺织 - 管理员后台</p>
         </div>
         
+        <!-- 登录界面 -->
         <div id="loginSection" class="login-form">
             <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-dark);">管理员登录</h2>
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username">用户名</label>
-                    <input type="text" id="username" required>
+                    <input type="text" id="username" required placeholder="请输入管理员账号">
                 </div>
                 <div class="form-group">
                     <label for="password">密码</label>
-                    <input type="password" id="password" required>
+                    <input type="password" id="password" required placeholder="请输入管理员密码">
                 </div>
                 <button type="submit" class="login-btn">登录</button>
             </form>
             <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
-                默认账号: admin / 密码: 123456
+                默认账号: admin，密码: 123456
             </p>
             
             <!-- 登录页面的返回链接 -->
             <div class="nav-links">
                 <a href="index.html" class="nav-link nav-link-primary">返回首页</a>
+                <a href="feedback.html" class="nav-link">查看反馈页面</a>
             </div>
         </div>
         
+        <!-- 管理面板 -->
         <div id="adminPanel" style="display: none;">
             <div class="admin-card">
-                <!-- Gist信息 -->
-                <div class="gist-info" id="gistInfo">
-                    <strong>公开讨论区：</strong>
-                    <a id="gistLink" target="_blank">加载中...</a>
-                    <span id="gistStatus"></span>
-                </div>
-
-                <div class="stats" id="statsContainer">
-                    <!-- 统计数据将通过JavaScript动态生成 -->
-                </div>
-                
-                <div class="data-management">
-                    <h3 style="margin-bottom: 1rem;">数据管理</h3>
-                    <div class="data-buttons">
+                <!-- 控制面板 -->
+                <div class="control-panel">
+                    <div>
+                        <h3 style="margin: 0;">反馈管理控制台</h3>
+                        <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">
+                            Bin ID: <code>692d257b1a35bc08957ff712</code>
+                        </p>
+                    </div>
+                    <div class="control-buttons">
                         <button class="action-btn" onclick="refreshData()" style="background: var(--primary-color); color: white;">刷新数据</button>
-                        <button class="action-btn" onclick="exportData()" style="background: var(--success-color); color: white;">导出数据</button>
-                        <button class="action-btn" onclick="addSampleData()" style="background: var(--warning-color); color: white;">添加示例</button>
+                        <button class="action-btn" onclick="exportData()" style="background: var(--secondary-color); color: white;">导出数据</button>
+                        <button class="action-btn" onclick="showAllFeedbacks()" style="background: var(--admin-color); color: white;">显示全部</button>
                     </div>
                 </div>
                 
-                <div class="filters">
-                    <select class="filter-select" id="statusFilter">
-                        <option value="all">全部状态</option>
-                        <option value="pending">待处理</option>
-                        <option value="processed">已处理</option>
-                    </select>
-                    
-                    <select class="filter-select" id="typeFilter">
-                        <option value="all">全部类型</option>
-                        <option value="suggestion">意见建议</option>
-                        <option value="problem">问题反馈</option>
-                        <option value="complaint">投诉举报</option>
-                        <option value="other">其他</option>
-                    </select>
-                    
-                    <button class="action-btn" onclick="showAllComments()" style="background: #722ed1; color: white;">显示所有评论</button>
+                <!-- 统计信息 -->
+                <div class="stats" id="statsContainer">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        正在加载统计数据...
+                    </div>
                 </div>
                 
+                <!-- 过滤器 -->
+                <div class="filters">
+                    <div>
+                        <label for="statusFilter" style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">状态筛选:</label>
+                        <select class="filter-select" id="statusFilter">
+                            <option value="all">全部状态</option>
+                            <option value="pending">待处理</option>
+                            <option value="processed">已处理</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="typeFilter" style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">类型筛选:</label>
+                        <select class="filter-select" id="typeFilter">
+                            <option value="all">全部类型</option>
+                            <option value="suggestion">意见建议</option>
+                            <option value="problem">问题反馈</option>
+                            <option value="complaint">投诉举报</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="dateFilter" style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">时间范围:</label>
+                        <select class="filter-select" id="dateFilter">
+                            <option value="all">全部时间</option>
+                            <option value="today">今天</option>
+                            <option value="week">本周</option>
+                            <option value="month">本月</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="searchInput" style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">搜索内容:</label>
+                        <input type="text" id="searchInput" placeholder="搜索反馈内容..." style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; min-width: 200px;">
+                    </div>
+                </div>
+                
+                <!-- 反馈列表 -->
                 <div class="feedback-list" id="feedbackList">
-                    <!-- 反馈列表将通过JavaScript动态生成 -->
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        正在加载反馈数据...
+                    </div>
                 </div>
             </div>
             
@@ -587,7 +667,7 @@
             <div class="nav-links">
                 <a href="index.html" class="nav-link nav-link-primary">返回首页</a>
                 <a href="feedback.html" class="nav-link">查看反馈页面</a>
-                <button class="nav-link" onclick="logout()" style="background: var(--error-color); border-color: var(--error-color);">退出登录</button>
+                <button class="nav-link" onclick="logout()" style="background: var(--error-color); border-color: var(--error-color); cursor: pointer;">退出登录</button>
             </div>
         </div>
     </div>
@@ -603,43 +683,151 @@
         <div class="modal-counter" id="modalCounter"></div>
     </div>
 
-    <script src="gist-storage.js"></script>
-    <script>
-        // 初始化存储管理器
-        const storageManager = new GistStorage();
+    <!-- 通知消息 -->
+    <div class="notification" id="notification"></div>
 
-        // 图片查看相关变量
+    <script src="jsonbin-storage.js"></script>
+    <script>
+        // 管理员认证
+        const ADMIN_CREDENTIALS = {
+            username: 'admin',
+            password: '123456'
+        };
+
+        // 全局变量
+        let allFeedbacks = [];
         let currentImages = [];
         let currentImageIndex = 0;
+        let isAuthenticated = false;
 
-        // 查看图片
-        function viewImage(imageData, index) {
-            currentImages = [imageData];
-            currentImageIndex = 0;
-            showImageModal();
+        // 显示通知
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
         }
 
-        // 显示图片模态框
+        // 认证管理员
+        function authenticate(username, password) {
+            return username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password;
+        }
+
+        // 获取反馈数据
+        async function getFeedbacks() {
+            try {
+                const feedbacks = await jsonBinStorage.getFeedbacks();
+                allFeedbacks = feedbacks;
+                return feedbacks;
+            } catch (error) {
+                console.error('获取反馈数据失败:', error);
+                showNotification('获取数据失败: ' + error.message, 'error');
+                return [];
+            }
+        }
+
+        // 获取统计数据
+        async function getStats() {
+            try {
+                return await jsonBinStorage.getStats();
+            } catch (error) {
+                console.error('获取统计数据失败:', error);
+                return {
+                    total: 0,
+                    pending: 0,
+                    processed: 0,
+                    suggestions: 0,
+                    problems: 0,
+                    complaints: 0,
+                    others: 0
+                };
+            }
+        }
+
+        // 渲染统计数据
+        async function renderStats() {
+            try {
+                const stats = await getStats();
+                
+                const statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number stat-total">${stats.total}</div>
+                        <div class="stat-label">总反馈数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-pending">${stats.pending}</div>
+                        <div class="stat-label">待处理</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-processed">${stats.processed}</div>
+                        <div class="stat-label">已处理</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-suggestion">${stats.suggestions || 0}</div>
+                        <div class="stat-label">意见建议</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-problem">${stats.problems || 0}</div>
+                        <div class="stat-label">问题反馈</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-complaint">${stats.complaints || 0}</div>
+                        <div class="stat-label">投诉举报</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-other">${stats.others || 0}</div>
+                        <div class="stat-label">其他</div>
+                    </div>
+                `;
+                
+                document.getElementById('statsContainer').innerHTML = statsHTML;
+            } catch (error) {
+                console.error('渲染统计失败:', error);
+                document.getElementById('statsContainer').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">数据加载失败</div>
+                    </div>
+                `;
+            }
+        }
+
+        // 图片查看相关函数
+        function viewImage(imageData, index) {
+            currentImages = allFeedbacks.filter(fb => 
+                fb.images && fb.images.some(img => img.data === imageData)
+            ).flatMap(fb => fb.images);
+            
+            if (currentImages.length > 0) {
+                currentImageIndex = currentImages.findIndex(img => img.data === imageData);
+                if (currentImageIndex === -1) currentImageIndex = 0;
+                showImageModal();
+            }
+        }
+
         function showImageModal() {
             const modal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
             const modalCounter = document.getElementById('modalCounter');
             
-            modalImage.src = currentImages[currentImageIndex].data;
-            modalCounter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
-            modal.style.display = 'flex';
-            
-            document.body.style.overflow = 'hidden';
+            if (currentImages.length > 0 && currentImageIndex >= 0 && currentImageIndex < currentImages.length) {
+                modalImage.src = currentImages[currentImageIndex].data;
+                modalCounter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
         }
 
-        // 关闭图片模态框
         function closeImageModal() {
             const modal = document.getElementById('imageModal');
             modal.style.display = 'none';
             document.body.style.overflow = 'auto';
         }
 
-        // 图片导航
         function navigateImage(direction) {
             currentImageIndex += direction;
             
@@ -652,316 +840,289 @@
             showImageModal();
         }
 
-        // 更新Gist信息显示
-        function updateGistInfo() {
-            const gistLink = document.getElementById('gistLink');
-            const gistStatus = document.getElementById('gistStatus');
-            
-            const gistUrl = storageManager.getGistUrl();
-            if (gistUrl) {
-                gistLink.href = gistUrl;
-                gistLink.textContent = '点击访问公开讨论区';
-                gistStatus.innerHTML = ' <span style="color: var(--success-color);">✅ 连接正常</span>';
-            } else {
-                gistStatus.innerHTML = ' <span style="color: var(--error-color);">❌ 连接失败</span>';
-            }
-        }
-
-        // 渲染统计数据
-        async function renderStats() {
-            const feedbacks = await getFeedbacks();
-            const total = feedbacks.length;
-            const pending = feedbacks.filter(fb => fb.status === 'pending').length;
-            const processed = feedbacks.filter(fb => fb.status === 'processed').length;
-            const withComments = feedbacks.filter(fb => fb.comments && fb.comments.length > 0).length;
-            
-            const statsHTML = `
-                <div class="stat-card">
-                    <div class="stat-number stat-total">${total}</div>
-                    <div>总反馈数</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number stat-pending">${pending}</div>
-                    <div>待处理</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number stat-processed">${processed}</div>
-                    <div>已处理</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: #722ed1;">${withComments}</div>
-                    <div>有评论</div>
-                </div>
-            `;
-            
-            document.getElementById('statsContainer').innerHTML = statsHTML;
-        }
-
-        // 获取反馈数据
-        async function getFeedbacks() {
-            try {
-                return await storageManager.getFeedbacks();
-            } catch (error) {
-                console.error('获取数据失败:', error);
-                return [];
-            }
-        }
-
-        // 更新反馈状态
-        async function updateFeedbackStatus(feedbackId, status) {
-            const result = await storageManager.updateFeedbackStatus(feedbackId, status);
-            if (result.success) {
-                await renderStats();
-                await renderFeedbackList();
-            } else {
-                alert('更新失败: ' + result.error);
-            }
-        }
-
-        // 删除反馈
-        async function deleteFeedback(feedbackId) {
-            const result = await storageManager.deleteFeedback(feedbackId);
-            return result.success;
-        }
-
-        // 添加评论
-        async function addComment(feedbackId, commentText) {
-            if (!commentText.trim()) {
-                alert('请输入评论内容');
-                return;
-            }
-
-            const commentData = {
-                author: '管理员',
-                content: commentText.trim(),
-                isAdmin: true
-            };
-
-            const result = await storageManager.addComment(feedbackId, commentData);
-            if (result.success) {
-                await renderFeedbackList();
-                alert('评论添加成功');
-            } else {
-                alert('评论失败: ' + result.error);
-            }
-        }
-
         // 渲染反馈列表
         async function renderFeedbackList() {
-            const feedbacks = await getFeedbacks();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const typeFilter = document.getElementById('typeFilter').value;
-            
-            let filteredFeedbacks = feedbacks;
-            
-            if (statusFilter !== 'all') {
-                filteredFeedbacks = filteredFeedbacks.filter(fb => fb.status === statusFilter);
-            }
-            
-            if (typeFilter !== 'all') {
-                filteredFeedbacks = filteredFeedbacks.filter(fb => fb.type === typeFilter);
-            }
-            
-            filteredFeedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            const feedbackList = document.getElementById('feedbackList');
-            
-            if (filteredFeedbacks.length === 0) {
-                feedbackList.innerHTML = `
-                    <div class="empty-state">
-                        <h3>暂无反馈数据</h3>
-                        <p>当前没有符合条件的员工反馈</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            let feedbacksHTML = '';
-            
-            filteredFeedbacks.forEach(feedback => {
-                const typeText = {
-                    'suggestion': '意见建议',
-                    'problem': '问题反馈',
-                    'complaint': '投诉举报',
-                    'other': '其他'
-                }[feedback.type];
+            try {
+                const feedbacks = await getFeedbacks();
+                const statusFilter = document.getElementById('statusFilter').value;
+                const typeFilter = document.getElementById('typeFilter').value;
+                const dateFilter = document.getElementById('dateFilter').value;
+                const searchInput = document.getElementById('searchInput').value.toLowerCase();
                 
-                const typeClass = {
-                    'suggestion': 'type-suggestion',
-                    'problem': 'type-problem',
-                    'complaint': 'type-complaint',
-                    'other': 'type-other'
-                }[feedback.type];
+                // 过滤反馈
+                let filteredFeedbacks = feedbacks;
                 
-                const statusText = feedback.status === 'pending' ? '待处理' : '已处理';
-                const statusClass = feedback.status === 'pending' ? 'status-pending' : 'status-processed';
+                if (statusFilter !== 'all') {
+                    filteredFeedbacks = filteredFeedbacks.filter(fb => fb.status === statusFilter);
+                }
                 
-                const date = new Date(feedback.timestamp);
-                const timeString = date.toLocaleString('zh-CN');
+                if (typeFilter !== 'all') {
+                    filteredFeedbacks = filteredFeedbacks.filter(fb => fb.type === typeFilter);
+                }
                 
-                feedbacksHTML += `
-                    <div class="feedback-item">
-                        <div class="feedback-header">
-                            <div>
-                                <span class="feedback-type ${typeClass}">${typeText}</span>
-                                <span class="status-badge ${statusClass}" style="margin-left: 8px;">${statusText}</span>
-                                ${feedback.likes > 0 ? `<span style="margin-left: 8px; color: #ff6b6b;">👍 ${feedback.likes || 0}</span>` : ''}
-                            </div>
-                            <div class="feedback-time">${timeString} - ${feedback.employeeName || '匿名'}</div>
+                if (dateFilter !== 'all') {
+                    const now = new Date();
+                    let startDate;
+                    
+                    switch(dateFilter) {
+                        case 'today':
+                            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                            break;
+                        case 'week':
+                            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                            break;
+                        case 'month':
+                            startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+                            break;
+                    }
+                    
+                    filteredFeedbacks = filteredFeedbacks.filter(fb => {
+                        const feedbackDate = new Date(fb.timestamp);
+                        return feedbackDate >= startDate;
+                    });
+                }
+                
+                if (searchInput) {
+                    filteredFeedbacks = filteredFeedbacks.filter(fb => 
+                        fb.content.toLowerCase().includes(searchInput) || 
+                        (fb.employeeName && fb.employeeName.toLowerCase().includes(searchInput))
+                    );
+                }
+                
+                // 按时间倒序排序
+                filteredFeedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                const feedbackList = document.getElementById('feedbackList');
+                
+                if (filteredFeedbacks.length === 0) {
+                    feedbackList.innerHTML = `
+                        <div class="empty-state">
+                            <h3>暂无反馈数据</h3>
+                            <p>当前没有符合条件的员工反馈</p>
+                            <button onclick="showAllFeedbacks()" style="margin-top: 1rem; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                显示全部反馈
+                            </button>
                         </div>
-                        <div class="feedback-content">${feedback.content}</div>
-                        
-                        ${feedback.images && feedback.images.length > 0 ? `
-                            <div class="feedback-images">
-                                <div class="images-title">附件图片 (${feedback.images.length}张):</div>
-                                <div class="images-grid">
-                                    ${feedback.images.map((image, index) => `
-                                        <div class="image-item" onclick="viewImage(${JSON.stringify(image)}, ${index})">
-                                            <img src="${image.data}" alt="反馈图片 ${index + 1}" class="thumbnail">
-                                        </div>
-                                    `).join('')}
+                    `;
+                    return;
+                }
+                
+                let feedbacksHTML = '';
+                
+                filteredFeedbacks.forEach(feedback => {
+                    const typeText = feedback.typeText || {
+                        'suggestion': '意见建议',
+                        'problem': '问题反馈',
+                        'complaint': '投诉举报',
+                        'other': '其他'
+                    }[feedback.type] || '其他';
+                    
+                    const typeClass = {
+                        'suggestion': 'type-suggestion',
+                        'problem': 'type-problem',
+                        'complaint': 'type-complaint',
+                        'other': 'type-other'
+                    }[feedback.type] || 'type-other';
+                    
+                    const statusText = feedback.status === 'pending' ? '待处理' : '已处理';
+                    const statusClass = feedback.status === 'pending' ? 'status-pending' : 'status-processed';
+                    
+                    const date = new Date(feedback.timestamp);
+                    const timeString = date.toLocaleString('zh-CN');
+                    
+                    feedbacksHTML += `
+                        <div class="feedback-item" id="feedback-${feedback.id}">
+                            <div class="feedback-header">
+                                <div>
+                                    <span class="feedback-type ${typeClass}">${typeText}</span>
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
                                 </div>
+                                <div class="feedback-time">${timeString}</div>
                             </div>
-                        ` : ''}
-                        
-                        ${feedback.comments && feedback.comments.length > 0 ? `
-                            <div class="comments-section">
-                                <div class="images-title">评论 (${feedback.comments.length}条):</div>
-                                <div class="comment-list">
-                                    ${feedback.comments.map(comment => `
-                                        <div class="comment-item">
-                                            <div class="comment-header">
-                                                <span>${comment.author} ${comment.isAdmin ? '<span style="color: var(--primary-color);">[管理员]</span>' : ''}</span>
-                                                <span>${new Date(comment.timestamp).toLocaleString()}</span>
+                            
+                            ${feedback.employeeName ? `
+                                <div class="employee-info">
+                                    <strong>提交人:</strong> ${feedback.employeeName}
+                                </div>
+                            ` : ''}
+                            
+                            <div class="feedback-content">${feedback.content}</div>
+                            
+                            <!-- 图片显示区域 -->
+                            ${feedback.images && feedback.images.length > 0 ? `
+                                <div class="feedback-images">
+                                    <div class="images-title">附件图片 (${feedback.images.length}张):</div>
+                                    <div class="images-grid">
+                                        ${feedback.images.map((image, index) => `
+                                            <div class="image-item" onclick="viewImage('${image.data}', ${index})">
+                                                <img src="${image.data}" alt="反馈图片 ${index + 1}" class="thumbnail">
                                             </div>
-                                            <div class="comment-content">${comment.content}</div>
-                                        </div>
-                                    `).join('')}
+                                        `).join('')}
+                                    </div>
                                 </div>
+                            ` : ''}
+                            
+                            <div class="feedback-actions">
+                                ${feedback.status === 'pending' ? 
+                                    `<button class="action-btn btn-process" onclick="processFeedback('${feedback.id}')">标记为已处理</button>` : 
+                                    `<button class="action-btn btn-pending" onclick="pendingFeedback('${feedback.id}')">标记为待处理</button>`
+                                }
+                                <button class="action-btn btn-view" onclick="viewFeedbackDetail('${feedback.id}')">查看详情</button>
+                                <button class="action-btn btn-delete" onclick="deleteFeedbackItem('${feedback.id}')">删除</button>
                             </div>
-                        ` : ''}
-
-                        <div class="comment-form">
-                            <input type="text" class="comment-input" id="comment_${feedback.id}" placeholder="回复此反馈...">
-                            <button class="comment-submit" onclick="addComment('${feedback.id}', document.getElementById('comment_${feedback.id}').value)">回复</button>
                         </div>
-                        
-                        <div class="feedback-actions">
-                            ${feedback.status === 'pending' ? 
-                                `<button class="action-btn btn-process" onclick="processFeedback('${feedback.id}')">标记为已处理</button>` : 
-                                `<button class="action-btn btn-pending" onclick="pendingFeedback('${feedback.id}')">标记为待处理</button>`
-                            }
-                            <button class="action-btn" onclick="likeFeedback('${feedback.id}')" style="background: #ff6b6b; color: white;">点赞 (${feedback.likes || 0})</button>
-                            <button class="action-btn btn-delete" onclick="deleteFeedbackItem('${feedback.id}')">删除</button>
-                        </div>
+                    `;
+                });
+                
+                feedbackList.innerHTML = feedbacksHTML;
+            } catch (error) {
+                console.error('渲染反馈列表失败:', error);
+                document.getElementById('feedbackList').innerHTML = `
+                    <div class="empty-state">
+                        <h3>加载失败</h3>
+                        <p>${error.message}</p>
+                        <button onclick="refreshData()" style="margin-top: 1rem; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            重试加载
+                        </button>
                     </div>
                 `;
-            });
-            
-            feedbackList.innerHTML = feedbacksHTML;
+            }
+        }
+
+        // 显示所有反馈
+        function showAllFeedbacks() {
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('typeFilter').value = 'all';
+            document.getElementById('dateFilter').value = 'all';
+            document.getElementById('searchInput').value = '';
+            renderFeedbackList();
         }
 
         // 处理反馈
         async function processFeedback(feedbackId) {
-            await updateFeedbackStatus(feedbackId, 'processed');
+            if (!isAuthenticated) {
+                showNotification('请先登录管理员账号', 'error');
+                return;
+            }
+            
+            try {
+                const result = await jsonBinStorage.updateFeedbackStatus(feedbackId, 'processed');
+                
+                if (result.success) {
+                    showNotification('反馈状态已更新为已处理');
+                    refreshData();
+                } else {
+                    showNotification('更新失败: ' + (result.message || '未知错误'), 'error');
+                }
+            } catch (error) {
+                console.error('处理反馈失败:', error);
+                showNotification('操作失败: ' + error.message, 'error');
+            }
         }
 
         // 标记为待处理
         async function pendingFeedback(feedbackId) {
-            await updateFeedbackStatus(feedbackId, 'pending');
+            if (!isAuthenticated) {
+                showNotification('请先登录管理员账号', 'error');
+                return;
+            }
+            
+            try {
+                const result = await jsonBinStorage.updateFeedbackStatus(feedbackId, 'pending');
+                
+                if (result.success) {
+                    showNotification('反馈状态已更新为待处理');
+                    refreshData();
+                } else {
+                    showNotification('更新失败: ' + (result.message || '未知错误'), 'error');
+                }
+            } catch (error) {
+                console.error('更新反馈状态失败:', error);
+                showNotification('操作失败: ' + error.message, 'error');
+            }
         }
 
-        // 点赞反馈
-        async function likeFeedback(feedbackId) {
-            const userId = 'admin_' + Date.now();
-            const result = await storageManager.likeFeedback(feedbackId, userId);
-            if (result.success) {
-                await renderFeedbackList();
-            } else {
-                alert('点赞失败: ' + result.error);
+        // 查看反馈详情
+        function viewFeedbackDetail(feedbackId) {
+            const feedback = allFeedbacks.find(fb => fb.id === feedbackId);
+            if (feedback) {
+                alert(`反馈详情\n\nID: ${feedback.id}\n提交人: ${feedback.employeeName || '匿名'}\n类型: ${feedback.typeText}\n状态: ${feedback.status === 'pending' ? '待处理' : '已处理'}\n时间: ${new Date(feedback.timestamp).toLocaleString('zh-CN')}\n内容: ${feedback.content}`);
             }
         }
 
         // 删除反馈项
         async function deleteFeedbackItem(feedbackId) {
-            if (confirm('确定要删除这条反馈吗？此操作不可恢复。')) {
-                if (await deleteFeedback(feedbackId)) {
-                    await renderStats();
-                    await renderFeedbackList();
+            if (!isAuthenticated) {
+                showNotification('请先登录管理员账号', 'error');
+                return;
+            }
+            
+            if (!confirm('确定要删除这条反馈吗？此操作不可恢复。')) {
+                return;
+            }
+            
+            try {
+                const result = await jsonBinStorage.deleteFeedback(feedbackId);
+                
+                if (result.success) {
+                    showNotification('反馈已删除');
+                    refreshData();
+                } else {
+                    showNotification('删除失败: ' + (result.message || '未知错误'), 'error');
                 }
+            } catch (error) {
+                console.error('删除反馈失败:', error);
+                showNotification('删除失败: ' + error.message, 'error');
             }
         }
 
         // 刷新数据
         async function refreshData() {
-            await renderStats();
-            await renderFeedbackList();
-            updateGistInfo();
+            if (!isAuthenticated) {
+                showNotification('请先登录管理员账号', 'error');
+                return;
+            }
+            
+            try {
+                showNotification('正在刷新数据...', 'warning');
+                await renderStats();
+                await renderFeedbackList();
+                showNotification('数据刷新完成');
+            } catch (error) {
+                console.error('刷新数据失败:', error);
+                showNotification('刷新失败: ' + error.message, 'error');
+            }
         }
 
         // 导出数据
         async function exportData() {
-            const feedbacks = await getFeedbacks();
-            if (feedbacks.length === 0) {
-                alert('没有数据可导出');
+            if (!isAuthenticated) {
+                showNotification('请先登录管理员账号', 'error');
                 return;
             }
             
-            const dataStr = JSON.stringify(feedbacks, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(dataBlob);
-            link.download = `员工反馈数据_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            
-            alert(`成功导出 ${feedbacks.length} 条反馈数据`);
-        }
-
-        // 添加示例数据
-        async function addSampleData() {
-            const sampleData = {
-                employeeName: '示例用户',
-                type: 'suggestion',
-                content: '这是一个示例反馈，用于演示系统功能。建议可以增加更多的团队建设活动。',
-                images: [],
-                status: 'pending'
-            };
-
             try {
-                const result = await storageManager.saveFeedback(sampleData);
-                if (result.success) {
-                    alert('示例数据添加成功');
-                    await refreshData();
-                }
+                const blob = await jsonBinStorage.exportData();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `员工反馈数据_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                showNotification('数据导出成功');
             } catch (error) {
-                alert('添加示例数据失败: ' + error.message);
+                console.error('导出数据失败:', error);
+                showNotification('导出失败: ' + error.message, 'error');
             }
-        }
-
-        // 显示所有评论
-        function showAllComments() {
-            document.getElementById('statusFilter').value = 'all';
-            document.getElementById('typeFilter').value = 'all';
-            renderFeedbackList();
         }
 
         // 退出登录
         function logout() {
             if (confirm('确定要退出登录吗？')) {
+                isAuthenticated = false;
                 document.getElementById('adminPanel').style.display = 'none';
                 document.getElementById('loginSection').style.display = 'block';
                 document.getElementById('loginForm').reset();
+                showNotification('已成功退出登录');
             }
-        }
-
-        // 简单的管理员认证
-        function authenticate(username, password) {
-            const adminCredentials = {
-                username: 'admin',
-                password: '123456'
-            };
-            return username === adminCredentials.username && password === adminCredentials.password;
         }
 
         // 初始化页面
@@ -974,15 +1135,42 @@
                 const password = document.getElementById('password').value;
                 
                 if (authenticate(username, password)) {
+                    isAuthenticated = true;
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
                     
-                    await refreshData();
+                    // 显示加载状态
+                    document.getElementById('statsContainer').innerHTML = `
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            正在加载统计数据...
+                        </div>
+                    `;
                     
+                    document.getElementById('feedbackList').innerHTML = `
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            正在加载反馈数据...
+                        </div>
+                    `;
+                    
+                    // 初始化管理面板
+                    try {
+                        await renderStats();
+                        await renderFeedbackList();
+                        showNotification('登录成功，数据加载完成');
+                    } catch (error) {
+                        console.error('初始化失败:', error);
+                        showNotification('数据加载失败: ' + error.message, 'error');
+                    }
+                    
+                    // 设置过滤器事件监听
                     document.getElementById('statusFilter').addEventListener('change', renderFeedbackList);
                     document.getElementById('typeFilter').addEventListener('change', renderFeedbackList);
+                    document.getElementById('dateFilter').addEventListener('change', renderFeedbackList);
+                    document.getElementById('searchInput').addEventListener('input', renderFeedbackList);
                 } else {
-                    alert('用户名或密码错误！');
+                    showNotification('用户名或密码错误！', 'error');
                 }
             });
 
@@ -992,7 +1180,20 @@
                     closeImageModal();
                 }
             });
+
+            // 测试服务器连接
+            testServerConnection();
         });
+
+        // 测试服务器连接
+        async function testServerConnection() {
+            try {
+                const result = await jsonBinStorage.testConnection();
+                console.log('服务器连接状态:', result);
+            } catch (error) {
+                console.error('服务器连接测试失败:', error);
+            }
+        }
     </script>
 </body>
 </html>
