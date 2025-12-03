@@ -2,7 +2,7 @@
 class JsonBinStorage {
     constructor() {
         // ⚠️ 核心修改：硬编码固定Bin ID，禁止自动创建
-        this.binId = '692d257b1a35bc08957ff712'; // 固定使用这个ID
+        this.binId = '692fb6c4d0ea881f400f2b52'; // 固定使用这个ID
         
         // 保存到localStorage确保一致性
         localStorage.setItem('feedbackBinId', this.binId);
