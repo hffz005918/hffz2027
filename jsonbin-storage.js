@@ -10,7 +10,7 @@ class JsonBinStorage {
         this.baseUrl = 'https://api.jsonbin.io/v3/b';
         this.headers = {
             'Content-Type': 'application/json',
-            'X-Bin-Name': '宏方纺织员工反馈系统'
+            'X-Bin-Name': 'Hongfang-Feedback-System'
         };
         
         // 模拟数据，以防网络问题
