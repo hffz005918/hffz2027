@@ -1,14 +1,14 @@
-// jsonbin-storage-server.js - 服务器端版本
+// jsonbin-storage-fixed.js - 固定Bin ID的服务器端版本
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
 
 class JsonBinStorage {
-    constructor(configPath = './jsonbin-config.json') {
-        this.configPath = configPath;
-        this.config = null;
+    constructor() {
+        // 固定Bin ID - 一旦生成就不再改变
+        this.binId = null;
         
-        // API Keys - 从配置文件或环境变量读取
+        // API Keys - 从环境变量读取
         this.readOnlyKey = process.env.JSONBIN_READ_KEY || '$2a$10$AOxCSd1PIW2XUkxQvRpVVeimltcnLXIoOlqvBvFJwlxCihUD2wope';
         this.masterKey = process.env.JSONBIN_MASTER_KEY || '$2a$10$AOxCSd1PIW2XUkxQvRpVVeimltcnLXIoOlqvBvFJwlxCihUD2wope';
         
@@ -16,130 +16,65 @@ class JsonBinStorage {
         this.apiBaseUrl = 'https://api.jsonbin.io/v3';
         
         this.initialized = false;
+        this.binCreated = false; // 标记Bin是否已创建
         
-        console.log('🔄 JSONBin存储服务器端初始化');
+        console.log('🔄 固定Bin ID JSONBin存储系统初始化');
     }
     
     /**
-     * 加载配置文件
+     * 初始化存储系统
+     * 如果已有Bin ID，直接使用；否则创建新Bin并固定使用
      */
-    async loadConfig() {
-        try {
-            const data = await fs.readFile(this.configPath, 'utf8');
-            this.config = JSON.parse(data);
-            
-            if (this.config.binId) {
-                this.binId = this.config.binId;
-                console.log('✅ 从配置文件加载Bin ID:', this.binId);
-                return true;
-            }
-        } catch (error) {
-            // 如果配置文件不存在，创建默认配置
-            if (error.code === 'ENOENT') {
-                console.log('📄 配置文件不存在，将创建默认配置');
-                this.config = {
-                    binId: null,
-                    storage: {
-                        created: new Date().toISOString(),
-                        version: '1.0'
-                    }
-                };
-                await this.saveConfig();
-            } else {
-                console.warn('无法读取配置文件:', error.message);
-            }
-        }
-        return false;
-    }
-    
-    /**
-     * 保存配置文件
-     */
-    async saveConfig() {
-        try {
-            // 确保目录存在
-            const dir = path.dirname(this.configPath);
-            await fs.mkdir(dir, { recursive: true });
-            
-            await fs.writeFile(
-                this.configPath, 
-                JSON.stringify(this.config, null, 2), 
-                'utf8'
-            );
-            console.log('✅ 配置文件已保存:', this.configPath);
-            return true;
-        } catch (error) {
-            console.error('❌ 保存配置文件失败:', error);
-            return false;
-        }
-    }
-    
-    /**
-     * 从配置加载Bin ID
-     */
-    async loadBinIdFromConfig() {
-        if (!this.config) {
-            await this.loadConfig();
-        }
-        return this.config?.binId || null;
-    }
-    
-    /**
-     * 保存Bin ID到配置
-     */
-    async saveBinIdToConfig(binId) {
-        if (!this.config) {
-            this.config = {
-                binId: null,
-                storage: {
-                    created: new Date().toISOString(),
-                    version: '1.0'
-                }
+    async initialize() {
+        if (this.initialized && this.binId) {
+            console.log('✅ 存储系统已初始化，使用固定Bin:', this.binId);
+            return {
+                success: true,
+                message: `存储系统已初始化，使用固定Bin: ${this.binId}`,
+                binId: this.binId,
+                binCreated: this.binCreated
             };
         }
         
-        this.config.binId = binId;
-        this.config.storage.lastUpdated = new Date().toISOString();
-        this.binId = binId;
+        console.log('🔄 初始化JSONBin存储系统...');
         
-        return await this.saveConfig();
-    }
-    
-    /**
-     * 检查是否需要创建新的Bin
-     */
-    async checkAndCreateBinIfNeeded() {
-        // 从配置加载Bin ID
-        const existingBinId = await this.loadBinIdFromConfig();
+        // 检查是否已有Bin ID（从第一次创建时保存）
+        const existingBinId = await this.loadFixedBinId();
         
-        // 如果已经有Bin ID，验证它是否有效
         if (existingBinId) {
+            // 使用已有的固定Bin ID
             this.binId = existingBinId;
-            const testResult = await this.testConnection();
+            this.binCreated = true;
             
+            // 测试连接
+            const testResult = await this.testConnection();
             if (testResult.connected) {
-                console.log('✅ 使用现有Bin ID:', this.binId);
                 this.initialized = true;
+                console.log(`✅ 使用固定Bin ID: ${this.binId}`);
+                
                 return {
                     success: true,
-                    message: `使用现有Bin: ${this.binId}`,
+                    message: `✅ 使用固定Bin: ${this.binId}`,
                     binId: this.binId,
+                    binCreated: true,
                     existing: true
                 };
+            } else {
+                console.warn(`固定Bin ID ${existingBinId} 无效:`, testResult.message);
+                // 如果固定Bin无效，尝试重新创建
+                return await this.createAndFixNewBin();
             }
-            
-            console.warn('现有Bin ID无效，将创建新Bin');
+        } else {
+            // 首次使用，创建新Bin并固定
+            return await this.createAndFixNewBin();
         }
-        
-        // 创建新Bin
-        return await this.createAndSetupNewBin();
     }
     
     /**
-     * 自动创建和配置新的Bin
+     * 创建新Bin并固定使用
      */
-    async createAndSetupNewBin() {
-        console.log('🔄 正在创建新的JSONBin存储...');
+    async createAndFixNewBin() {
+        console.log('🔄 正在创建新的JSONBin存储并固定使用...');
         
         try {
             // 1. 创建新的Bin
@@ -164,12 +99,14 @@ class JsonBinStorage {
                     system: {
                         created: new Date().toISOString(),
                         lastUpdated: new Date().toISOString(),
-                        version: '1.0'
+                        version: '1.0',
+                        fixed: true, // 标记为固定Bin
+                        fixedAt: new Date().toISOString()
                     },
                     meta: {
-                        description: '员工反馈管理系统 - 服务器端',
+                        description: '员工反馈管理系统 - 固定Bin版本',
                         version: '1.0',
-                        autoGenerated: true,
+                        fixed: true,
                         generatedAt: new Date().toISOString()
                     }
                 })
@@ -185,8 +122,10 @@ class JsonBinStorage {
             
             console.log('✅ 成功创建新Bin:', newBinId);
             
-            // 2. 更新Bin ID到配置
-            await this.saveBinIdToConfig(newBinId);
+            // 2. 固定Bin ID（保存到文件，不再更改）
+            await this.saveFixedBinId(newBinId);
+            this.binId = newBinId;
+            this.binCreated = true;
             
             // 3. 验证创建
             const verifyResponse = await fetch(`${this.baseUrl}/${newBinId}`, {
@@ -207,18 +146,130 @@ class JsonBinStorage {
             
             return {
                 success: true,
-                message: '✅ 新Bin创建并配置成功!',
+                message: '✅ 新Bin创建并固定成功!',
                 binId: newBinId,
+                binCreated: true,
                 existing: false,
                 record: verifyData.record
             };
             
         } catch (error) {
-            console.error('❌ 创建Bin失败:', error);
+            console.error('❌ 创建固定Bin失败:', error);
             return {
                 success: false,
                 message: `创建失败: ${error.message}`,
                 binId: null
+            };
+        }
+    }
+    
+    /**
+     * 保存固定Bin ID到文件
+     */
+    async saveFixedBinId(binId) {
+        try {
+            const configDir = path.join(process.cwd(), 'config');
+            const configFile = path.join(configDir, 'fixed-bin.json');
+            
+            // 确保目录存在
+            await fs.mkdir(configDir, { recursive: true });
+            
+            const configData = {
+                binId: binId,
+                fixed: true,
+                createdAt: new Date().toISOString(),
+                lastAccessed: new Date().toISOString(),
+                note: '此Bin ID已固定，不再更改'
+            };
+            
+            await fs.writeFile(
+                configFile,
+                JSON.stringify(configData, null, 2),
+                'utf8'
+            );
+            
+            console.log(`✅ 固定Bin ID已保存: ${binId}`);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ 保存固定Bin ID失败:', error);
+            return false;
+        }
+    }
+    
+    /**
+     * 从文件加载固定Bin ID
+     */
+    async loadFixedBinId() {
+        try {
+            const configFile = path.join(process.cwd(), 'config', 'fixed-bin.json');
+            
+            // 检查文件是否存在
+            try {
+                await fs.access(configFile);
+            } catch {
+                return null; // 文件不存在
+            }
+            
+            const data = await fs.readFile(configFile, 'utf8');
+            const config = JSON.parse(data);
+            
+            if (config.binId && config.fixed) {
+                // 更新最后访问时间
+                config.lastAccessed = new Date().toISOString();
+                await fs.writeFile(configFile, JSON.stringify(config, null, 2), 'utf8');
+                
+                console.log(`📂 加载固定Bin ID: ${config.binId}`);
+                return config.binId;
+            }
+            
+            return null;
+            
+        } catch (error) {
+            console.warn('无法加载固定Bin ID:', error.message);
+            return null;
+        }
+    }
+    
+    /**
+     * 强制使用指定Bin ID（仅在无固定Bin时可用）
+     */
+    async useSpecificBinId(binId) {
+        // 检查是否已有固定Bin
+        const existingBinId = await this.loadFixedBinId();
+        
+        if (existingBinId) {
+            console.warn(`已有固定Bin ID: ${existingBinId}，无法更改`);
+            return {
+                success: false,
+                message: `已有固定Bin ID: ${existingBinId}，无法更改为其他Bin`
+            };
+        }
+        
+        // 验证Bin ID有效性
+        this.binId = binId;
+        const testResult = await this.testConnection();
+        
+        if (testResult.connected) {
+            // 保存为固定Bin
+            await this.saveFixedBinId(binId);
+            this.initialized = true;
+            this.binCreated = false; // 不是新创建的
+            
+            console.log(`✅ 使用指定Bin ID并固定: ${binId}`);
+            
+            return {
+                success: true,
+                message: `✅ 使用指定Bin ID并固定: ${binId}`,
+                binId: binId,
+                binCreated: false,
+                fixed: true
+            };
+        } else {
+            this.binId = null;
+            return {
+                success: false,
+                message: `指定Bin ID无效: ${testResult.message}`
             };
         }
     }
@@ -271,22 +322,6 @@ class JsonBinStorage {
                 binId: this.binId
             };
         }
-    }
-    
-    /**
-     * 初始化存储系统（自动检测或创建Bin）
-     */
-    async initialize() {
-        if (this.initialized) {
-            return {
-                success: true,
-                message: '存储系统已初始化',
-                binId: this.binId
-            };
-        }
-        
-        console.log('🔄 初始化JSONBin存储系统...');
-        return await this.checkAndCreateBinIfNeeded();
     }
     
     /**
@@ -353,7 +388,7 @@ class JsonBinStorage {
             const getData = await getResponse.json();
             const record = getData.record;
             
-            // 2. 创建新反馈（使用更安全的ID生成）
+            // 2. 创建新反馈
             const feedbackId = 'fb_' + Date.now() + '_' + crypto.randomBytes(4).toString('hex');
             const newFeedback = {
                 id: feedbackId,
@@ -363,7 +398,7 @@ class JsonBinStorage {
                 images: feedbackData.images || [],
                 status: 'pending',
                 timestamp: new Date().toISOString(),
-                source: 'server'
+                source: 'fixed-bin-server'
             };
             
             // 3. 添加到数组
@@ -371,7 +406,7 @@ class JsonBinStorage {
             record.feedbacks.push(newFeedback);
             
             // 4. 更新统计
-            this.updateStats(record, newFeedback);
+            this.updateStats(record);
             
             // 5. 更新系统信息
             if (!record.system) record.system = {};
@@ -392,13 +427,14 @@ class JsonBinStorage {
                 throw new Error(`保存失败: ${saveResponse.status} - ${errorText}`);
             }
             
-            console.log('✅ 反馈保存成功:', newFeedback.id);
+            console.log(`✅ 反馈保存到固定Bin: ${newFeedback.id}`);
             
             return {
                 success: true,
                 id: newFeedback.id,
-                message: '反馈已成功保存到云端',
+                message: `反馈已保存到固定Bin: ${this.binId}`,
                 binId: this.binId,
+                binFixed: true,
                 feedback: newFeedback
             };
             
@@ -414,7 +450,7 @@ class JsonBinStorage {
     /**
      * 更新统计信息
      */
-    updateStats(record, newFeedback) {
+    updateStats(record) {
         if (!record.stats) {
             record.stats = {
                 total: 0,
@@ -555,6 +591,7 @@ class JsonBinStorage {
             return {
                 success: true,
                 message: `反馈状态已更新为 ${newStatus}`,
+                binId: this.binId,
                 feedback: record.feedbacks[feedbackIndex]
             };
             
@@ -568,24 +605,6 @@ class JsonBinStorage {
     }
     
     /**
-     * 重置存储（创建新的Bin）
-     */
-    async resetStorage() {
-        console.log('🔄 重置存储，创建新Bin...');
-        
-        // 重置配置
-        this.config.binId = null;
-        this.initialized = false;
-        this.binId = null;
-        
-        // 保存空配置
-        await this.saveConfig();
-        
-        // 创建新Bin
-        return await this.createAndSetupNewBin();
-    }
-    
-    /**
      * 获取存储状态信息
      */
     async getStorageInfo() {
@@ -594,11 +613,12 @@ class JsonBinStorage {
         
         return {
             binId: this.binId,
+            fixed: true, // 始终固定
             initialized: this.initialized,
-            configPath: this.configPath,
+            binCreated: this.binCreated,
             connectionStatus,
             stats,
-            configExists: this.config !== null
+            configFile: path.join(process.cwd(), 'config', 'fixed-bin.json')
         };
     }
     
@@ -615,6 +635,7 @@ class JsonBinStorage {
                 exportInfo: {
                     exportedAt: new Date().toISOString(),
                     binId: this.binId,
+                    fixedBin: true,
                     totalFeedbacks: feedbacks.length
                 },
                 stats,
@@ -632,12 +653,13 @@ class JsonBinStorage {
                 'utf8'
             );
             
-            console.log(`✅ 数据已导出到: ${filePath}`);
+            console.log(`✅ 数据已从固定Bin导出到: ${filePath}`);
             
             return {
                 success: true,
                 filePath,
-                count: feedbacks.length
+                count: feedbacks.length,
+                binId: this.binId
             };
             
         } catch (error) {
@@ -648,11 +670,58 @@ class JsonBinStorage {
             };
         }
     }
+    
+    /**
+     * 清除固定Bin配置（危险操作，仅用于特殊情况）
+     */
+    async clearFixedBin() {
+        try {
+            const configFile = path.join(process.cwd(), 'config', 'fixed-bin.json');
+            
+            // 检查文件是否存在
+            try {
+                await fs.access(configFile);
+            } catch {
+                return {
+                    success: false,
+                    message: '固定Bin配置文件不存在'
+                };
+            }
+            
+            // 备份原配置
+            const backupFile = path.join(process.cwd(), 'config', `fixed-bin-backup-${Date.now()}.json`);
+            const configData = await fs.readFile(configFile, 'utf8');
+            await fs.writeFile(backupFile, configData, 'utf8');
+            
+            // 删除配置文件
+            await fs.unlink(configFile);
+            
+            // 重置状态
+            this.binId = null;
+            this.initialized = false;
+            this.binCreated = false;
+            
+            console.log('⚠️ 固定Bin配置已清除，下次将创建新Bin');
+            
+            return {
+                success: true,
+                message: '固定Bin配置已清除',
+                backupFile: backupFile
+            };
+            
+        } catch (error) {
+            console.error('清除固定Bin失败:', error);
+            return {
+                success: false,
+                message: '清除失败: ' + error.message
+            };
+        }
+    }
 }
 
-// Express.js 路由集成示例
-function setupJsonBinRoutes(app, configPath) {
-    const storage = new JsonBinStorage(configPath);
+// Express.js 路由集成
+function setupFixedJsonBinRoutes(app) {
+    const storage = new JsonBinStorage();
     
     // 初始化存储
     app.get('/api/jsonbin/init', async (req, res) => {
@@ -686,6 +755,8 @@ function setupJsonBinRoutes(app, configPath) {
             const feedbacks = await storage.getFeedbacks();
             res.json({
                 success: true,
+                fixedBin: true,
+                binId: storage.binId,
                 count: feedbacks.length,
                 feedbacks
             });
@@ -716,6 +787,8 @@ function setupJsonBinRoutes(app, configPath) {
             const stats = await storage.getStats();
             res.json({
                 success: true,
+                fixedBin: true,
+                binId: storage.binId,
                 stats
             });
         } catch (error) {
@@ -749,19 +822,6 @@ function setupJsonBinRoutes(app, configPath) {
         }
     });
     
-    // 重置存储
-    app.post('/api/jsonbin/reset', async (req, res) => {
-        try {
-            const result = await storage.resetStorage();
-            res.json(result);
-        } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: '重置失败: ' + error.message
-            });
-        }
-    });
-    
     // 导出数据
     app.get('/api/jsonbin/export', async (req, res) => {
         try {
@@ -775,21 +835,61 @@ function setupJsonBinRoutes(app, configPath) {
         }
     });
     
+    // 使用指定Bin ID（仅在无固定Bin时可用）
+    app.post('/api/jsonbin/use-bin', async (req, res) => {
+        try {
+            const { binId } = req.body;
+            
+            if (!binId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Bin ID不能为空'
+                });
+            }
+            
+            const result = await storage.useSpecificBinId(binId);
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: '设置Bin ID失败: ' + error.message
+            });
+        }
+    });
+    
+    // 清除固定Bin配置（危险操作）
+    app.delete('/api/jsonbin/clear-fixed', async (req, res) => {
+        try {
+            const result = await storage.clearFixedBin();
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: '清除失败: ' + error.message
+            });
+        }
+    });
+    
     return storage;
 }
 
 // 独立运行示例
 if (require.main === module) {
     // 直接运行此文件时的测试代码
-    async function testJsonBinStorage() {
-        console.log('🧪 测试JSONBin存储服务器端...');
+    async function testFixedJsonBinStorage() {
+        console.log('🧪 测试固定Bin ID JSONBin存储...');
         
         const storage = new JsonBinStorage();
         
-        // 1. 初始化
+        // 1. 初始化（将创建或使用固定Bin）
         console.log('\n1. 初始化存储...');
         const initResult = await storage.initialize();
-        console.log('初始化结果:', initResult);
+        console.log('初始化结果:', {
+            success: initResult.success,
+            message: initResult.message,
+            binId: initResult.binId,
+            binCreated: initResult.binCreated
+        });
         
         if (!initResult.success) {
             console.error('❌ 初始化失败，停止测试');
@@ -814,37 +914,39 @@ if (require.main === module) {
         // 5. 提交测试反馈
         console.log('\n5. 提交测试反馈...');
         const testFeedback = {
-            employeeName: '测试员工',
+            employeeName: '固定Bin测试员工',
             type: 'suggestion',
-            content: '这是一个来自服务器端的测试反馈',
+            content: '这是一个来自固定Bin系统的测试反馈',
             images: []
         };
         
         const saveResult = await storage.saveFeedback(testFeedback);
         console.log('保存结果:', saveResult.success ? '✅ 成功' : '❌ 失败');
         
-        // 6. 获取更新后的统计
-        console.log('\n6. 获取更新后的统计...');
-        const newStats = await storage.getStats();
-        console.log('更新后统计:', newStats);
+        // 6. 再次初始化（应该使用固定Bin，不会创建新Bin）
+        console.log('\n6. 再次初始化测试...');
+        const reinitResult = await storage.initialize();
+        console.log('再次初始化结果:', reinitResult.message);
         
         // 7. 获取存储信息
         console.log('\n7. 获取完整存储信息...');
         const info = await storage.getStorageInfo();
         console.log('存储信息:', {
             binId: info.binId,
-            initialized: info.initialized,
-            connectionStatus: info.connectionStatus.message
+            fixed: info.fixed,
+            initialized: info.initialized
         });
         
-        console.log('\n✅ 测试完成!');
+        console.log('\n✅ 固定Bin测试完成!');
+        console.log(`📦 固定Bin ID: ${storage.binId}`);
+        console.log('🔒 此Bin ID已固定，服务器重启后仍会使用同一个Bin');
     }
     
     // 运行测试
-    testJsonBinStorage().catch(console.error);
+    testFixedJsonBinStorage().catch(console.error);
 }
 
 module.exports = {
     JsonBinStorage,
-    setupJsonBinRoutes
+    setupFixedJsonBinRoutes
 };
