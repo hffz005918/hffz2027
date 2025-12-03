@@ -386,9 +386,14 @@
             border-left-color: var(--error-color);
         }
 
-        .server-status.warning {
-            background: #fff7e6;
-            border-left-color: var(--warning-color);
+        .debug-info {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: none;
         }
 
         @media (max-width: 768px) {
@@ -431,22 +436,23 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>员工反馈系统</h1>
-            <p>宏方纺织 - 您的意见对我们非常重要</p>
+            <h1>员工反馈</h1>
+            <p>您的意见对我们非常重要</p>
         </div>
         
         <div class="feedback-card">
             <!-- 服务器状态显示 -->
-            <div class="server-status" id="serverStatus">
-                正在连接服务器...
-            </div>
+            <div class="server-status" id="serverStatus"></div>
+
+            <!-- 调试信息（开发时使用） -->
+            <div class="debug-info" id="debugInfo"></div>
 
             <div class="anonymous-notice">
-                <strong>温馨提示：</strong>您的反馈将帮助我们不断改进工作环境和流程。所有反馈将匿名处理，保护您的隐私。
+                <strong>温馨提示：</strong>您的反馈将帮助我们不断改进工作环境和流程。
             </div>
 
             <div class="storage-notice">
-                <strong>云端存储：</strong>所有反馈数据将安全存储在JSONBin.io云端服务器，管理员会及时查看和处理。
+                <strong>实时同步：</strong>所有反馈将实时保存到服务器，管理员会及时查看和处理。
             </div>
 
             <div class="error-message" id="errorMessage"></div>
@@ -500,13 +506,9 @@
             <div class="success-message" id="successMessage">
                 <div class="success-icon">✅</div>
                 <h2>感谢您的反馈！</h2>
-                <p>您的意见已成功提交，我们会认真考虑并尽快处理。</p>
-                <p>反馈ID: <strong><span id="feedbackId"></span></strong></p>
-                <p>状态: <span id="feedbackStatus"></span></p>
+                <p>您的意见已成功提交到服务器，我们会认真考虑并尽快处理。</p>
+                <p>反馈ID: <span id="feedbackId"></span></p>
                 <p>页面将在 <span class="countdown" id="countdown">5</span> 秒后自动刷新</p>
-                <button onclick="location.reload()" style="margin-top: 1rem; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    立即刷新
-                </button>
             </div>
         </div>
 
@@ -514,7 +516,7 @@
         <div class="feedback-card">
             <h2 style="margin-bottom: 1rem;">最新反馈</h2>
             <div id="feedbacksList">
-                <div class="loading">正在加载最新反馈...</div>
+                <div class="loading">加载中...</div>
             </div>
         </div>
         
@@ -522,12 +524,56 @@
         <a href="admin-feedback.html" class="back-link" style="margin-top: 0.5rem;">管理员入口</a>
     </div>
 
-    <script src="jsonbin-storage.js"></script>
+    <script src="server-storage-get.js"></script>
     <script>
+        // 使用服务器存储
+        let storage;
+
+try {
+    console.log('尝试加载 jsonBinStorage...');
+    if (typeof jsonBinStorage !== 'undefined') {
+        storage = jsonBinStorage;
+        console.log('✅ 使用 jsonBinStorage');
+    } else {
+        // 尝试动态加载
+        console.log('动态加载存储脚本...');
+        const script = document.createElement('script');
+        script.src = 'jsonbin-storage.js';
+        script.async = false; // 同步加载，确保立即可用
+        document.head.appendChild(script);
+        
+        // 等待加载完成
+        script.onload = function() {
+            if (typeof jsonBinStorage !== 'undefined') {
+                storage = jsonBinStorage;
+                console.log('✅ jsonBinStorage 加载成功');
+                initPage(); // 初始化页面
+            }
+        };
+    }
+} catch (error) {
+    console.error('存储初始化失败:', error);
+    storage = window.emergencyStorage; // 使用应急存储
+}
+
+// 延迟初始化页面
+setTimeout(function() {
+    if (!storage) {
+        console.warn('存储系统未初始化，创建应急存储');
+        storage = window.emergencyStorage || {
+            testConnection: () => Promise.resolve({connected: false}),
+            getFeedbacks: () => Promise.resolve([]),
+            saveFeedback: () => Promise.resolve({success: false})
+        };
+    }
+    initPage();
+}, 100);
+
+function initPage() {
+
         document.addEventListener('DOMContentLoaded', function() {
             console.log('员工反馈页面初始化');
             
-            // DOM 元素
             const feedbackForm = document.getElementById('feedbackForm');
             const feedbackContent = document.getElementById('feedbackContent');
             const charCount = document.getElementById('charCount');
@@ -535,7 +581,6 @@
             const successMessage = document.getElementById('successMessage');
             const countdownElement = document.getElementById('countdown');
             const feedbackIdElement = document.getElementById('feedbackId');
-            const feedbackStatusElement = document.getElementById('feedbackStatus');
             const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
             const imagePreview = document.getElementById('imagePreview');
@@ -543,118 +588,59 @@
             const feedbacksList = document.getElementById('feedbacksList');
             const errorMessage = document.getElementById('errorMessage');
             const serverStatus = document.getElementById('serverStatus');
+            const debugInfo = document.getElementById('debugInfo');
             
-            // 图片相关变量
             let selectedImages = [];
             const MAX_IMAGES = 3;
-            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+            const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-            // 初始化
-            initializePage();
+            // 测试服务器连接
+            testServerConnection();
 
-            /**
-             * 页面初始化
-             */
-            async function initializePage() {
-                // 测试服务器连接
-                await testServerConnection();
+            // 加载反馈列表
+            loadFeedbacks();
+
+            // 字符计数
+            feedbackContent.addEventListener('input', function() {
+                const length = this.value.length;
+                charCount.textContent = length;
                 
-                // 加载反馈列表
-                await loadFeedbacks();
-                
-                // 初始化事件监听
-                setupEventListeners();
-            }
-
-            /**
-             * 测试服务器连接
-             */
-            async function testServerConnection() {
-                try {
-                    const result = await jsonBinStorage.testConnection();
-                    
-                    serverStatus.textContent = result.message;
-                    serverStatus.style.display = 'block';
-                    
-                    if (result.connected) {
-                        serverStatus.className = 'server-status connected';
-                        console.log('服务器连接状态:', result);
-                    } else if (result.usingFallback) {
-                        serverStatus.className = 'server-status warning';
-                    } else {
-                        serverStatus.className = 'server-status error';
-                    }
-                } catch (error) {
-                    console.error('连接测试失败:', error);
-                    serverStatus.textContent = '服务器连接异常，请稍后重试';
-                    serverStatus.className = 'server-status error';
-                    serverStatus.style.display = 'block';
+                if (length > 900) {
+                    charCount.style.color = '#ff4d4f';
+                } else {
+                    charCount.style.color = '';
                 }
-            }
+            });
 
-            /**
-             * 设置事件监听器
-             */
-            function setupEventListeners() {
-                // 字符计数
-                feedbackContent.addEventListener('input', function() {
-                    const length = this.value.length;
-                    charCount.textContent = length;
-                    
-                    if (length > 900) {
-                        charCount.style.color = '#ff4d4f';
-                    } else {
-                        charCount.style.color = '';
-                    }
-                });
+            // 图片上传功能
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
 
-                // 图片上传功能
-                uploadArea.addEventListener('click', function() {
-                    fileInput.click();
-                });
+            fileInput.addEventListener('change', handleFileSelect);
 
-                fileInput.addEventListener('change', handleFileSelect);
+            // 拖拽功能
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('drag-over');
+            });
 
-                // 拖拽功能
-                uploadArea.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    uploadArea.classList.add('drag-over');
-                });
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.classList.remove('drag-over');
+            });
 
-                uploadArea.addEventListener('dragleave', function() {
-                    uploadArea.classList.remove('drag-over');
-                });
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
 
-                uploadArea.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    uploadArea.classList.remove('drag-over');
-                    const files = e.dataTransfer.files;
-                    handleFiles(files);
-                });
-
-                // 表单验证
-                feedbackForm.addEventListener('input', function() {
-                    const typeSelected = document.getElementById('feedbackType').value !== '';
-                    const contentFilled = feedbackContent.value.trim().length > 0;
-                    
-                    submitBtn.disabled = !(typeSelected && contentFilled);
-                });
-
-                // 表单提交
-                feedbackForm.addEventListener('submit', handleFormSubmit);
-            }
-
-            /**
-             * 处理文件选择
-             */
             function handleFileSelect(e) {
                 const files = e.target.files;
                 handleFiles(files);
             }
 
-            /**
-             * 处理文件上传
-             */
             function handleFiles(files) {
                 const remainingSlots = MAX_IMAGES - selectedImages.length;
                 
@@ -667,7 +653,7 @@
                     if (selectedImages.length >= MAX_IMAGES) break;
 
                     if (!file.type.startsWith('image/')) {
-                        showError('请选择图片文件（JPG、PNG格式）');
+                        showError('请选择图片文件');
                         continue;
                     }
 
@@ -681,8 +667,7 @@
                         selectedImages.push({
                             name: file.name,
                             data: e.target.result,
-                            type: file.type,
-                            size: file.size
+                            type: file.type
                         });
                         updateImagePreview();
                         updateImageCount();
@@ -693,9 +678,6 @@
                 fileInput.value = '';
             }
 
-            /**
-             * 更新图片预览
-             */
             function updateImagePreview() {
                 imagePreview.innerHTML = '';
                 selectedImages.forEach((image, index) => {
@@ -722,9 +704,6 @@
                 });
             }
 
-            /**
-             * 更新图片计数
-             */
             function updateImageCount() {
                 const count = selectedImages.length;
                 imageCount.textContent = `已选择 ${count}/${MAX_IMAGES} 张图片`;
@@ -738,36 +717,57 @@
                 }
             }
 
-            /**
-             * 显示错误信息
-             */
+            // 测试服务器连接
+            async function testServerConnection() {
+                try {
+                    serverStatus.textContent = '正在连接服务器...';
+                    serverStatus.className = 'server-status';
+                    serverStatus.style.display = 'block';
+                    
+                    const result = await storage.testConnection();
+                    
+                    serverStatus.textContent = '✅ 服务器连接正常，可以提交反馈';
+                    serverStatus.className = 'server-status connected';
+                    
+                    // 显示调试信息
+                    debugInfo.innerHTML = `服务器状态: 正常 | 时间: ${new Date().toLocaleString()}`;
+                    debugInfo.style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('服务器连接失败:', error);
+                    serverStatus.textContent = '❌ 服务器连接失败，请检查网络连接或联系管理员';
+                    serverStatus.className = 'server-status error';
+                    
+                    debugInfo.innerHTML = `服务器状态: 失败 | 错误: ${error.message}`;
+                    debugInfo.style.display = 'block';
+                }
+            }
+
+            // 显示错误信息
             function showError(message) {
+                console.error('显示错误:', message);
                 errorMessage.textContent = message;
                 errorMessage.style.display = 'block';
                 
+                // 5秒后自动隐藏错误信息
                 setTimeout(() => {
                     errorMessage.style.display = 'none';
                 }, 5000);
             }
 
-            /**
-             * 显示成功信息
-             */
-            function showSuccess(feedbackId, status) {
+            // 显示成功信息
+            function showSuccess(feedbackId) {
+                console.log('显示成功消息，反馈ID:', feedbackId);
+                
                 // 隐藏表单，显示成功消息
                 feedbackForm.style.display = 'none';
                 successMessage.style.display = 'block';
                 
-                // 显示反馈信息
-                if (feedbackIdElement) {
+                // 显示反馈ID
+                if (feedbackIdElement && feedbackId) {
                     feedbackIdElement.textContent = feedbackId;
                 }
                 
-                if (feedbackStatusElement) {
-                    feedbackStatusElement.textContent = status || '已提交，待处理';
-                }
-                
-                // 倒计时刷新
                 let countdown = 5;
                 countdownElement.textContent = countdown;
                 
@@ -777,34 +777,29 @@
                     
                     if (countdown <= 0) {
                         clearInterval(countdownInterval);
-                        location.reload();
+                        location.reload(); // 刷新页面显示最新反馈
                     }
                 }, 1000);
             }
 
-            /**
-             * 加载反馈列表
-             */
+            // 加载反馈列表
             async function loadFeedbacks() {
                 try {
-                    const feedbacks = await jsonBinStorage.getFeedbacks();
+                    console.log('开始加载反馈列表...');
+                    const feedbacks = await storage.getFeedbacks();
+                    console.log('成功获取反馈数据:', feedbacks.length, '条');
                     displayFeedbacks(feedbacks);
                 } catch (error) {
                     console.error('加载反馈列表失败:', error);
                     feedbacksList.innerHTML = `
                         <div style="text-align: center; padding: 2rem; color: var(--error-color);">
-                            加载失败: ${error.message}<br>
-                            <button onclick="location.reload()" style="margin-top: 1rem; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                重试加载
-                            </button>
+                            加载失败: ${error.message}
                         </div>
                     `;
                 }
             }
 
-            /**
-             * 显示反馈列表
-             */
+            // 显示反馈列表
             function displayFeedbacks(feedbacks) {
                 if (feedbacks.length === 0) {
                     feedbacksList.innerHTML = `
@@ -821,14 +816,20 @@
                 
                 let html = '';
                 recentFeedbacks.forEach(feedback => {
+                    const typeText = {
+                        'suggestion': '意见建议',
+                        'problem': '问题反馈',
+                        'complaint': '投诉举报',
+                        'other': '其他'
+                    }[feedback.type];
+                    
                     const typeClass = {
                         'suggestion': 'type-suggestion',
                         'problem': 'type-problem',
                         'complaint': 'type-complaint',
                         'other': 'type-other'
-                    }[feedback.type] || 'type-other';
+                    }[feedback.type];
                     
-                    const typeText = feedback.typeText || feedback.type;
                     const date = new Date(feedback.timestamp);
                     const timeString = date.toLocaleString('zh-CN');
                     
@@ -845,12 +846,10 @@
                             
                             ${feedback.images && feedback.images.length > 0 ? `
                                 <div class="feedback-images">
-                                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                                        附件图片 (${feedback.images.length}张)
-                                    </div>
+                                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">附件图片 (${feedback.images.length}张):</div>
                                     <div class="images-grid">
                                         ${feedback.images.map((image, index) => `
-                                            <img src="${image.data}" alt="反馈图片 ${index + 1}" class="thumbnail">
+                                            <img src="${image.data}" alt="图片" class="thumbnail">
                                         `).join('')}
                                     </div>
                                 </div>
@@ -858,7 +857,8 @@
                             
                             <div class="feedback-stats">
                                 <span>状态: ${feedback.status === 'processed' ? '✅ 已处理' : '⏳ 待处理'}</span>
-                                <span>反馈ID: ${feedback.id || '未知'}</span>
+                                <span>👍 ${feedback.likes || 0}</span>
+                                <span>ID: ${feedback.id || '未知'}</span>
                             </div>
                         </div>
                     `;
@@ -867,10 +867,8 @@
                 feedbacksList.innerHTML = html;
             }
 
-            /**
-             * 处理表单提交
-             */
-            async function handleFormSubmit(e) {
+            // 表单提交 - 确保数据保存到服务器
+            feedbackForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 console.log('开始提交反馈...');
@@ -892,11 +890,6 @@
                     return;
                 }
                 
-                if (contentFilled && feedbackContent.value.trim().length < 10) {
-                    showError('反馈内容至少需要10个字符');
-                    return;
-                }
-                
                 // 禁用提交按钮
                 submitBtn.disabled = true;
                 submitBtn.textContent = '提交中...';
@@ -910,31 +903,39 @@
                         images: selectedImages
                     };
                     
-                    console.log('提交反馈数据:', feedbackData);
+                    console.log('准备提交的反馈数据:', feedbackData);
                     
-                    // 保存到云端
-                    const result = await jsonBinStorage.saveFeedback(feedbackData);
+                    // 显示调试信息
+                    debugInfo.innerHTML += `<br>正在提交数据到服务器...`;
                     
-                    console.log('保存结果:', result);
+                    // 保存到服务器
+                    const result = await storage.saveFeedback(feedbackData);
+                    
+                    console.log('服务器返回结果:', result);
                     
                     if (result.success) {
                         console.log('✅ 反馈提交成功，ID:', result.id);
-                        showSuccess(result.id, '已提交');
-                        
-                        // 重新加载反馈列表
-                        setTimeout(() => {
-                            loadFeedbacks();
-                        }, 1000);
+                        debugInfo.innerHTML += `<br>✅ 保存成功! 反馈ID: ${result.id}`;
+                        showSuccess(result.id);
                     } else {
                         throw new Error(result.error || '保存失败');
                     }
                 } catch (error) {
                     console.error('❌ 提交失败:', error);
+                    debugInfo.innerHTML += `<br>❌ 保存失败: ${error.message}`;
                     showError('提交失败: ' + error.message);
                     submitBtn.disabled = false;
                     submitBtn.textContent = '提交反馈';
                 }
-            }
+            });
+            
+            // 表单验证
+            feedbackForm.addEventListener('input', function() {
+                const typeSelected = document.getElementById('feedbackType').value !== '';
+                const contentFilled = feedbackContent.value.trim().length > 0;
+                
+                submitBtn.disabled = !(typeSelected && contentFilled);
+            });
 
             // 初始化图片计数
             updateImageCount();
