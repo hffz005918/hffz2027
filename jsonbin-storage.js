@@ -31,7 +31,7 @@ class JsonBinStorage {
      * 测试连接
      */
     async testConnection() {
-        if (this.binId.includes('这里放你的新BinID')) {
+        if (this.binId.includes('692ff0a2ae596e708f803a50')) {
             return {
                 connected: false,
                 message: '❌ 请先设置正确的Bin ID'
