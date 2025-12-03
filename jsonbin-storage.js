@@ -1,88 +1,20 @@
 // jsonbin-storage-simple.js - 最简单稳定的版本
-
-// 添加这个创建新Bin的函数到文件开头
-async function createAndSetupNewBin() {
-    console.log('🔄 正在创建新的JSONBin...');
-    
-    const masterKey = '$2a$10$SFoy1TAiSmFV8QC9HMK.v.vDSWo753EnwshUaK7880MIslM/elP0m';
-    
-    // 初始数据结构
-    const initialData = {
-        feedbacks: [],
-        stats: {
-            total: 0,
-            pending: 0,
-            processed: 0
-        },
-        system: {
-            created: new Date().toISOString(),
-            lastUpdated: new Date().toISOString(),
-            version: "1.0"
-        }
-    };
-    
-    try {
-        const response = await fetch('https://api.jsonbin.io/v3/b', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': masterKey,
-                'X-Bin-Private': 'false'
-            },
-            body: JSON.stringify(initialData)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`创建失败: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const binId = data.metadata.id;
-        
-        console.log(`
-        ✅ 成功创建新的JSONBin！
-        
-        📍 你的Bin ID: ${binId}
-        
-        下一步操作：
-        1. 复制上面的Bin ID
-        2. 替换第20行的 binId 值
-        3. 刷新页面
-        4. 测试连接
-        
-        示例：
-        this.binId = '${binId}'; // ← 替换这里！
-        `);
-        
-        return binId;
-        
-    } catch (error) {
-        console.error('❌ 创建Bin失败:', error);
-        return null;
-    }
-}
-
 class JsonBinStorage {
     constructor() {
         // 🔧 第一步：先运行上面的 createAndSetupNewBin() 获取新的Bin ID
         // 然后用那个新ID替换下面的值
-        this.binId = '692fcd96ae596e708f8004bb'; // ← 替换这里！
+        this.binId = '692ff0a2ae596e708f803a50'; // ← 替换这里！
         
         // 如果binId还是默认值，提示用户
-        if (this.binId === '692fcd96ae596e708f8004bb') {
+        if (this.binId === '692ff0a2ae596e708f803a50') {
             console.error(`
             ❌ 请先设置正确的Bin ID！
             
             运行步骤：
-            1. 打开浏览器的开发者工具（F12）
-            2. 进入控制台(Console)标签页
-            3. 复制粘贴下面的代码并回车：
-            
-               createAndSetupNewBin();
-            
-            4. 复制返回的新Bin ID
-            5. 替换第20行的 binId 值为新ID
-            6. 刷新页面
+            1. 在控制台运行 createAndSetupNewBin()
+            2. 复制返回的新Bin ID
+            3. 替换第5行的 binId 值
+            4. 刷新页面
             `);
         }
         
@@ -99,7 +31,7 @@ class JsonBinStorage {
      * 测试连接
      */
     async testConnection() {
-        if (this.binId === '692fcd96ae596e708f8004bb') {
+        if (this.binId.includes('这里放你的新BinID')) {
             return {
                 connected: false,
                 message: '❌ 请先设置正确的Bin ID'
