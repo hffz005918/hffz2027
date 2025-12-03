@@ -1,8 +1,22 @@
-// jsonbin-storage-fixed.js - 修复版本
+// jsonbin-storage-simple.js - 最简单稳定的版本
 class JsonBinStorage {
     constructor() {
-        // 🎯 核心修复：硬编码固定Bin ID
-        this.binId = '692fb6c4d0ea881f400f2b52'; // 固定使用这个
+        // 🔧 第一步：先运行上面的 createAndSetupNewBin() 获取新的Bin ID
+        // 然后用那个新ID替换下面的值
+        this.binId = '692fcd96ae596e708f8004bb'; // ← 替换这里！
+        
+        // 如果binId还是默认值，提示用户
+        if (this.binId === '692fcd96ae596e708f8004bb') {
+            console.error(`
+            ❌ 请先设置正确的Bin ID！
+            
+            运行步骤：
+            1. 在控制台运行 createAndSetupNewBin()
+            2. 复制返回的新Bin ID
+            3. 替换第5行的 binId 值
+            4. 刷新页面
+            `);
+        }
         
         // API Keys
         this.readOnlyKey = '$2a$10$SFoy1TAiSmFV8QC9HMK.v.vDSWo753EnwshUaK7880MIslM/elP0m';
@@ -10,11 +24,20 @@ class JsonBinStorage {
         
         this.baseUrl = 'https://api.jsonbin.io/v3/b';
         
-        console.log('初始化JSONBin存储，固定Bin ID:', this.binId);
+        console.log('🔄 JSONBin存储初始化，Bin ID:', this.binId);
     }
     
-    // 简化版testConnection（不自动创建）
+    /**
+     * 测试连接
+     */
     async testConnection() {
+        if (this.binId.includes('这里放你的新BinID')) {
+            return {
+                connected: false,
+                message: '❌ 请先设置正确的Bin ID'
+            };
+        }
+        
         try {
             const response = await fetch(`${this.baseUrl}/${this.binId}`, {
                 headers: {
@@ -26,31 +49,36 @@ class JsonBinStorage {
             if (response.status === 404) {
                 return {
                     connected: false,
-                    message: `Bin ${this.binId} 不存在`,
-                    binId: this.binId
+                    message: `❌ Bin ${this.binId} 不存在，请创建新Bin`
                 };
             }
             
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
             
             const data = await response.json();
+            const count = data.record?.feedbacks?.length || 0;
+            
             return {
                 connected: true,
-                message: `✅ 连接成功`,
+                message: `✅ 连接成功 (${count}条反馈)`,
                 binId: this.binId,
-                feedbackCount: data.record?.feedbacks?.length || 0
+                feedbackCount: count
             };
             
         } catch (error) {
             return {
                 connected: false,
-                message: `连接失败: ${error.message}`,
+                message: `❌ 连接失败: ${error.message}`,
                 binId: this.binId
             };
         }
     }
     
-    // 简化版getFeedbacks
+    /**
+     * 获取所有反馈
+     */
     async getFeedbacks() {
         try {
             const response = await fetch(`${this.baseUrl}/${this.binId}`, {
@@ -60,7 +88,10 @@ class JsonBinStorage {
                 }
             });
             
-            if (!response.ok) return [];
+            if (!response.ok) {
+                console.warn('获取失败，返回空数组');
+                return [];
+            }
             
             const data = await response.json();
             return data.record?.feedbacks || [];
@@ -71,23 +102,27 @@ class JsonBinStorage {
         }
     }
     
-    // 保存反馈（简化版）
+    /**
+     * 保存反馈
+     */
     async saveFeedback(feedbackData) {
         try {
-            // 获取当前数据
-            const response = await fetch(`${this.baseUrl}/${this.binId}`, {
+            // 1. 获取当前数据
+            const getResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Access-Key': this.readOnlyKey
                 }
             });
             
-            if (!response.ok) throw new Error('获取数据失败');
+            if (!getResponse.ok) {
+                throw new Error('获取当前数据失败');
+            }
             
-            const data = await response.json();
-            const record = data.record || { feedbacks: [], stats: {}, system: {} };
+            const getData = await getResponse.json();
+            const record = getData.record;
             
-            // 创建新反馈
+            // 2. 创建新反馈
             const newFeedback = {
                 id: 'fb_' + Date.now(),
                 employeeName: feedbackData.employeeName || '匿名员工',
@@ -98,20 +133,15 @@ class JsonBinStorage {
                 timestamp: new Date().toISOString()
             };
             
-            // 添加到数组
-            if (!record.feedbacks) record.feedbacks = [];
+            // 3. 添加到数组
             record.feedbacks.push(newFeedback);
             
-            // 更新统计
-            if (!record.stats) record.stats = {};
+            // 4. 更新统计
             record.stats.total = record.feedbacks.length;
             record.stats.pending = record.feedbacks.filter(f => f.status === 'pending').length;
-            
-            // 更新时间
-            if (!record.system) record.system = {};
             record.system.lastUpdated = new Date().toISOString();
             
-            // 保存回云端
+            // 5. 保存回云端
             const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
                 method: 'PUT',
                 headers: {
@@ -121,12 +151,16 @@ class JsonBinStorage {
                 body: JSON.stringify(record)
             });
             
-            if (!saveResponse.ok) throw new Error('保存失败');
+            if (!saveResponse.ok) {
+                throw new Error('保存失败: ' + saveResponse.status);
+            }
+            
+            console.log('✅ 反馈保存成功:', newFeedback.id);
             
             return {
                 success: true,
                 id: newFeedback.id,
-                message: '反馈已保存到云端',
+                message: '反馈已成功保存到云端',
                 binId: this.binId
             };
             
@@ -137,6 +171,23 @@ class JsonBinStorage {
                 message: '保存失败: ' + error.message
             };
         }
+    }
+    
+    /**
+     * 获取统计
+     */
+    async getStats() {
+        const feedbacks = await this.getFeedbacks();
+        
+        return {
+            total: feedbacks.length,
+            pending: feedbacks.filter(f => f.status === 'pending').length,
+            processed: feedbacks.filter(f => f.status === 'processed').length,
+            suggestions: feedbacks.filter(f => f.type === 'suggestion').length,
+            problems: feedbacks.filter(f => f.type === 'problem').length,
+            complaints: feedbacks.filter(f => f.type === 'complaint').length,
+            others: feedbacks.filter(f => f.type === 'other').length
+        };
     }
 }
 
