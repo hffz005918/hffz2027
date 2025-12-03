@@ -1,28 +1,44 @@
-//jsonbin-storage.js - 完全修复版
+// jsonbin-storage-simple.js - 最简单稳定的版本
 class JsonBinStorage {
     constructor() {
-        // ✅ 固定Bin ID - 使用已创建的Bin
-        this.binId = '69302491ae596e708f80a42b';
+        // 🔧 第一步：先运行上面的 createAndSetupNewBin() 获取新的Bin ID
+        // 然后用那个新ID替换下面的值
+        this.binId = '69302a1243b1c97be9d4f52e'; // ← 替换这里！
         
-        // ✅ 必须更新这两个Key！
-        this.readOnlyKey = '$2a$10$7HImvQnFOiRjiLQJO3Gj2ucB.zYHhZUGO41thxxh4IHpaGhEUQa/G'; // ← 必须替换！
-        this.masterKey = '$2a$10$7HImvQnFOiRjiLQJO3Gj2ucB.zYHhZUGO41thxxh4IHpaGhEUQa/G';    // ← 确保这个也是有效的
+        // 如果binId还是默认值，提示用户
+        if (this.binId === '692fcd96ae596e708f8004bb') {
+            console.error(`
+            ❌ 请先设置正确的Bin ID！
+            
+            运行步骤：
+            1. 在控制台运行 createAndSetupNewBin()
+            2. 复制返回的新Bin ID
+            3. 替换第5行的 binId 值
+            4. 刷新页面
+            `);
+        }
+        
+        // API Keys
+        this.readOnlyKey = '$2a$10$7HImvQnFOiRjiLQJO3Gj2ucB.zYHhZUGO41thxxh4IHpaGhEUQa/G';
+        this.masterKey = '$2a$10$7HImvQnFOiRjiLQJO3Gj2ucB.zYHhZUGO41thxxh4IHpaGhEUQa/G';
         
         this.baseUrl = 'https://api.jsonbin.io/v3/b';
         
-        console.log('✅ JSONBin存储已初始化');
-        console.log('Bin ID:', this.binId);
-        console.log('请确保Read-Only Key有效');
+        console.log('🔄 JSONBin存储初始化，Bin ID:', this.binId);
     }
-
+    
     /**
-     * 智能连接测试
+     * 测试连接
      */
     async testConnection() {
+        if (this.binId.includes('这里放你的新BinID')) {
+            return {
+                connected: false,
+                message: '❌ 请先设置正确的Bin ID'
+            };
+        }
+        
         try {
-            console.log('🔗 测试连接，Bin ID:', this.binId);
-            
-            // 先测试Read-Only Key
             const response = await fetch(`${this.baseUrl}/${this.binId}`, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -30,21 +46,10 @@ class JsonBinStorage {
                 }
             });
             
-            if (response.status === 401) {
-                console.error('❌ Read-Only Key无效或已过期');
-                return {
-                    connected: false,
-                    message: 'Read-Only Key无效，请更新API Key',
-                    error: 'INVALID_KEY'
-                };
-            }
-            
             if (response.status === 404) {
-                console.error('❌ Bin不存在:', this.binId);
                 return {
                     connected: false,
-                    message: `Bin不存在 (${this.binId})`,
-                    error: 'BIN_NOT_FOUND'
+                    message: `❌ Bin ${this.binId} 不存在，请创建新Bin`
                 };
             }
             
@@ -53,34 +58,29 @@ class JsonBinStorage {
             }
             
             const data = await response.json();
-            const feedbackCount = data.record?.feedbacks?.length || 0;
-            
-            console.log(`✅ 连接成功！${feedbackCount}条反馈`);
+            const count = data.record?.feedbacks?.length || 0;
             
             return {
                 connected: true,
-                message: `✅ 服务器连接正常 (${feedbackCount}条反馈)`,
+                message: `✅ 连接成功 (${count}条反馈)`,
                 binId: this.binId,
-                feedbackCount: feedbackCount
+                feedbackCount: count
             };
             
         } catch (error) {
-            console.error('连接测试失败:', error);
             return {
                 connected: false,
-                message: `连接失败: ${error.message}`,
-                error: error.message
+                message: `❌ 连接失败: ${error.message}`,
+                binId: this.binId
             };
         }
     }
-
+    
     /**
-     * 获取所有反馈（修复版）
+     * 获取所有反馈
      */
     async getFeedbacks() {
         try {
-            console.log('📥 获取反馈数据...');
-            
             const response = await fetch(`${this.baseUrl}/${this.binId}`, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,37 +88,26 @@ class JsonBinStorage {
                 }
             });
             
-            if (response.status === 401) {
-                console.error('❌ 权限错误：Read-Only Key无效');
-                throw new Error('API Key无效，请更新Read-Only Key');
-            }
-            
             if (!response.ok) {
-                console.error('获取失败:', response.status, response.statusText);
-                throw new Error(`获取失败: ${response.status}`);
+                console.warn('获取失败，返回空数组');
+                return [];
             }
             
             const data = await response.json();
-            const feedbacks = data.record?.feedbacks || [];
-            
-            console.log(`✅ 获取到 ${feedbacks.length} 条反馈`);
-            return feedbacks;
+            return data.record?.feedbacks || [];
             
         } catch (error) {
-            console.error('获取反馈失败:', error.message);
-            // 返回空数组而不是抛出错误，避免页面崩溃
+            console.error('获取反馈失败:', error);
             return [];
         }
     }
-
+    
     /**
      * 保存反馈
      */
     async saveFeedback(feedbackData) {
         try {
-            console.log('💾 保存反馈...');
-            
-            // 1. 先获取当前数据（用Read-Only Key）
+            // 1. 获取当前数据
             const getResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,7 +116,7 @@ class JsonBinStorage {
             });
             
             if (!getResponse.ok) {
-                throw new Error('无法获取当前数据');
+                throw new Error('获取当前数据失败');
             }
             
             const getData = await getResponse.json();
@@ -141,8 +130,7 @@ class JsonBinStorage {
                 content: feedbackData.content,
                 images: feedbackData.images || [],
                 status: 'pending',
-                timestamp: new Date().toISOString(),
-                likes: 0
+                timestamp: new Date().toISOString()
             };
             
             // 3. 添加到数组
@@ -153,8 +141,7 @@ class JsonBinStorage {
             record.stats.pending = record.feedbacks.filter(f => f.status === 'pending').length;
             record.system.lastUpdated = new Date().toISOString();
             
-            // 5. 保存回云端（用Master Key）
-            console.log('正在保存到云端...');
+            // 5. 保存回云端
             const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
                 method: 'PUT',
                 headers: {
@@ -165,10 +152,7 @@ class JsonBinStorage {
             });
             
             if (!saveResponse.ok) {
-                if (saveResponse.status === 401) {
-                    throw new Error('Master Key无效，无法保存');
-                }
-                throw new Error(`保存失败: ${saveResponse.status}`);
+                throw new Error('保存失败: ' + saveResponse.status);
             }
             
             console.log('✅ 反馈保存成功:', newFeedback.id);
@@ -181,113 +165,31 @@ class JsonBinStorage {
             };
             
         } catch (error) {
-            console.error('❌ 保存失败:', error.message);
-            
-            // 本地备份
-            const localId = 'local_' + Date.now();
-            const localData = {
-                ...feedbackData,
-                id: localId,
-                timestamp: new Date().toISOString(),
-                status: 'pending'
-            };
-            
-            localStorage.setItem('local_fb_' + localId, JSON.stringify(localData));
-            
+            console.error('保存失败:', error);
             return {
                 success: false,
-                id: localId,
-                message: '云端保存失败，已保存到本地',
-                error: error.message,
-                warning: '请检查Master Key和网络连接'
-            };
-        }
-    }
-
-    /**
-     * 获取统计数据
-     */
-    async getStats() {
-        try {
-            const feedbacks = await this.getFeedbacks();
-            
-            return {
-                total: feedbacks.length,
-                pending: feedbacks.filter(f => f.status === 'pending').length,
-                processed: feedbacks.filter(f => f.status === 'processed').length,
-                suggestions: feedbacks.filter(f => f.type === 'suggestion').length,
-                problems: feedbacks.filter(f => f.type === 'problem').length,
-                complaints: feedbacks.filter(f => f.type === 'complaint').length,
-                others: feedbacks.filter(f => f.type === 'other').length
-            };
-            
-        } catch (error) {
-            console.error('获取统计失败:', error);
-            return {
-                total: 0, pending: 0, processed: 0,
-                suggestions: 0, problems: 0, complaints: 0, others: 0
+                message: '保存失败: ' + error.message
             };
         }
     }
     
     /**
-     * 检查API Key状态
+     * 获取统计
      */
-    async checkApiKeys() {
-        console.log('🔑 检查API Key状态...');
+    async getStats() {
+        const feedbacks = await this.getFeedbacks();
         
-        let readOnlyValid = false;
-        let masterValid = false;
-        
-        // 检查Read-Only Key
-        try {
-            const roResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
-                headers: { 'X-Access-Key': this.readOnlyKey }
-            });
-            readOnlyValid = roResponse.ok;
-            console.log('Read-Only Key:', readOnlyValid ? '✅ 有效' : '❌ 无效');
-        } catch (error) {
-            console.log('Read-Only Key: ❌ 测试失败');
-        }
-        
-        // 检查Master Key（尝试创建测试Bin）
-        try {
-            const testResponse = await fetch('https://api.jsonbin.io/v3/b', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': this.masterKey,
-                    'X-Bin-Name': 'Test-Key-Validation'
-                },
-                body: JSON.stringify({ test: true, timestamp: new Date().toISOString() })
-            });
-            
-            if (testResponse.ok) {
-                masterValid = true;
-                const data = await testResponse.json();
-                // 删除测试Bin
-                await fetch(`https://api.jsonbin.io/v3/b/${data.metadata.id}`, {
-                    method: 'DELETE',
-                    headers: { 'X-Master-Key': this.masterKey }
-                });
-            }
-            console.log('Master Key:', masterValid ? '✅ 有效' : '❌ 无效');
-        } catch (error) {
-            console.log('Master Key: ❌ 测试失败');
-        }
-        
-        return { readOnlyValid, masterValid };
+        return {
+            total: feedbacks.length,
+            pending: feedbacks.filter(f => f.status === 'pending').length,
+            processed: feedbacks.filter(f => f.status === 'processed').length,
+            suggestions: feedbacks.filter(f => f.type === 'suggestion').length,
+            problems: feedbacks.filter(f => f.type === 'problem').length,
+            complaints: feedbacks.filter(f => f.type === 'complaint').length,
+            others: feedbacks.filter(f => f.type === 'other').length
+        };
     }
 }
 
-// 创建实例
+// 全局实例
 const jsonBinStorage = new JsonBinStorage();
-
-// 自动检查Key状态
-setTimeout(() => {
-    jsonBinStorage.checkApiKeys().then(status => {
-        if (!status.readOnlyValid) {
-            console.error('⚠️ 请更新Read-Only Key！');
-        }
-    });
-}, 1000);
