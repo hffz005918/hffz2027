@@ -31,7 +31,7 @@ class JsonBinStorage {
      * 测试连接
      */
     async testConnection() {
-        if (this.binId.includes('这里放你的新BinID')) {
+        if (this.binId.includes('692fcd96ae596e708f8004bb')) {
             return {
                 connected: false,
                 message: '❌ 请先设置正确的Bin ID'
@@ -188,6 +188,165 @@ class JsonBinStorage {
             complaints: feedbacks.filter(f => f.type === 'complaint').length,
             others: feedbacks.filter(f => f.type === 'other').length
         };
+    }
+    
+    /**
+     * 更新反馈状态
+     */
+    async updateFeedbackStatus(feedbackId, newStatus) {
+        try {
+            // 1. 获取当前数据
+            const getResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Access-Key': this.readOnlyKey
+                }
+            });
+            
+            if (!getResponse.ok) {
+                throw new Error('获取当前数据失败');
+            }
+            
+            const getData = await getResponse.json();
+            const record = getData.record;
+            
+            // 2. 查找并更新反馈
+            const feedbackIndex = record.feedbacks.findIndex(fb => fb.id === feedbackId);
+            
+            if (feedbackIndex === -1) {
+                throw new Error('反馈不存在');
+            }
+            
+            // 更新状态
+            record.feedbacks[feedbackIndex].status = newStatus;
+            
+            // 3. 更新统计
+            record.stats.total = record.feedbacks.length;
+            record.stats.pending = record.feedbacks.filter(f => f.status === 'pending').length;
+            record.system.lastUpdated = new Date().toISOString();
+            
+            // 4. 保存回云端
+            const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': this.masterKey
+                },
+                body: JSON.stringify(record)
+            });
+            
+            if (!saveResponse.ok) {
+                throw new Error('保存失败: ' + saveResponse.status);
+            }
+            
+            console.log('✅ 反馈状态更新成功:', feedbackId, newStatus);
+            
+            return {
+                success: true,
+                message: '反馈状态已更新',
+                feedbackId: feedbackId,
+                newStatus: newStatus
+            };
+            
+        } catch (error) {
+            console.error('更新反馈状态失败:', error);
+            return {
+                success: false,
+                message: '更新失败: ' + error.message
+            };
+        }
+    }
+    
+    /**
+     * 删除反馈
+     */
+    async deleteFeedback(feedbackId) {
+        try {
+            // 1. 获取当前数据
+            const getResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Access-Key': this.readOnlyKey
+                }
+            });
+            
+            if (!getResponse.ok) {
+                throw new Error('获取当前数据失败');
+            }
+            
+            const getData = await getResponse.json();
+            const record = getData.record;
+            
+            // 2. 查找反馈
+            const feedbackIndex = record.feedbacks.findIndex(fb => fb.id === feedbackId);
+            
+            if (feedbackIndex === -1) {
+                throw new Error('反馈不存在');
+            }
+            
+            // 3. 删除反馈
+            record.feedbacks.splice(feedbackIndex, 1);
+            
+            // 4. 更新统计
+            record.stats.total = record.feedbacks.length;
+            record.stats.pending = record.feedbacks.filter(f => f.status === 'pending').length;
+            record.system.lastUpdated = new Date().toISOString();
+            
+            // 5. 保存回云端
+            const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': this.masterKey
+                },
+                body: JSON.stringify(record)
+            });
+            
+            if (!saveResponse.ok) {
+                throw new Error('保存失败: ' + saveResponse.status);
+            }
+            
+            console.log('✅ 反馈删除成功:', feedbackId);
+            
+            return {
+                success: true,
+                message: '反馈已删除',
+                feedbackId: feedbackId
+            };
+            
+        } catch (error) {
+            console.error('删除反馈失败:', error);
+            return {
+                success: false,
+                message: '删除失败: ' + error.message
+            };
+        }
+    }
+    
+    /**
+     * 导出数据
+     */
+    async exportData() {
+        try {
+            const feedbacks = await this.getFeedbacks();
+            
+            // 创建JSON数据
+            const exportData = {
+                exportTime: new Date().toISOString(),
+                totalCount: feedbacks.length,
+                feedbacks: feedbacks
+            };
+            
+            // 创建Blob对象
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            
+            return blob;
+            
+        } catch (error) {
+            console.error('导出数据失败:', error);
+            throw error;
+        }
     }
 }
 
