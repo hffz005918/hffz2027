@@ -524,55 +524,189 @@
         <a href="admin-feedback.html" class="back-link" style="margin-top: 0.5rem;">管理员入口</a>
     </div>
 
-    <script src="server-storage-get.js"></script>
+    <!-- 使用本地的存储系统 -->
     <script>
-        // 使用服务器存储
-        let storage;
-
-try {
-    console.log('尝试加载 jsonBinStorage...');
-    if (typeof jsonBinStorage !== 'undefined') {
-        storage = jsonBinStorage;
-        console.log('✅ 使用 jsonBinStorage');
-    } else {
-        // 尝试动态加载
-        console.log('动态加载存储脚本...');
-        const script = document.createElement('script');
-        script.src = 'jsonbin-storage.js';
-        script.async = false; // 同步加载，确保立即可用
-        document.head.appendChild(script);
-        
-        // 等待加载完成
-        script.onload = function() {
-            if (typeof jsonBinStorage !== 'undefined') {
-                storage = jsonBinStorage;
-                console.log('✅ jsonBinStorage 加载成功');
-                initPage(); // 初始化页面
+        // 存储系统适配器 - 兼容多种存储方式
+        class StorageSystem {
+            constructor() {
+                console.log('🔄 初始化存储系统...');
+                this.storage = null;
+                this.type = 'unknown';
+                this.initialize();
             }
-        };
-    }
-} catch (error) {
-    console.error('存储初始化失败:', error);
-    storage = window.emergencyStorage; // 使用应急存储
-}
 
-// 延迟初始化页面
-setTimeout(function() {
-    if (!storage) {
-        console.warn('存储系统未初始化，创建应急存储');
-        storage = window.emergencyStorage || {
-            testConnection: () => Promise.resolve({connected: false}),
-            getFeedbacks: () => Promise.resolve([]),
-            saveFeedback: () => Promise.resolve({success: false})
-        };
-    }
-    initPage();
-}, 100);
+            async initialize() {
+                // 1. 首先尝试使用 jsonBinStorage（如果已加载）
+                if (typeof jsonBinStorage !== 'undefined') {
+                    console.log('✅ 检测到 jsonBinStorage');
+                    this.storage = jsonBinStorage;
+                    this.type = 'jsonbin';
+                    return;
+                }
 
-function initPage() {
+                // 2. 如果没有找到，尝试加载 jsonbin-storage.js
+                console.log('🔄 加载 JSONBin 存储脚本...');
+                try {
+                    const script = document.createElement('script');
+                    script.src = 'jsonbin-storage.js';
+                    script.async = false;
+                    
+                    await new Promise((resolve, reject) => {
+                        script.onload = () => {
+                            console.log('✅ JSONBin 脚本加载成功');
+                            if (typeof jsonBinStorage !== 'undefined') {
+                                this.storage = jsonBinStorage;
+                                this.type = 'jsonbin';
+                                console.log('✅ 使用 JSONBin 存储');
+                            } else {
+                                console.warn('⚠️ JSONBin 存储未定义');
+                            }
+                            resolve();
+                        };
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                } catch (error) {
+                    console.warn('❌ JSONBin 脚本加载失败:', error);
+                }
 
-        document.addEventListener('DOMContentLoaded', function() {
+                // 3. 如果还是不行，创建本地存储
+                if (!this.storage) {
+                    console.log('🔄 创建本地应急存储');
+                    this.storage = this.createLocalStorage();
+                    this.type = 'local';
+                }
+            }
+
+            createLocalStorage() {
+                return {
+                    testConnection: async function() {
+                        console.log('本地存储连接测试');
+                        return {
+                            connected: true,
+                            message: '✅ 使用本地存储模式',
+                            localMode: true,
+                            binId: 'local-storage'
+                        };
+                    },
+                    
+                    getFeedbacks: async function() {
+                        try {
+                            const data = localStorage.getItem('local_feedbacks');
+                            if (data) {
+                                return JSON.parse(data);
+                            }
+                            
+                            // 如果没有数据，尝试从旧格式迁移
+                            const oldData = localStorage.getItem('emergency_feedbacks');
+                            if (oldData) {
+                                return JSON.parse(oldData);
+                            }
+                            
+                            return [];
+                        } catch (error) {
+                            console.error('获取本地反馈失败:', error);
+                            return [];
+                        }
+                    },
+                    
+                    saveFeedback: async function(feedbackData) {
+                        try {
+                            const feedbacks = await this.getFeedbacks();
+                            
+                            const newFeedback = {
+                                id: 'fb_' + Date.now(),
+                                employeeName: feedbackData.employeeName || '匿名员工',
+                                type: feedbackData.type,
+                                content: feedbackData.content,
+                                images: feedbackData.images || [],
+                                status: 'pending',
+                                timestamp: new Date().toISOString(),
+                                likes: 0
+                            };
+                            
+                            feedbacks.push(newFeedback);
+                            localStorage.setItem('local_feedbacks', JSON.stringify(feedbacks));
+                            
+                            // 同步到旧格式（兼容性）
+                            localStorage.setItem('emergency_feedbacks', JSON.stringify(feedbacks));
+                            
+                            console.log('✅ 反馈保存到本地存储:', newFeedback.id);
+                            
+                            return {
+                                success: true,
+                                id: newFeedback.id,
+                                message: '反馈已保存到本地存储',
+                                localMode: true
+                            };
+                        } catch (error) {
+                            console.error('本地保存失败:', error);
+                            return {
+                                success: false,
+                                error: error.message
+                            };
+                        }
+                    },
+                    
+                    getStats: async function() {
+                        const feedbacks = await this.getFeedbacks();
+                        return {
+                            total: feedbacks.length,
+                            pending: feedbacks.filter(f => f.status === 'pending').length,
+                            processed: feedbacks.filter(f => f.status === 'processed').length,
+                            suggestions: feedbacks.filter(f => f.type === 'suggestion').length,
+                            problems: feedbacks.filter(f => f.type === 'problem').length,
+                            complaints: feedbacks.filter(f => f.type === 'complaint').length,
+                            others: feedbacks.filter(f => f.type === 'other').length
+                        };
+                    }
+                };
+            }
+
+            // 代理方法
+            async testConnection() {
+                if (!this.storage) await this.initialize();
+                return this.storage.testConnection();
+            }
+
+            async getFeedbacks() {
+                if (!this.storage) await this.initialize();
+                return this.storage.getFeedbacks();
+            }
+
+            async saveFeedback(feedbackData) {
+                if (!this.storage) await this.initialize();
+                return this.storage.saveFeedback(feedbackData);
+            }
+
+            async getStats() {
+                if (!this.storage) await this.initialize();
+                if (this.storage.getStats) {
+                    return this.storage.getStats();
+                }
+                const feedbacks = await this.getFeedbacks();
+                return {
+                    total: feedbacks.length,
+                    pending: feedbacks.filter(f => f.status === 'pending').length,
+                    processed: feedbacks.filter(f => f.status === 'processed').length,
+                    suggestions: feedbacks.filter(f => f.type === 'suggestion').length,
+                    problems: feedbacks.filter(f => f.type === 'problem').length,
+                    complaints: feedbacks.filter(f => f.type === 'complaint').length,
+                    others: feedbacks.filter(f => f.type === 'other').length
+                };
+            }
+        }
+
+        // 创建全局存储实例
+        window.storageSystem = new StorageSystem();
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log('员工反馈页面初始化');
+            
+            // 等待存储系统初始化
+            await storageSystem.initialize();
             
             const feedbackForm = document.getElementById('feedbackForm');
             const feedbackContent = document.getElementById('feedbackContent');
@@ -724,21 +858,38 @@ function initPage() {
                     serverStatus.className = 'server-status';
                     serverStatus.style.display = 'block';
                     
-                    const result = await storage.testConnection();
+                    const result = await storageSystem.testConnection();
                     
-                    serverStatus.textContent = '✅ 服务器连接正常，可以提交反馈';
-                    serverStatus.className = 'server-status connected';
+                    if (result.connected) {
+                        serverStatus.textContent = '✅ 服务器连接正常，可以提交反馈';
+                        serverStatus.className = 'server-status connected';
+                    } else if (result.localMode) {
+                        serverStatus.textContent = '⚠️ 使用本地存储模式，反馈仅保存在本浏览器';
+                        serverStatus.className = 'server-status';
+                    } else {
+                        serverStatus.textContent = '❌ 服务器连接失败';
+                        serverStatus.className = 'server-status error';
+                    }
                     
                     // 显示调试信息
-                    debugInfo.innerHTML = `服务器状态: 正常 | 时间: ${new Date().toLocaleString()}`;
+                    debugInfo.innerHTML = `
+                        存储类型: ${storageSystem.type} <br>
+                        连接状态: ${result.connected ? '正常' : '异常'} <br>
+                        消息: ${result.message} <br>
+                        时间: ${new Date().toLocaleString()}
+                    `;
                     debugInfo.style.display = 'block';
                     
                 } catch (error) {
                     console.error('服务器连接失败:', error);
-                    serverStatus.textContent = '❌ 服务器连接失败，请检查网络连接或联系管理员';
+                    serverStatus.textContent = '❌ 存储系统初始化失败';
                     serverStatus.className = 'server-status error';
                     
-                    debugInfo.innerHTML = `服务器状态: 失败 | 错误: ${error.message}`;
+                    debugInfo.innerHTML = `
+                        存储类型: 未知 <br>
+                        错误: ${error.message} <br>
+                        时间: ${new Date().toLocaleString()}
+                    `;
                     debugInfo.style.display = 'block';
                 }
             }
@@ -786,7 +937,7 @@ function initPage() {
             async function loadFeedbacks() {
                 try {
                     console.log('开始加载反馈列表...');
-                    const feedbacks = await storage.getFeedbacks();
+                    const feedbacks = await storageSystem.getFeedbacks();
                     console.log('成功获取反馈数据:', feedbacks.length, '条');
                     displayFeedbacks(feedbacks);
                 } catch (error) {
@@ -867,7 +1018,7 @@ function initPage() {
                 feedbacksList.innerHTML = html;
             }
 
-            // 表单提交 - 确保数据保存到服务器
+            // 表单提交
             feedbackForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
@@ -908,15 +1059,18 @@ function initPage() {
                     // 显示调试信息
                     debugInfo.innerHTML += `<br>正在提交数据到服务器...`;
                     
-                    // 保存到服务器
-                    const result = await storage.saveFeedback(feedbackData);
+                    // 保存到存储系统
+                    const result = await storageSystem.saveFeedback(feedbackData);
                     
-                    console.log('服务器返回结果:', result);
+                    console.log('存储系统返回结果:', result);
                     
                     if (result.success) {
                         console.log('✅ 反馈提交成功，ID:', result.id);
                         debugInfo.innerHTML += `<br>✅ 保存成功! 反馈ID: ${result.id}`;
                         showSuccess(result.id);
+                        
+                        // 保存后重新加载反馈列表
+                        setTimeout(loadFeedbacks, 1000);
                     } else {
                         throw new Error(result.error || '保存失败');
                     }
