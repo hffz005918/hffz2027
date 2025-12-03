@@ -1,12 +1,12 @@
-// jsonbin-storage-fixed.js - 完全修复版
+//jsonbin-storage.js - 完全修复版
 class JsonBinStorage {
     constructor() {
         // ✅ 固定Bin ID - 使用已创建的Bin
         this.binId = '69302491ae596e708f80a42b';
         
         // ✅ 必须更新这两个Key！
-        this.readOnlyKey = '$2a$10$0Tjd7CvwY9K98sbp0UqH0e7CRfpCZRRkD14gamCT9ohnbyXFFCDky'; // ← 必须替换！
-        this.masterKey = '$2a$10$0Tjd7CvwY9K98sbp0UqH0e7CRfpCZRRkD14gamCT9ohnbyXFFCDky';    // ← 确保这个也是有效的
+        this.readOnlyKey = '$2a$10$7HImvQnFOiRjiLQJO3Gj2ucB.zYHhZUGO41thxxh4IHpaGhEUQa/G'; // ← 必须替换！
+        this.masterKey = '$2a$10$7HImvQnFOiRjiLQJO3Gj2ucB.zYHhZUGO41thxxh4IHpaGhEUQa/G';    // ← 确保这个也是有效的
         
         this.baseUrl = 'https://api.jsonbin.io/v3/b';
         
