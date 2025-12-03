@@ -2,7 +2,7 @@
 class JsonBinStorage {
     constructor() {
         // ✅ 固定Bin ID - 使用已创建的Bin
-        this.binId = '693022ded0ea881f400fee67';
+        this.binId = '69302491ae596e708f80a42b';
         
         // ✅ 必须更新这两个Key！
         this.readOnlyKey = '$2a$10$0Tjd7CvwY9K98sbp0UqH0e7CRfpCZRRkD14gamCT9ohnbyXFFCDky'; // ← 必须替换！
