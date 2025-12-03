@@ -6,7 +6,7 @@ class JsonBinStorage {
         this.binId = '69302a1243b1c97be9d4f52e'; // ← 替换这里！
         
         // 如果binId还是默认值，提示用户
-        if (this.binId === '692fcd96ae596e708f8004bb') {
+        if (this.binId === '69302a1243b1c97be9d4f52e') {
             console.error(`
             ❌ 请先设置正确的Bin ID！
             
