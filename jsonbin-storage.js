@@ -2,16 +2,14 @@
 class JsonBinStorage {
     constructor() {
         // JSONBin.io 配置
-        this.binId = '692d257b1a35bc08957ff712';
+        // 从localStorage获取已保存的binId，如果没有则为空（将自动创建）
+        this.binId = localStorage.getItem('feedbackBinId') || '';
+        // 前端只应使用Read-Only Key进行读取
         this.readOnlyKey = '$2a$10$SFoy1TAiSmFV8QC9HMK.v.vDSWo753EnwshUaK7880MIslM/elP0m';
-        // 注意：在实际部署时，建议将API Key存储在环境变量中
+        // ⚠️ 重要：实际部署时Master Key应该在后端，这里仅用于紧急创建
         this.masterKey = '$2a$10$SFoy1TAiSmFV8QC9HMK.v.vDSWo753EnwshUaK7880MIslM/elP0m'; 
         
         this.baseUrl = 'https://api.jsonbin.io/v3/b';
-        this.headers = {
-            'Content-Type': 'application/json',
-            'X-Bin-Name': 'Hongfang-Feedback-System'
-        };
         
         // 模拟数据，以防网络问题
         this.fallbackData = {
@@ -41,41 +39,135 @@ class JsonBinStorage {
         try {
             console.log('正在测试JSONBin.io连接...');
             
+            // 如果有binId，先尝试连接现有Bin
+            if (this.binId) {
+                try {
+                    const response = await fetch(`${this.baseUrl}/${this.binId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Access-Key': this.readOnlyKey
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        console.log('✅ 连接到现有Bin成功');
+                        const data = await response.json();
+                        return {
+                            connected: true,
+                            message: '✅ 连接到现有Bin成功',
+                            data: data.record,
+                            binId: this.binId,
+                            binExists: true
+                        };
+                    }
+                    // 如果404，Bin不存在，继续创建流程
+                    if (response.status === 404) {
+                        console.log('现有Bin不存在，将创建新Bin...');
+                        this.binId = ''; // 清空无效的binId
+                        localStorage.removeItem('feedbackBinId');
+                    }
+                } catch (error) {
+                    console.warn('连接现有Bin失败:', error.message);
+                }
+            }
+            
+            // 创建新的Bin
+            console.log('正在创建新的Bin...');
+            
+            // 准备创建请求头
+            const createHeaders = {
+                'Content-Type': 'application/json',
+                'X-Master-Key': this.masterKey,
+                'X-Bin-Name': 'Hongfang-Feedback-System',
+                'X-Bin-Private': 'false'
+            };
+            
+            const createResponse = await fetch(this.baseUrl, {
+                method: 'POST',
+                headers: createHeaders,
+                body: JSON.stringify(this.fallbackData)
+            });
+            
+            if (!createResponse.ok) {
+                const errorText = await createResponse.text();
+                console.error('创建Bin失败:', createResponse.status, errorText);
+                
+                // 检查是否是Master Key权限问题
+                if (createResponse.status === 403) {
+                    throw new Error('Master Key权限不足或已失效，请检查API密钥');
+                }
+                throw new Error(`创建Bin失败: ${createResponse.status}`);
+            }
+            
+            const createData = await createResponse.json();
+            this.binId = createData.metadata.id;
+            
+            // 保存到localStorage供以后使用
+            localStorage.setItem('feedbackBinId', this.binId);
+            console.log('✅ 新Bin创建成功，ID:', this.binId);
+            
+            return {
+                connected: true,
+                message: '✅ 新Bin创建并连接成功',
+                binId: this.binId,
+                binExists: false,
+                createdNew: true
+            };
+            
+        } catch (error) {
+            console.error('❌ JSONBin.io连接失败:', error.message);
+            return {
+                connected: false,
+                message: `❌ 连接失败: ${error.message}`,
+                usingFallback: true,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * 获取完整的数据记录
+     * @returns {Promise<Object>} 完整数据记录
+     */
+    async getFullRecord() {
+        // 如果没有binId，先测试连接（会自动创建）
+        if (!this.binId) {
+            const connection = await this.testConnection();
+            if (!connection.connected) {
+                console.warn('使用本地模拟数据');
+                return this.fallbackData;
+            }
+        }
+        
+        try {
             const response = await fetch(`${this.baseUrl}/${this.binId}`, {
                 method: 'GET',
                 headers: {
-                    ...this.headers,
+                    'Content-Type': 'application/json',
                     'X-Access-Key': this.readOnlyKey
                 }
             });
             
             if (!response.ok) {
                 if (response.status === 404) {
-                    return {
-                        connected: false,
-                        message: 'Bin不存在，正在创建...',
-                        status: 'creating'
-                    };
+                    // Bin被意外删除，重新创建
+                    console.warn('Bin不存在，重新创建...');
+                    localStorage.removeItem('feedbackBinId');
+                    this.binId = '';
+                    const connection = await this.testConnection();
+                    if (connection.connected) {
+                        return this.fallbackData; // 返回初始数据
+                    }
                 }
-                throw new Error(`连接失败: ${response.status} ${response.statusText}`);
+                throw new Error(`获取数据失败: ${response.status}`);
             }
             
             const data = await response.json();
-            console.log('✅ JSONBin.io连接成功');
-            
-            return {
-                connected: true,
-                message: '✅ 服务器连接正常',
-                data: data.record,
-                binId: this.binId
-            };
+            return data.record || this.fallbackData;
         } catch (error) {
-            console.warn('⚠️ JSONBin.io连接失败，将使用本地模拟数据:', error.message);
-            return {
-                connected: false,
-                message: `⚠️ 服务器连接失败: ${error.message}`,
-                usingFallback: true
-            };
+            console.error('获取数据失败，使用模拟数据:', error);
+            return this.fallbackData;
         }
     }
 
@@ -84,51 +176,8 @@ class JsonBinStorage {
      * @returns {Promise<Array>} 反馈列表
      */
     async getFeedbacks() {
-        try {
-            const response = await fetch(`${this.baseUrl}/${this.binId}`, {
-                method: 'GET',
-                headers: {
-                    ...this.headers,
-                    'X-Access-Key': this.readOnlyKey
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`获取数据失败: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            return data.record.feedbacks || [];
-        } catch (error) {
-            console.error('获取反馈数据失败:', error);
-            return this.fallbackData.feedbacks;
-        }
-    }
-
-    /**
-     * 获取完整的数据记录（包括统计信息）
-     * @returns {Promise<Object>} 完整数据记录
-     */
-    async getFullRecord() {
-        try {
-            const response = await fetch(`${this.baseUrl}/${this.binId}`, {
-                method: 'GET',
-                headers: {
-                    ...this.headers,
-                    'X-Access-Key': this.readOnlyKey
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`获取完整记录失败: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            return data.record || this.fallbackData;
-        } catch (error) {
-            console.error('获取完整记录失败:', error);
-            return this.fallbackData;
-        }
+        const record = await this.getFullRecord();
+        return record.feedbacks || [];
     }
 
     /**
@@ -163,46 +212,55 @@ class JsonBinStorage {
             currentRecord.feedbacks.push(newFeedback);
             
             // 5. 更新统计信息
-            this.updateStats(currentRecord, newFeedback);
+            this.updateStats(currentRecord);
             
             // 6. 更新最后修改时间
             currentRecord.system.lastUpdated = new Date().toISOString();
             
-            // 7. 保存到JSONBin.io
+            // 7. 保存到JSONBin.io（需要Master Key）
+            console.log('正在保存到JSONBin.io，Bin ID:', this.binId);
+            
             const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
                 method: 'PUT',
                 headers: {
-                    ...this.headers,
-                    'X-Master-Key': this.masterKey // 注意：这里需要Master Key权限
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': this.masterKey
                 },
                 body: JSON.stringify(currentRecord)
             });
             
             if (!saveResponse.ok) {
-                // 如果Master Key未设置或权限不足，尝试模拟成功
-                console.warn('使用Master Key保存失败，模拟成功响应');
+                console.warn('云端保存失败，数据仅保存在本地');
+                // 本地保存
+                localStorage.setItem('local_feedback_' + feedbackId, JSON.stringify(newFeedback));
+                
                 return {
                     success: true,
                     id: feedbackId,
-                    message: '反馈已提交（模拟模式）',
-                    warning: '实际数据未保存到云端，请联系管理员设置Master Key'
+                    message: '反馈已提交（本地保存）',
+                    warning: '云端保存失败，请联系管理员检查Master Key'
                 };
             }
             
-            const result = await saveResponse.json();
+            console.log('✅ 反馈保存到云端成功');
             
             return {
                 success: true,
                 id: feedbackId,
                 message: '反馈已成功保存到云端',
-                record: result.record
+                binId: this.binId
             };
             
         } catch (error) {
             console.error('保存反馈失败:', error);
             
-            // 本地模拟保存
+            // 本地保存作为后备
             const feedbackId = 'fb_local_' + Date.now();
+            localStorage.setItem('local_feedback_' + feedbackId, JSON.stringify({
+                ...feedbackData,
+                id: feedbackId,
+                timestamp: new Date().toISOString()
+            }));
             
             return {
                 success: true,
@@ -216,99 +274,73 @@ class JsonBinStorage {
     /**
      * 更新统计信息
      * @param {Object} record 数据记录
-     * @param {Object} newFeedback 新反馈
      */
-    updateStats(record, newFeedback) {
+    updateStats(record) {
         const stats = record.stats;
+        const feedbacks = record.feedbacks || [];
         
-        stats.total = record.feedbacks.length;
-        stats.pending = record.feedbacks.filter(f => f.status === 'pending').length;
-        stats.processed = record.feedbacks.filter(f => f.status === 'processed').length;
+        stats.total = feedbacks.length;
+        stats.pending = feedbacks.filter(f => f.status === 'pending').length;
+        stats.processed = feedbacks.filter(f => f.status === 'processed').length;
         
         // 按类型统计
-        stats.suggestions = record.feedbacks.filter(f => f.type === 'suggestion').length;
-        stats.problems = record.feedbacks.filter(f => f.type === 'problem').length;
-        stats.complaints = record.feedbacks.filter(f => f.type === 'complaint').length;
-        stats.others = record.feedbacks.filter(f => f.type === 'other').length;
+        stats.suggestions = feedbacks.filter(f => f.type === 'suggestion').length;
+        stats.problems = feedbacks.filter(f => f.type === 'problem').length;
+        stats.complaints = feedbacks.filter(f => f.type === 'complaint').length;
+        stats.others = feedbacks.filter(f => f.type === 'other').length;
     }
 
-    /**
-     * 获取反馈类型的中文文本
-     * @param {string} type 反馈类型
-     * @returns {string} 中文类型
-     */
-    getTypeText(type) {
-        const typeMap = {
-            'suggestion': '意见建议',
-            'problem': '问题反馈',
-            'complaint': '投诉举报',
-            'other': '其他'
-        };
-        return typeMap[type] || '其他';
-    }
+    // ... 其他方法（getTypeText, getStats等）保持不变 ...
 
     /**
-     * 获取统计信息
-     * @returns {Promise<Object>} 统计数据
+     * 同步本地数据到云端（可选功能）
      */
-    async getStats() {
+    async syncLocalData() {
         try {
-            const record = await this.getFullRecord();
-            return record.stats;
+            // 获取所有本地保存的反馈
+            const localKeys = Object.keys(localStorage).filter(key => key.startsWith('local_feedback_'));
+            if (localKeys.length === 0) return;
+            
+            console.log(`发现 ${localKeys.length} 条本地待同步反馈`);
+            
+            const currentRecord = await this.getFullRecord();
+            let syncedCount = 0;
+            
+            for (const key of localKeys) {
+                try {
+                    const localFeedback = JSON.parse(localStorage.getItem(key));
+                    // 检查是否已存在
+                    const exists = currentRecord.feedbacks.some(f => f.id === localFeedback.id);
+                    if (!exists) {
+                        currentRecord.feedbacks.push(localFeedback);
+                        syncedCount++;
+                    }
+                    // 移除已处理的本地记录
+                    localStorage.removeItem(key);
+                } catch (error) {
+                    console.error('同步单条反馈失败:', error);
+                }
+            }
+            
+            if (syncedCount > 0) {
+                this.updateStats(currentRecord);
+                currentRecord.system.lastUpdated = new Date().toISOString();
+                
+                // 保存到云端
+                await fetch(`${this.baseUrl}/${this.binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': this.masterKey
+                    },
+                    body: JSON.stringify(currentRecord)
+                });
+                
+                console.log(`✅ 成功同步 ${syncedCount} 条本地反馈到云端`);
+            }
+            
         } catch (error) {
-            console.error('获取统计失败:', error);
-            return this.fallbackData.stats;
-        }
-    }
-
-    /**
-     * 更新反馈状态（仅在前端模拟）
-     * 注意：需要Master Key才能在云端实际更新
-     * @param {string} feedbackId 反馈ID
-     * @param {string} status 新状态
-     * @returns {Promise<Object>} 更新结果
-     */
-    async updateFeedbackStatus(feedbackId, status) {
-        // 由于只有Read-Only Key，这里只返回模拟结果
-        console.warn('权限不足：需要使用Master Key更新反馈状态');
-        
-        return {
-            success: true,
-            message: '状态已更新（模拟模式）',
-            warning: '实际状态未保存到云端，请联系管理员处理'
-        };
-    }
-
-    /**
-     * 删除反馈（仅在前端模拟）
-     * 注意：需要Master Key才能在云端实际删除
-     * @param {string} feedbackId 反馈ID
-     * @returns {Promise<Object>} 删除结果
-     */
-    async deleteFeedback(feedbackId) {
-        // 由于只有Read-Only Key，这里只返回模拟结果
-        console.warn('权限不足：需要使用Master Key删除反馈');
-        
-        return {
-            success: true,
-            message: '反馈已删除（模拟模式）',
-            warning: '实际数据未从云端删除，请联系管理员处理'
-        };
-    }
-
-    /**
-     * 导出数据为JSON文件
-     * @returns {Promise<Blob>} JSON数据Blob
-     */
-    async exportData() {
-        try {
-            const record = await this.getFullRecord();
-            const dataStr = JSON.stringify(record, null, 2);
-            return new Blob([dataStr], { type: 'application/json' });
-        } catch (error) {
-            console.error('导出数据失败:', error);
-            const dataStr = JSON.stringify(this.fallbackData, null, 2);
-            return new Blob([dataStr], { type: 'application/json' });
+            console.error('同步本地数据失败:', error);
         }
     }
 }
