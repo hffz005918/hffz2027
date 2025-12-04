@@ -22,7 +22,7 @@
     <meta name="renderer" content="webkit">
     
     <!-- SEO优化 -->
-    <meta name="description" content="宏方纺织员工服务平台，提供宿舍管理、费用查询等服务">
+    <meta name="description" content="宏方纺织员工服务平台，提供宿舍管理、费用查询、员工反馈等服务">
     
     <title>员工服务系统 - 宏方纺织</title>
 
@@ -32,6 +32,8 @@
             --secondary-color: #1a73e8;
             --admin-color: #722ed1;
             --success-color: #52c41a;
+            --feedback-color: #fa8c16;
+            --wechat-color: #07c160;
             --card-bg: rgba(255, 255, 255, 0.95);
             --text-light: #ffffff;
             --text-dark: #333333;
@@ -61,6 +63,82 @@
             position: relative;
         }
 
+        /* 微信浏览器提示框 */
+        .wechat-tip {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(135deg, var(--wechat-color) 0%, #0aad60 100%);
+            color: #fff;
+            z-index: 2000;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideDown 0.5s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .wechat-tip .tip-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .wechat-tip .tip-text {
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            font-weight: 500;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .wechat-tip .tip-icon {
+            font-size: 1.2rem;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .wechat-tip .tip-detail {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-top: 3px;
+            display: block;
+            width: 100%;
+        }
+
+        .wechat-tip .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        .wechat-tip .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .wechat-tip .browser-icon {
+            display: inline-block;
+            margin: 0 5px;
+            font-size: 1rem;
+        }
+
         .background {
             position: fixed;
             width: 100%;
@@ -85,6 +163,12 @@
             padding: 20px;
             opacity: 0;
             animation: fadeInContent 0.5s ease 0.3s forwards;
+        }
+
+        /* 当微信提示框显示时，调整内容区域位置 */
+        body.wechat-tip-visible .content {
+            padding-top: 80px;
+            height: calc(100vh - 60px);
         }
 
         .title {
@@ -173,11 +257,11 @@
         }
 
         .nav-card.feedback {
-            border-top: 4px solid #fa8c16;
+            border-top: 4px solid var(--feedback-color);
         }
 
         .nav-card.feedback h2 {
-            color: #fa8c16;
+            color: var(--feedback-color);
         }
 
         .nav-card.admin {
@@ -194,6 +278,18 @@
             top: 10px;
             right: 10px;
             background: var(--admin-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .feature-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--feedback-color);
             color: white;
             padding: 4px 8px;
             border-radius: 12px;
@@ -296,6 +392,11 @@
             to { opacity: 1; }
         }
 
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
         @media (max-width: 768px) {
             .nav-cards {
                 gap: 1.2rem;
@@ -315,6 +416,28 @@
                 touch-action: manipulation;
                 -webkit-text-size-adjust: 100%;
             }
+
+            /* 微信提示框优化 */
+            .wechat-tip {
+                padding: 12px 15px;
+            }
+            
+            .wechat-tip .tip-content {
+                gap: 8px;
+            }
+            
+            .wechat-tip .tip-text {
+                font-size: 0.9rem;
+            }
+            
+            .wechat-tip .tip-detail {
+                font-size: 0.75rem;
+            }
+            
+            body.wechat-tip-visible .content {
+                padding-top: 70px;
+                height: calc(100vh - 50px);
+            }
         }
 
         @media (max-width: 480px) {
@@ -329,6 +452,30 @@
             .title {
                 margin-bottom: 2rem;
             }
+            
+            /* 小屏幕微信提示框优化 */
+            .wechat-tip .tip-content {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .wechat-tip .close-btn {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                width: 24px;
+                height: 24px;
+                font-size: 0.9rem;
+            }
+            
+            .wechat-tip .tip-text {
+                padding-right: 30px;
+                text-align: left;
+            }
+            
+            body.wechat-tip-visible .content {
+                padding-top: 80px;
+            }
         }
 
         @supports not (backdrop-filter: blur(5px)) {
@@ -338,6 +485,10 @@
             
             .wechat-loader {
                 background: rgba(0, 0, 0, 0.85);
+            }
+            
+            .wechat-tip {
+                background: linear-gradient(135deg, #07c160 0%, #0aad60 100%);
             }
         }
 
@@ -351,6 +502,18 @@
     </style>
 </head>
 <body>
+    <!-- 微信浏览器提示框 -->
+    <div class="wechat-tip" id="wechatTip" aria-live="polite">
+        <div class="tip-content">
+            <span class="tip-text">
+                <span class="tip-icon">📱</span>
+                检测到您在微信内打开，建议使用手机浏览器访问以获得更好体验
+                <span class="tip-detail">部分功能在微信中可能受限，请点击右上角"..."选择"在浏览器打开"</span>
+            </span>
+            <button class="close-btn" id="closeWechatTip" aria-label="关闭提示">×</button>
+        </div>
+    </div>
+    
     <div class="mobile-status-bar"></div>
     
     <!-- 微信加载失败提示 -->
@@ -401,13 +564,14 @@
                 <p id="fee-desc">水电费用查询与缴纳服务</p>
             </div>
             
-            <!-- 员工反馈 -->
+            <!-- 员工反馈系统 -->
             <div class="nav-card feedback" 
                  role="button" 
                  tabindex="0"
                  data-href="feedback.html"
                  aria-labelledby="feedback-title"
                  aria-describedby="feedback-desc">
+                <div class="feature-badge">新功能</div>
                 <h2 id="feedback-title">员工反馈</h2>
                 <p id="feedback-desc">意见建议与问题匿名反馈</p>
             </div>
@@ -434,6 +598,42 @@
         const isWeChat = /micromessenger/i.test(navigator.userAgent);
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        
+        // 微信浏览器提示功能 - 只在微信中显示
+        function initWechatBrowserTip() {
+            // 只在微信内置浏览器中显示提示
+            if (isWeChat) {
+                const tipElement = document.getElementById('wechatTip');
+                const closeBtn = document.getElementById('closeWechatTip');
+                
+                // 检查是否已经关闭过提示
+                const tipClosed = localStorage.getItem('wechatTipClosed');
+                
+                if (!tipClosed && tipElement) {
+                    // 显示提示框
+                    tipElement.style.display = 'block';
+                    document.body.classList.add('wechat-tip-visible');
+                    
+                    // 添加关闭按钮事件
+                    if (closeBtn) {
+                        closeBtn.addEventListener('click', function() {
+                            tipElement.style.display = 'none';
+                            document.body.classList.remove('wechat-tip-visible');
+                            localStorage.setItem('wechatTipClosed', 'true');
+                        });
+                    }
+                    
+                    // 20秒后自动关闭提示（微信用户可能不方便操作）
+                    setTimeout(function() {
+                        if (tipElement.style.display === 'block') {
+                            tipElement.style.display = 'none';
+                            document.body.classList.remove('wechat-tip-visible');
+                            localStorage.setItem('wechatTipClosed', 'true');
+                        }
+                    }, 20000);
+                }
+            }
+        }
         
         // 微信专用错误处理 - 增强版本
         if (isWeChat) {
@@ -780,12 +980,14 @@
         
         // 主初始化函数
         function initApp() {
+            initWechatBrowserTip(); // 新增：初始化微信浏览器提示
             initMobileOptimizations();
             initNavigation();
             initBackground();
             initPageLoad();
             
             console.log('应用初始化完成 - 版本: ' + APP_VERSION);
+            console.log('微信浏览器检测: ' + (isWeChat ? '是' : '否'));
         }
         
         // 安全启动
