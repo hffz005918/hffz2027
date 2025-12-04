@@ -597,8 +597,6 @@
                     <div>
                         <h3 style="margin: 0;">反馈管理控制台</h3>
                         <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">
-                            Bin ID: <code>692fcd96ae596e708f8004bb</code>
-                        </p>
                     </div>
                     <div class="control-buttons">
                         <button class="action-btn" onclick="refreshData()" style="background: var(--primary-color); color: white;">刷新数据</button>
@@ -1093,7 +1091,7 @@
             }
         }
 
-        // 导出数据
+        // 导出数据 - 已修复
         async function exportData() {
             if (!isAuthenticated) {
                 showNotification('请先登录管理员账号', 'error');
@@ -1101,11 +1099,44 @@
             }
             
             try {
-                const blob = await jsonBinStorage.exportData();
+                // 获取所有反馈数据
+                const feedbacks = await getFeedbacks();
+                
+                if (feedbacks.length === 0) {
+                    showNotification('没有数据可导出', 'warning');
+                    return;
+                }
+                
+                // 准备导出的数据
+                const exportData = {
+                    exportTime: new Date().toISOString(),
+                    total: feedbacks.length,
+                    feedbacks: feedbacks
+                };
+                
+                // 转换为JSON字符串
+                const jsonString = JSON.stringify(exportData, null, 2);
+                
+                // 创建Blob对象
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                
+                // 创建下载链接
+                const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `员工反馈数据_${new Date().toISOString().split('T')[0]}.json`;
+                link.href = url;
+                
+                // 生成文件名
+                const dateStr = new Date().toISOString().split('T')[0];
+                link.download = `宏方纺织_员工反馈数据_${dateStr}.json`;
+                
+                // 触发下载
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
+                
+                // 清理URL对象
+                URL.revokeObjectURL(url);
+                
                 showNotification('数据导出成功');
             } catch (error) {
                 console.error('导出数据失败:', error);
