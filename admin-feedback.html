@@ -836,91 +836,154 @@
         }
 
         // 删除评论
-        async function deleteComment(feedbackId, commentId) {
-            console.log('删除评论:', feedbackId, commentId);
-            
-            if (confirm('确定要删除这条评论吗？\n此操作将同时删除该评论的所有点赞数据！\n此操作不可恢复！')) {
-                try {
-                    // 获取当前反馈
-                    const feedback = await getFeedbackById(feedbackId);
-                    if (!feedback || !feedback.comments) {
-                        throw new Error('未找到评论');
-                    }
+async function deleteComment(feedbackId, commentId) {
+    console.log('删除评论:', feedbackId, commentId);
+    
+    if (confirm('确定要删除这条评论吗？\n此操作将同时删除该评论的所有点赞数据！\n此操作不可恢复！')) {
+        try {
+            // 使用 jsonBinStorage 的 deleteComment 方法
+            if (typeof jsonBinStorage !== 'undefined' && jsonBinStorage.deleteComment) {
+                // 直接调用 jsonBinStorage 的 deleteComment 方法
+                const result = await jsonBinStorage.deleteComment(feedbackId, commentId);
+                
+                if (result.success) {
+                    showSuccess('评论删除成功');
                     
-                    // 找到评论索引
-                    const commentIndex = feedback.comments.findIndex(comment => 
-                        comment.id === commentId || generateCommentIdFromComment(comment) === commentId
-                    );
-                    
-                    if (commentIndex === -1) {
-                        throw new Error('未找到要删除的评论');
-                    }
-                    
-                    // 从评论数组中删除
-                    feedback.comments.splice(commentIndex, 1);
-                    
-                    // 更新反馈数据
-                    const updateResult = await updateFeedbackComments(feedbackId, feedback.comments);
-                    
-                    if (updateResult.success) {
-                        showSuccess('评论删除成功');
-                        
-                        // 重新加载反馈数据
-                        loadFeedbacks();
-                    } else {
-                        throw new Error(updateResult.error || '更新失败');
-                    }
-                    
-                } catch (error) {
-                    console.error('删除评论失败:', error);
-                    showError('删除评论失败: ' + error.message);
+                    // 重新加载反馈数据
+                    loadFeedbacks();
+                } else {
+                    throw new Error(result.message || '删除失败');
                 }
-            }
-        }
-
-        // 从评论对象生成ID（用于查找）
-        function generateCommentIdFromComment(comment) {
-            if (comment.id) return comment.id;
-            // 如果没有ID，使用其他属性生成一个匹配的ID
-            return 'comment_' + new Date(comment.timestamp).getTime() + '_' + (comment.author || 'anonymous').hashCode();
-        }
-
-        // 字符串hashCode函数
-        String.prototype.hashCode = function() {
-            let hash = 0;
-            for (let i = 0; i < this.length; i++) {
-                const char = this.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return Math.abs(hash).toString(36);
-        };
-
-        // 更新反馈的评论列表
-        async function updateFeedbackComments(feedbackId, comments) {
-            try {
-                const feedbacks = await storage.getFeedbacks();
-                const feedbackIndex = feedbacks.findIndex(f => f.id === feedbackId);
+            } else {
+                // 回退到原来的方法
+                console.warn('使用旧的删除评论方法');
+                
+                // 获取当前反馈
+                const feedback = await getFeedbackById(feedbackId);
+                if (!feedback || !feedback.comments) {
+                    throw new Error('未找到评论');
+                }
+                
+                // 找到评论索引
+                const commentIndex = feedback.comments.findIndex(comment => 
+                    comment.id === commentId || generateCommentIdFromComment(comment) === commentId
+                );
+                
+                if (commentIndex === -1) {
+                    throw new Error('未找到要删除的评论');
+                }
+                
+                // 从评论数组中删除
+                feedback.comments.splice(commentIndex, 1);
+                
+                // 更新反馈数据 - 使用正确的保存方法
+                const allFeedbacks = await storage.getFeedbacks();
+                const feedbackIndex = allFeedbacks.findIndex(f => f.id === feedbackId);
                 
                 if (feedbackIndex === -1) {
                     throw new Error('未找到反馈');
                 }
                 
-                feedbacks[feedbackIndex].comments = comments;
-                const result = await storage.saveFeedbacks(feedbacks);
+                // 更新评论数组
+                allFeedbacks[feedbackIndex].comments = feedback.comments;
                 
-                return {
-                    success: true,
-                    message: '评论更新成功'
-                };
-            } catch (error) {
-                console.error('更新评论失败:', error);
-                return {
-                    success: false,
-                    error: error.message
-                };
+                // 保存整个反馈数组
+                // 注意：这里需要保存整个数组，不是单个反馈
+                await saveAllFeedbacks(allFeedbacks);
+                
+                showSuccess('评论删除成功');
+                loadFeedbacks();
             }
+            
+        } catch (error) {
+            console.error('删除评论失败:', error);
+            showError('删除评论失败: ' + error.message);
         }
+    }
+}
+
+// 保存所有反馈数据
+async function saveAllFeedbacks(feedbacks) {
+    try {
+        // 1. 获取当前bin数据
+        const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${jsonBinStorage.binId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Access-Key': jsonBinStorage.readOnlyKey
+            }
+        });
+        
+        if (!getResponse.ok) {
+            throw new Error('获取当前数据失败');
+        }
+        
+        const getData = await getResponse.json();
+        const record = getData.record;
+        
+        // 2. 更新反馈数组
+        record.feedbacks = feedbacks;
+        
+        // 3. 更新统计信息
+        record.stats.total = feedbacks.length;
+        record.stats.pending = feedbacks.filter(f => f.status === 'pending').length;
+        record.system.lastUpdated = new Date().toISOString();
+        
+        // 4. 保存回云端
+        const saveResponse = await fetch(`https://api.jsonbin.io/v3/b/${jsonBinStorage.binId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': jsonBinStorage.masterKey
+            },
+            body: JSON.stringify(record)
+        });
+        
+        if (!saveResponse.ok) {
+            throw new Error('保存失败: ' + saveResponse.status);
+        }
+        
+        console.log('✅ 反馈数据保存成功');
+        
+        return {
+            success: true,
+            message: '数据已保存到云端'
+        };
+        
+    } catch (error) {
+        console.error('保存失败:', error);
+        throw error;
+    }
+}
+
+// 更新反馈的评论列表
+async function updateFeedbackComments(feedbackId, comments) {
+    try {
+        // 获取所有反馈
+        const feedbacks = await storage.getFeedbacks();
+        const feedbackIndex = feedbacks.findIndex(f => f.id === feedbackId);
+        
+        if (feedbackIndex === -1) {
+            throw new Error('未找到反馈');
+        }
+        
+        // 更新评论
+        feedbacks[feedbackIndex].comments = comments;
+        
+        // 保存到云端
+        const result = await saveAllFeedbacks(feedbacks);
+        
+        return {
+            success: true,
+            message: '评论更新成功'
+        };
+    } catch (error) {
+        console.error('更新评论失败:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
 
         // 切换评论显示/隐藏
         function toggleComments(button, feedbackId) {
