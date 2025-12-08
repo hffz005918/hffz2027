@@ -258,6 +258,7 @@
             background: white;
             border-radius: 4px;
             border-left: 2px solid #eee;
+            position: relative;
         }
 
         .comment-header {
@@ -282,13 +283,14 @@
             font-size: 0.85rem;
             line-height: 1.4;
             color: #666;
+            margin-bottom: 0.5rem;
         }
 
         .comment-stats {
             display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 0.25rem;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
         }
 
         .comment-like-stat {
@@ -301,6 +303,28 @@
 
         .comment-like-stat.liked {
             color: #ff6b6b;
+        }
+
+        /* 新增：评论删除按钮样式 */
+        .comment-delete-btn {
+            background: #ff4d4f;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .comment-delete-btn:hover {
+            background: #ff7875;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 5px;
+            align-items: center;
         }
 
         .no-comments {
@@ -357,11 +381,11 @@
                 <form id="loginForm">
                     <div class="form-group">
                         <label for="username">用户名</label>
-                        <input type="text" id="username" required value="admin">
+                        <input type="text" id="username" required placeholder="请输入用户名">
                     </div>
                     <div class="form-group">
                         <label for="password">密码</label>
-                        <input type="password" id="password" required value="123456">
+                        <input type="password" id="password" required placeholder="请输入密码">
                     </div>
                     <button type="submit" class="login-btn" id="loginBtn">登录</button>
                 </form>
@@ -406,7 +430,6 @@
             
             <div style="margin: 1rem 0;">
                 <button onclick="loadFeedbacks()" style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">刷新数据</button>
-                <button onclick="addSampleData()" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">
             </div>
 
             <div class="error-message" id="errorMessage"></div>
@@ -433,9 +456,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('管理员页面加载完成');
             
-            // 设置自动填充
-            document.getElementById('username').value = 'admin';
-            document.getElementById('password').value = '123456';
+            // 清空输入框，移除自动填充
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
             
             // 绑定登录表单提交事件
             document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -443,10 +466,7 @@
                 handleLogin();
             });
             
-            // 检查是否已经登录
-            if (localStorage.getItem('admin_logged_in') === 'true') {
-                showAdminPanel();
-            }
+            // 不再检查是否已经登录，每次都需要手动登录
         });
 
         // 处理登录
@@ -469,7 +489,7 @@
                     const connectionResult = await storage.testConnection();
                     
                     if (connectionResult.connected || connectionResult.connected === true) {
-                        // 保存登录状态
+                        // 保存登录状态（仅限当前会话）
                         localStorage.setItem('admin_logged_in', 'true');
                         
                         // 显示成功消息
@@ -649,9 +669,10 @@
                         const commentDate = new Date(comment.timestamp);
                         const commentTime = commentDate.toLocaleString('zh-CN');
                         const commentLikes = comment.likes ? comment.likes.count : 0;
+                        const commentId = comment.id || generateCommentId();
                         
                         return `
-                            <div class="comment-item">
+                            <div class="comment-item" id="comment-${commentId}">
                                 <div class="comment-header">
                                     <span class="comment-author">${comment.author || '匿名同事'}</span>
                                     <span class="comment-time">${commentTime}</span>
@@ -660,6 +681,11 @@
                                 <div class="comment-stats">
                                     <div class="comment-like-stat ${commentLikes > 0 ? 'liked' : ''}">
                                         👍 ${commentLikes}
+                                    </div>
+                                    <div class="comment-actions">
+                                        <button class="comment-delete-btn" onclick="deleteComment('${feedback.id}', '${commentId}')">
+                                            删除
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -721,7 +747,7 @@
                                 ${feedback.status === 'pending' ? '标记处理' : '标记待处理'}
                             </button>
                             <button onclick="deleteFeedback('${feedback.id}')" style="padding: 6px 12px; background: #ff4d4f; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                删除
+                                删除反馈
                             </button>
                         </div>
                     </div>
@@ -729,6 +755,11 @@
             });
             
             container.innerHTML = html;
+        }
+
+        // 生成评论ID（如果评论没有ID）
+        function generateCommentId() {
+            return 'comment_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
 
         function getTypeText(type) {
@@ -804,6 +835,93 @@
             }
         }
 
+        // 删除评论
+        async function deleteComment(feedbackId, commentId) {
+            console.log('删除评论:', feedbackId, commentId);
+            
+            if (confirm('确定要删除这条评论吗？\n此操作将同时删除该评论的所有点赞数据！\n此操作不可恢复！')) {
+                try {
+                    // 获取当前反馈
+                    const feedback = await getFeedbackById(feedbackId);
+                    if (!feedback || !feedback.comments) {
+                        throw new Error('未找到评论');
+                    }
+                    
+                    // 找到评论索引
+                    const commentIndex = feedback.comments.findIndex(comment => 
+                        comment.id === commentId || generateCommentIdFromComment(comment) === commentId
+                    );
+                    
+                    if (commentIndex === -1) {
+                        throw new Error('未找到要删除的评论');
+                    }
+                    
+                    // 从评论数组中删除
+                    feedback.comments.splice(commentIndex, 1);
+                    
+                    // 更新反馈数据
+                    const updateResult = await updateFeedbackComments(feedbackId, feedback.comments);
+                    
+                    if (updateResult.success) {
+                        showSuccess('评论删除成功');
+                        
+                        // 重新加载反馈数据
+                        loadFeedbacks();
+                    } else {
+                        throw new Error(updateResult.error || '更新失败');
+                    }
+                    
+                } catch (error) {
+                    console.error('删除评论失败:', error);
+                    showError('删除评论失败: ' + error.message);
+                }
+            }
+        }
+
+        // 从评论对象生成ID（用于查找）
+        function generateCommentIdFromComment(comment) {
+            if (comment.id) return comment.id;
+            // 如果没有ID，使用其他属性生成一个匹配的ID
+            return 'comment_' + new Date(comment.timestamp).getTime() + '_' + (comment.author || 'anonymous').hashCode();
+        }
+
+        // 字符串hashCode函数
+        String.prototype.hashCode = function() {
+            let hash = 0;
+            for (let i = 0; i < this.length; i++) {
+                const char = this.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
+        };
+
+        // 更新反馈的评论列表
+        async function updateFeedbackComments(feedbackId, comments) {
+            try {
+                const feedbacks = await storage.getFeedbacks();
+                const feedbackIndex = feedbacks.findIndex(f => f.id === feedbackId);
+                
+                if (feedbackIndex === -1) {
+                    throw new Error('未找到反馈');
+                }
+                
+                feedbacks[feedbackIndex].comments = comments;
+                const result = await storage.saveFeedbacks(feedbacks);
+                
+                return {
+                    success: true,
+                    message: '评论更新成功'
+                };
+            } catch (error) {
+                console.error('更新评论失败:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
         // 切换评论显示/隐藏
         function toggleComments(button, feedbackId) {
             const commentsPreview = document.getElementById(`comments-preview-${feedbackId}`);
@@ -835,9 +953,10 @@
                 const commentDate = new Date(comment.timestamp);
                 const commentTime = commentDate.toLocaleString('zh-CN');
                 const commentLikes = comment.likes ? comment.likes.count : 0;
+                const commentId = comment.id || generateCommentIdFromComment(comment);
                 
                 return `
-                    <div class="comment-item">
+                    <div class="comment-item" id="comment-${commentId}">
                         <div class="comment-header">
                             <span class="comment-author">${comment.author || '匿名同事'}</span>
                             <span class="comment-time">${commentTime}</span>
@@ -846,6 +965,11 @@
                         <div class="comment-stats">
                             <div class="comment-like-stat ${commentLikes > 0 ? 'liked' : ''}">
                                 👍 ${commentLikes}
+                            </div>
+                            <div class="comment-actions">
+                                <button class="comment-delete-btn" onclick="deleteComment('${feedback.id}', '${commentId}')">
+                                    删除
+                                </button>
                             </div>
                         </div>
                     </div>
