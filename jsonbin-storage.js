@@ -289,7 +289,85 @@ class JsonBinStorage {
             };
         }
     }
-    
+       /**
+     * 删除评论
+     */
+    async deleteComment(feedbackId, commentId) {
+        try {
+            console.log(`🔄 正在删除评论: 反馈 ${feedbackId}, 评论 ${commentId}`);
+            
+            // 1. 获取当前数据
+            const getResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Access-Key': this.readOnlyKey
+                }
+            });
+            
+            if (!getResponse.ok) {
+                throw new Error('获取当前数据失败');
+            }
+            
+            const getData = await getResponse.json();
+            const record = getData.record;
+            
+            // 2. 查找目标反馈
+            const feedbackIndex = record.feedbacks.findIndex(f => f.id === feedbackId);
+            
+            if (feedbackIndex === -1) {
+                throw new Error('未找到对应的反馈');
+            }
+            
+            const feedback = record.feedbacks[feedbackIndex];
+            
+            // 3. 查找并删除评论
+            if (!feedback.comments) {
+                throw new Error('该反馈没有评论');
+            }
+            
+            const commentIndex = feedback.comments.findIndex(c => c.id === commentId);
+            
+            if (commentIndex === -1) {
+                throw new Error('未找到要删除的评论');
+            }
+            
+            // 从数组中移除评论
+            feedback.comments.splice(commentIndex, 1);
+            
+            // 4. 更新时间戳
+            record.system.lastUpdated = new Date().toISOString();
+            
+            // 5. 保存回云端
+            const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': this.masterKey
+                },
+                body: JSON.stringify(record)
+            });
+            
+            if (!saveResponse.ok) {
+                throw new Error('保存删除操作失败: ' + saveResponse.status);
+            }
+            
+            console.log('✅ 评论删除成功:', commentId);
+            
+            return {
+                success: true,
+                message: '评论已成功删除',
+                binId: this.binId,
+                updatedFeedback: feedback
+            };
+            
+        } catch (error) {
+            console.error('删除评论失败:', error);
+            return {
+                success: false,
+                message: '删除评论失败: ' + error.message
+            };
+        }
+    } 
     /**
      * 点赞/取消点赞反馈
      */
@@ -674,4 +752,5 @@ class JsonBinStorage {
 }
 
 // 全局实例
+
 const jsonBinStorage = new JsonBinStorage();

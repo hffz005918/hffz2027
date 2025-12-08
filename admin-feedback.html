@@ -835,64 +835,20 @@
             }
         }
 
-        // 删除评论
+       // 删除评论 - 简化版本
 async function deleteComment(feedbackId, commentId) {
     console.log('删除评论:', feedbackId, commentId);
     
     if (confirm('确定要删除这条评论吗？\n此操作将同时删除该评论的所有点赞数据！\n此操作不可恢复！')) {
         try {
-            // 使用 jsonBinStorage 的 deleteComment 方法
-            if (typeof jsonBinStorage !== 'undefined' && jsonBinStorage.deleteComment) {
-                // 直接调用 jsonBinStorage 的 deleteComment 方法
-                const result = await jsonBinStorage.deleteComment(feedbackId, commentId);
-                
-                if (result.success) {
-                    showSuccess('评论删除成功');
-                    
-                    // 重新加载反馈数据
-                    loadFeedbacks();
-                } else {
-                    throw new Error(result.message || '删除失败');
-                }
-            } else {
-                // 回退到原来的方法
-                console.warn('使用旧的删除评论方法');
-                
-                // 获取当前反馈
-                const feedback = await getFeedbackById(feedbackId);
-                if (!feedback || !feedback.comments) {
-                    throw new Error('未找到评论');
-                }
-                
-                // 找到评论索引
-                const commentIndex = feedback.comments.findIndex(comment => 
-                    comment.id === commentId || generateCommentIdFromComment(comment) === commentId
-                );
-                
-                if (commentIndex === -1) {
-                    throw new Error('未找到要删除的评论');
-                }
-                
-                // 从评论数组中删除
-                feedback.comments.splice(commentIndex, 1);
-                
-                // 更新反馈数据 - 使用正确的保存方法
-                const allFeedbacks = await storage.getFeedbacks();
-                const feedbackIndex = allFeedbacks.findIndex(f => f.id === feedbackId);
-                
-                if (feedbackIndex === -1) {
-                    throw new Error('未找到反馈');
-                }
-                
-                // 更新评论数组
-                allFeedbacks[feedbackIndex].comments = feedback.comments;
-                
-                // 保存整个反馈数组
-                // 注意：这里需要保存整个数组，不是单个反馈
-                await saveAllFeedbacks(allFeedbacks);
-                
+            // 直接调用 jsonBinStorage 的 deleteComment 方法
+            const result = await jsonBinStorage.deleteComment(feedbackId, commentId);
+            
+            if (result.success) {
                 showSuccess('评论删除成功');
                 loadFeedbacks();
+            } else {
+                throw new Error(result.message || '删除失败');
             }
             
         } catch (error) {
