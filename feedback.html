@@ -11,6 +11,7 @@
             --success-color: #52c41a;
             --warning-color: #faad14;
             --error-color: #ff4d4f;
+            --like-color: #ff6b6b;
             --card-bg: rgba(255, 255, 255, 0.95);
             --text-light: #ffffff;
             --text-dark: #333333;
@@ -222,9 +223,266 @@
 
         .feedback-stats {
             display: flex;
+            justify-content: space-between;
+            align-items: center;
             gap: 1rem;
             font-size: 0.8rem;
             color: var(--text-secondary);
+        }
+
+        .feedback-info {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .feedback-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* 点赞按钮样式 */
+        .like-btn {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 4px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            color: #666;
+            min-height: 32px;
+        }
+
+        .like-btn:hover {
+            background: #f0f0f0;
+            border-color: #ccc;
+        }
+
+        .like-btn.liked {
+            background: #fff0f0;
+            border-color: var(--like-color);
+            color: var(--like-color);
+        }
+
+        .like-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .like-btn.liked .like-icon {
+            animation: like-pop 0.3s;
+        }
+
+        @keyframes like-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .like-icon {
+            font-size: 1rem;
+        }
+
+        .like-count {
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* 评论按钮样式 */
+        .comment-btn {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 4px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            color: #666;
+            min-height: 32px;
+            text-decoration: none;
+        }
+
+        .comment-btn:hover {
+            background: #f0f0f0;
+            border-color: #ccc;
+        }
+
+        /* 评论区域样式 */
+        .comments-section {
+            margin-top: 1.5rem;
+            border-top: 1px solid #eee;
+            padding-top: 1.5rem;
+        }
+
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .comments-header h3 {
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        .comment-count {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .comments-list {
+            margin-bottom: 1.5rem;
+        }
+
+        .comment-item {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid #ddd;
+            position: relative;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-author {
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        .comment-time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .comment-content {
+            line-height: 1.5;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 0.5rem;
+        }
+
+        /* 评论点赞按钮 */
+        .comment-like-btn {
+            background: transparent;
+            border: 1px solid #ddd;
+            border-radius: 16px;
+            padding: 2px 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .comment-like-btn:hover {
+            border-color: #ccc;
+        }
+
+        .comment-like-btn.liked {
+            background: #fff0f0;
+            border-color: var(--like-color);
+            color: var(--like-color);
+        }
+
+        .comment-like-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .comment-like-icon {
+            font-size: 0.85rem;
+        }
+
+        .comment-like-count {
+            font-weight: bold;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .no-comments {
+            text-align: center;
+            padding: 1rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .add-comment-form {
+            margin-top: 1rem;
+        }
+
+        .comment-input-group {
+            margin-bottom: 1rem;
+        }
+
+        .comment-input-group label {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .comment-input {
+            padding: 10px;
+            font-size: 0.9rem;
+            min-height: 80px;
+        }
+
+        .add-comment-btn {
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .add-comment-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        .add-comment-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .view-comments-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            padding: 0;
+        }
+
+        .view-comments-btn:hover {
+            color: var(--secondary-color);
         }
 
         .loading {
@@ -268,6 +526,22 @@
             border-left-color: var(--warning-color);
         }
 
+        /* 加载动画 */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .feedback-card {
                 padding: 1.5rem;
@@ -275,6 +549,17 @@
             
             .header h1 {
                 font-size: 1.7rem;
+            }
+            
+            .feedback-stats {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .feedback-actions {
+                width: 100%;
+                justify-content: flex-start;
             }
         }
         
@@ -289,6 +574,11 @@
             
             .header h1 {
                 font-size: 1.5rem;
+            }
+            
+            .feedback-header {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -307,7 +597,7 @@
             </div>
 
             <div class="anonymous-notice">
-                <strong>温馨提示：</strong>我们深知，最好的改变源于最真实的感受。您的反馈对我们至关重要，它将直接帮助我们倾听心声、发现问题，并为您和所有伙伴创造一个更舒适、更顺畅的工作环境。感谢您的支持与同行！
+                <strong>温馨提示：</strong>您的反馈对我们至关重要，它将直接帮助我们倾听心声、发现问题，并为您和所有伙伴创造一个更舒适、更顺畅的工作环境。感谢您的支持与同行！
             </div>
 
             <div class="error-message" id="errorMessage"></div>
@@ -375,6 +665,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('员工反馈页面初始化');
             
+            // 全局用户ID（用于点赞跟踪）
+            let currentUserId = getOrCreateUserId();
+            
             // DOM 元素
             const feedbackForm = document.getElementById('feedbackForm');
             const feedbackContent = document.getElementById('feedbackContent');
@@ -390,6 +683,18 @@
             
             // 初始化
             initializePage();
+
+            /**
+             * 获取或创建用户ID
+             */
+            function getOrCreateUserId() {
+                let userId = localStorage.getItem('feedback_user_id');
+                if (!userId) {
+                    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('feedback_user_id', userId);
+                }
+                return userId;
+            }
 
             /**
              * 页面初始化
@@ -509,7 +814,25 @@
             async function loadFeedbacks() {
                 try {
                     const feedbacks = await jsonBinStorage.getFeedbacks();
-                    displayFeedbacks(feedbacks);
+                    
+                    // 处理点赞状态
+                    const processedFeedbacks = feedbacks.map(feedback => {
+                        // 检查用户是否点赞了该反馈
+                        feedback.userLiked = feedback.likes && feedback.likes.users ? 
+                            feedback.likes.users.includes(currentUserId) : false;
+                        
+                        // 处理评论的点赞状态
+                        if (feedback.comments) {
+                            feedback.comments.forEach(comment => {
+                                comment.userLiked = comment.likes && comment.likes.users ?
+                                    comment.likes.users.includes(currentUserId) : false;
+                            });
+                        }
+                        
+                        return feedback;
+                    });
+                    
+                    displayFeedbacks(processedFeedbacks);
                 } catch (error) {
                     console.error('加载反馈列表失败:', error);
                     feedbacksList.innerHTML = `
@@ -553,8 +876,16 @@
                     const date = new Date(feedback.timestamp);
                     const timeString = date.toLocaleString('zh-CN');
                     
+                    // 检查是否有评论
+                    const hasComments = feedback.comments && feedback.comments.length > 0;
+                    const commentCount = hasComments ? feedback.comments.length : 0;
+                    
+                    // 获取点赞数
+                    const likesCount = feedback.likes ? feedback.likes.count : 0;
+                    const isLiked = feedback.userLiked || false;
+                    
                     html += `
-                        <div class="feedback-item">
+                        <div class="feedback-item" data-feedback-id="${feedback.id}">
                             <div class="feedback-header">
                                 <div>
                                     <span class="feedback-type ${typeClass}">${typeText}</span>
@@ -565,14 +896,108 @@
                             <div class="feedback-content">${feedback.content}</div>
                             
                             <div class="feedback-stats">
-                                <span>状态: ${feedback.status === 'processed' ? '✅ 已处理' : '⏳ 待处理'}</span>
-                                <span>反馈ID: ${feedback.id || '未知'}</span>
+                                <div class="feedback-info">
+                                    <span>状态: ${feedback.status === 'processed' ? '✅ 已处理' : '⏳ 待处理'}</span>
+                                    <span>反馈ID: ${feedback.id || '未知'}</span>
+                                </div>
+                                <div class="feedback-actions">
+                                    <button class="like-btn ${isLiked ? 'liked' : ''}" 
+                                            onclick="toggleFeedbackLike('${feedback.id}', this)"
+                                            data-feedback-id="${feedback.id}"
+                                            title="${isLiked ? '取消点赞' : '点赞'}">
+                                        <span class="like-icon">${isLiked ? '❤️' : '🤍'}</span>
+                                        <span class="like-count">${likesCount}</span>
+                                    </button>
+                                    <button class="comment-btn" onclick="toggleComments('${feedback.id}', this)">
+                                        ${commentCount > 0 ? `💬 评论(${commentCount})` : '💬 发表评论'}
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 评论区域 (初始隐藏) -->
+                            <div class="comments-section" id="comments-${feedback.id}" style="display: none;">
+                                <div class="comments-header">
+                                    <h3>评论</h3>
+                                    <span class="comment-count">${commentCount} 条评论</span>
+                                </div>
+                                
+                                <div class="comments-list" id="comments-list-${feedback.id}">
+                                    ${hasComments ? renderComments(feedback.comments, feedback.id) : `
+                                        <div class="no-comments">暂无评论，快来发表第一个评论吧！</div>
+                                    `}
+                                </div>
+                                
+                                <div class="add-comment-form">
+                                    <div class="comment-input-group">
+                                        <label for="comment-author-${feedback.id}">您的称呼（可选）</label>
+                                        <input type="text" id="comment-author-${feedback.id}" placeholder="姓名或昵称">
+                                    </div>
+                                    <div class="comment-input-group">
+                                        <label for="comment-content-${feedback.id}">评论内容</label>
+                                        <textarea 
+                                            id="comment-content-${feedback.id}" 
+                                            class="comment-input" 
+                                            placeholder="请输入您的评论..." 
+                                            maxlength="500"
+                                            required
+                                        ></textarea>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        class="add-comment-btn" 
+                                        id="add-comment-btn-${feedback.id}"
+                                        onclick="addComment('${feedback.id}')"
+                                    >
+                                        发表评论
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
                 });
                 
                 feedbacksList.innerHTML = html;
+            }
+
+            /**
+             * 渲染评论列表
+             */
+            function renderComments(comments, feedbackId) {
+                if (!comments || comments.length === 0) {
+                    return '<div class="no-comments">暂无评论</div>';
+                }
+                
+                // 按时间倒序排序
+                comments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                let html = '';
+                comments.forEach(comment => {
+                    const date = new Date(comment.timestamp);
+                    const timeString = date.toLocaleString('zh-CN');
+                    const commentLikesCount = comment.likes ? comment.likes.count : 0;
+                    const isLiked = comment.userLiked || false;
+                    
+                    html += `
+                        <div class="comment-item" data-comment-id="${comment.id}">
+                            <div class="comment-header">
+                                <span class="comment-author">${comment.author || '匿名同事'}</span>
+                                <span class="comment-time">${timeString}</span>
+                            </div>
+                            <div class="comment-content">${comment.content}</div>
+                            <div class="comment-actions">
+                                <button class="comment-like-btn ${isLiked ? 'liked' : ''}" 
+                                        onclick="toggleCommentLike('${feedbackId}', '${comment.id}', this)"
+                                        data-comment-id="${comment.id}"
+                                        title="${isLiked ? '取消点赞' : '点赞'}">
+                                    <span class="comment-like-icon">${isLiked ? '❤️' : '🤍'}</span>
+                                    <span class="comment-like-count">${commentLikesCount}</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                return html;
             }
 
             /**
@@ -600,8 +1025,8 @@
                     return;
                 }
                 
-                if (contentFilled && feedbackContent.value.trim().length < 10) {
-                    showError('反馈内容至少需要10个字符');
+                if (contentFilled && feedbackContent.value.trim().length < 5) {
+                    showError('反馈内容至少需要5个字符');
                     return;
                 }
                 
@@ -615,7 +1040,6 @@
                         employeeName: document.getElementById('employeeName').value.trim(),
                         type: document.getElementById('feedbackType').value,
                         content: feedbackContent.value.trim(),
-                        // 注意：已移除图片字段
                     };
                     
                     console.log('提交反馈数据:', feedbackData);
@@ -643,6 +1067,210 @@
                     submitBtn.textContent = '提交反馈';
                 }
             }
+
+            /**
+             * 切换评论显示/隐藏
+             */
+            window.toggleComments = function(feedbackId, button) {
+                const commentsSection = document.getElementById(`comments-${feedbackId}`);
+                if (!commentsSection) return;
+                
+                if (commentsSection.style.display === 'none') {
+                    commentsSection.style.display = 'block';
+                    if (button) button.textContent = '收起评论';
+                } else {
+                    commentsSection.style.display = 'none';
+                    if (button) {
+                        const commentCount = commentsSection.querySelectorAll('.comment-item').length;
+                        button.textContent = commentCount > 0 ? `💬 评论(${commentCount})` : '💬 发表评论';
+                    }
+                }
+            };
+
+            /**
+             * 添加评论
+             */
+            window.addComment = async function(feedbackId) {
+                const authorInput = document.getElementById(`comment-author-${feedbackId}`);
+                const contentInput = document.getElementById(`comment-content-${feedbackId}`);
+                const addCommentBtn = document.getElementById(`add-comment-btn-${feedbackId}`);
+                
+                // 检查按钮是否存在
+                if (!addCommentBtn) {
+                    console.error('评论按钮未找到:', `add-comment-btn-${feedbackId}`);
+                    alert('评论功能出现错误，请刷新页面重试');
+                    return;
+                }
+                
+                const author = authorInput ? authorInput.value.trim() : '';
+                const content = contentInput ? contentInput.value.trim() : '';
+                
+                // 验证
+                if (!content) {
+                    alert('请输入评论内容');
+                    if (contentInput) contentInput.focus();
+                    return;
+                }
+                
+                if (content.length < 5) {
+                    alert('评论内容至少需要5个字符');
+                    if (contentInput) contentInput.focus();
+                    return;
+                }
+                
+                try {
+                    // 禁用提交按钮
+                    addCommentBtn.disabled = true;
+                    addCommentBtn.textContent = '提交中...';
+                    
+                    // 创建评论数据
+                    const commentData = {
+                        author: author || '匿名同事',
+                        content: content,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    console.log('添加评论:', commentData);
+                    
+                    // 保存评论到云端
+                    const result = await jsonBinStorage.addComment(feedbackId, commentData);
+                    
+                    if (result.success) {
+                        console.log('✅ 评论添加成功');
+                        
+                        // 清空输入框
+                        if (authorInput) authorInput.value = '';
+                        if (contentInput) contentInput.value = '';
+                        
+                        // 重新加载评论列表
+                        const commentsList = document.getElementById(`comments-list-${feedbackId}`);
+                        if (commentsList) {
+                            // 重新加载整个反馈列表以获取最新数据
+                            await loadFeedbacks();
+                            
+                            // 展开评论区域
+                            const commentsSection = document.getElementById(`comments-${feedbackId}`);
+                            if (commentsSection) {
+                                commentsSection.style.display = 'block';
+                            }
+                            
+                            // 更新评论按钮文本
+                            const commentBtn = document.querySelector(`[data-feedback-id="${feedbackId}"] .comment-btn`);
+                            if (commentBtn) {
+                                const newCount = result.updatedFeedback.comments ? result.updatedFeedback.comments.length : 0;
+                                commentBtn.textContent = newCount > 0 ? `💬 评论(${newCount})` : '💬 发表评论';
+                            }
+                        }
+                    } else {
+                        throw new Error(result.error || '添加评论失败');
+                    }
+                } catch (error) {
+                    console.error('❌ 添加评论失败:', error);
+                    alert('添加评论失败: ' + error.message);
+                } finally {
+                    // 恢复提交按钮
+                    if (addCommentBtn) {
+                        addCommentBtn.disabled = false;
+                        addCommentBtn.textContent = '发表评论';
+                    }
+                }
+            };
+
+            /**
+             * 切换反馈点赞状态
+             */
+            window.toggleFeedbackLike = async function(feedbackId, button) {
+                if (!button) return;
+                
+                // 防止重复点击
+                if (button.disabled) return;
+                button.disabled = true;
+                
+                const likeIcon = button.querySelector('.like-icon');
+                const likeCountSpan = button.querySelector('.like-count');
+                
+                try {
+                    // 调用点赞API
+                    const result = await jsonBinStorage.toggleLike(feedbackId, currentUserId);
+                    
+                    if (result.success) {
+                        // 更新按钮状态
+                        if (result.action === 'liked') {
+                            button.classList.add('liked');
+                            likeIcon.textContent = '❤️';
+                        } else {
+                            button.classList.remove('liked');
+                            likeIcon.textContent = '🤍';
+                        }
+                        
+                        // 更新点赞数
+                        if (likeCountSpan) {
+                            likeCountSpan.textContent = result.likesCount;
+                        }
+                        
+                        // 添加动画效果
+                        button.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            button.style.transform = 'scale(1)';
+                        }, 100);
+                    } else {
+                        alert('操作失败: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('点赞操作失败:', error);
+                    alert('操作失败，请刷新页面重试');
+                } finally {
+                    button.disabled = false;
+                }
+            };
+
+            /**
+             * 切换评论点赞状态
+             */
+            window.toggleCommentLike = async function(feedbackId, commentId, button) {
+                if (!button) return;
+                
+                // 防止重复点击
+                if (button.disabled) return;
+                button.disabled = true;
+                
+                const likeIcon = button.querySelector('.comment-like-icon');
+                const likeCountSpan = button.querySelector('.comment-like-count');
+                
+                try {
+                    // 调用评论点赞API
+                    const result = await jsonBinStorage.toggleCommentLike(feedbackId, commentId, currentUserId);
+                    
+                    if (result.success) {
+                        // 更新按钮状态
+                        if (result.action === 'liked') {
+                            button.classList.add('liked');
+                            likeIcon.textContent = '❤️';
+                        } else {
+                            button.classList.remove('liked');
+                            likeIcon.textContent = '🤍';
+                        }
+                        
+                        // 更新点赞数
+                        if (likeCountSpan) {
+                            likeCountSpan.textContent = result.likesCount;
+                        }
+                        
+                        // 添加动画效果
+                        button.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            button.style.transform = 'scale(1)';
+                        }, 100);
+                    } else {
+                        alert('操作失败: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('评论点赞操作失败:', error);
+                    alert('操作失败，请刷新页面重试');
+                } finally {
+                    button.disabled = false;
+                }
+            };
         });
     </script>
 </body>

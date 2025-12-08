@@ -94,7 +94,34 @@ class JsonBinStorage {
             }
             
             const data = await response.json();
-            return data.record?.feedbacks || [];
+            const feedbacks = data.record?.feedbacks || [];
+            
+            // 确保每个反馈都有必要的数组
+            feedbacks.forEach(feedback => {
+                if (!feedback.comments) {
+                    feedback.comments = [];
+                }
+                if (!feedback.likes) {
+                    feedback.likes = {
+                        count: 0,
+                        users: []
+                    };
+                }
+                
+                // 确保每个评论都有点赞数据
+                if (feedback.comments) {
+                    feedback.comments.forEach(comment => {
+                        if (!comment.likes) {
+                            comment.likes = {
+                                count: 0,
+                                users: []
+                            };
+                        }
+                    });
+                }
+            });
+            
+            return feedbacks;
             
         } catch (error) {
             console.error('获取反馈失败:', error);
@@ -130,6 +157,11 @@ class JsonBinStorage {
                 content: feedbackData.content,
                 images: feedbackData.images || [],
                 status: 'pending',
+                comments: [], // 初始化评论数组
+                likes: {      // 初始化点赞数据
+                    count: 0,
+                    users: []
+                },
                 timestamp: new Date().toISOString()
             };
             
@@ -169,6 +201,311 @@ class JsonBinStorage {
             return {
                 success: false,
                 message: '保存失败: ' + error.message
+            };
+        }
+    }
+    
+    /**
+     * 添加评论到反馈
+     */
+    async addComment(feedbackId, commentData) {
+        try {
+            console.log(`🔄 正在添加评论到反馈 ${feedbackId}:`, commentData);
+            
+            // 1. 获取当前数据
+            const getResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Access-Key': this.readOnlyKey
+                }
+            });
+            
+            if (!getResponse.ok) {
+                throw new Error('获取当前数据失败');
+            }
+            
+            const getData = await getResponse.json();
+            const record = getData.record;
+            
+            // 2. 查找目标反馈
+            const feedbackIndex = record.feedbacks.findIndex(f => f.id === feedbackId);
+            
+            if (feedbackIndex === -1) {
+                throw new Error('未找到对应的反馈');
+            }
+            
+            // 3. 确保评论数组存在
+            if (!record.feedbacks[feedbackIndex].comments) {
+                record.feedbacks[feedbackIndex].comments = [];
+            }
+            
+            // 4. 创建新评论
+            const newComment = {
+                id: 'cm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                author: commentData.author || '匿名同事',
+                content: commentData.content,
+                timestamp: new Date().toISOString(),
+                likes: {  // 初始化评论点赞数据
+                    count: 0,
+                    users: []
+                }
+            };
+            
+            // 5. 添加到评论数组
+            record.feedbacks[feedbackIndex].comments.push(newComment);
+            
+            // 6. 更新统计和时间戳
+            record.system.lastUpdated = new Date().toISOString();
+            
+            // 7. 保存回云端
+            const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': this.masterKey
+                },
+                body: JSON.stringify(record)
+            });
+            
+            if (!saveResponse.ok) {
+                throw new Error('保存评论失败: ' + saveResponse.status);
+            }
+            
+            console.log('✅ 评论添加成功:', newComment.id);
+            
+            return {
+                success: true,
+                message: '评论已成功添加',
+                binId: this.binId,
+                updatedFeedback: record.feedbacks[feedbackIndex],
+                newComment: newComment
+            };
+            
+        } catch (error) {
+            console.error('添加评论失败:', error);
+            return {
+                success: false,
+                message: '添加评论失败: ' + error.message
+            };
+        }
+    }
+    
+    /**
+     * 点赞/取消点赞反馈
+     */
+    async toggleLike(feedbackId, userId = 'anonymous') {
+        try {
+            console.log(`🔄 处理点赞: 反馈 ${feedbackId}, 用户 ${userId}`);
+            
+            // 1. 获取当前数据
+            const getResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Access-Key': this.readOnlyKey
+                }
+            });
+            
+            if (!getResponse.ok) {
+                throw new Error('获取当前数据失败');
+            }
+            
+            const getData = await getResponse.json();
+            const record = getData.record;
+            
+            // 2. 查找目标反馈
+            const feedbackIndex = record.feedbacks.findIndex(f => f.id === feedbackId);
+            
+            if (feedbackIndex === -1) {
+                throw new Error('未找到对应的反馈');
+            }
+            
+            // 3. 确保点赞数据结构存在
+            const feedback = record.feedbacks[feedbackIndex];
+            if (!feedback.likes) {
+                feedback.likes = {
+                    count: 0,
+                    users: []
+                };
+            }
+            
+            // 4. 检查用户是否已经点赞
+            const userIndex = feedback.likes.users.indexOf(userId);
+            let action = '';
+            
+            if (userIndex === -1) {
+                // 用户未点赞，添加点赞
+                feedback.likes.users.push(userId);
+                feedback.likes.count++;
+                action = 'liked';
+            } else {
+                // 用户已点赞，取消点赞
+                feedback.likes.users.splice(userIndex, 1);
+                feedback.likes.count--;
+                action = 'unliked';
+            }
+            
+            // 5. 更新时间戳
+            record.system.lastUpdated = new Date().toISOString();
+            
+            // 6. 保存回云端
+            const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': this.masterKey
+                },
+                body: JSON.stringify(record)
+            });
+            
+            if (!saveResponse.ok) {
+                throw new Error('保存点赞失败: ' + saveResponse.status);
+            }
+            
+            console.log(`✅ 点赞操作成功: ${action}, 当前点赞数: ${feedback.likes.count}`);
+            
+            return {
+                success: true,
+                message: `已${action === 'liked' ? '点赞' : '取消点赞'}`,
+                action: action,
+                likesCount: feedback.likes.count,
+                isLiked: action === 'liked',
+                binId: this.binId
+            };
+            
+        } catch (error) {
+            console.error('点赞操作失败:', error);
+            return {
+                success: false,
+                message: '点赞操作失败: ' + error.message
+            };
+        }
+    }
+    
+    /**
+     * 点赞/取消点赞评论
+     */
+    async toggleCommentLike(feedbackId, commentId, userId = 'anonymous') {
+        try {
+            console.log(`🔄 处理评论点赞: 反馈 ${feedbackId}, 评论 ${commentId}, 用户 ${userId}`);
+            
+            // 1. 获取当前数据
+            const getResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Access-Key': this.readOnlyKey
+                }
+            });
+            
+            if (!getResponse.ok) {
+                throw new Error('获取当前数据失败');
+            }
+            
+            const getData = await getResponse.json();
+            const record = getData.record;
+            
+            // 2. 查找目标反馈
+            const feedbackIndex = record.feedbacks.findIndex(f => f.id === feedbackId);
+            
+            if (feedbackIndex === -1) {
+                throw new Error('未找到对应的反馈');
+            }
+            
+            const feedback = record.feedbacks[feedbackIndex];
+            
+            // 3. 查找目标评论
+            const commentIndex = feedback.comments.findIndex(c => c.id === commentId);
+            
+            if (commentIndex === -1) {
+                throw new Error('未找到对应的评论');
+            }
+            
+            const comment = feedback.comments[commentIndex];
+            
+            // 4. 确保点赞数据结构存在
+            if (!comment.likes) {
+                comment.likes = {
+                    count: 0,
+                    users: []
+                };
+            }
+            
+            // 5. 检查用户是否已经点赞
+            const userIndex = comment.likes.users.indexOf(userId);
+            let action = '';
+            
+            if (userIndex === -1) {
+                // 用户未点赞，添加点赞
+                comment.likes.users.push(userId);
+                comment.likes.count++;
+                action = 'liked';
+            } else {
+                // 用户已点赞，取消点赞
+                comment.likes.users.splice(userIndex, 1);
+                comment.likes.count--;
+                action = 'unliked';
+            }
+            
+            // 6. 更新时间戳
+            record.system.lastUpdated = new Date().toISOString();
+            
+            // 7. 保存回云端
+            const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': this.masterKey
+                },
+                body: JSON.stringify(record)
+            });
+            
+            if (!saveResponse.ok) {
+                throw new Error('保存评论点赞失败: ' + saveResponse.status);
+            }
+            
+            console.log(`✅ 评论点赞操作成功: ${action}, 当前点赞数: ${comment.likes.count}`);
+            
+            return {
+                success: true,
+                message: `已${action === 'liked' ? '点赞' : '取消点赞'}`,
+                action: action,
+                likesCount: comment.likes.count,
+                isLiked: action === 'liked',
+                binId: this.binId
+            };
+            
+        } catch (error) {
+            console.error('评论点赞操作失败:', error);
+            return {
+                success: false,
+                message: '评论点赞操作失败: ' + error.message
+            };
+        }
+    }
+    
+    /**
+     * 获取用户是否点赞了某个反馈
+     */
+    async getUserLikeStatus(feedbackId, userId = 'anonymous') {
+        try {
+            const feedbacks = await this.getFeedbacks();
+            const feedback = feedbacks.find(f => f.id === feedbackId);
+            
+            if (!feedback || !feedback.likes) {
+                return {
+                    isLiked: false,
+                    likesCount: 0
+                };
+            }
+            
+            return {
+                isLiked: feedback.likes.users.includes(userId),
+                likesCount: feedback.likes.count || 0
+            };
+        } catch (error) {
+            console.error('获取点赞状态失败:', error);
+            return {
+                isLiked: false,
+                likesCount: 0
             };
         }
     }
@@ -320,6 +657,19 @@ class JsonBinStorage {
             complaints: feedbacks.filter(f => f.type === 'complaint').length,
             others: feedbacks.filter(f => f.type === 'other').length
         };
+    }
+    
+    /**
+     * 获取单个反馈（用于测试）
+     */
+    async getFeedbackById(feedbackId) {
+        try {
+            const feedbacks = await this.getFeedbacks();
+            return feedbacks.find(f => f.id === feedbackId);
+        } catch (error) {
+            console.error('获取单个反馈失败:', error);
+            return null;
+        }
     }
 }
 
