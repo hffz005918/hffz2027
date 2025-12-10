@@ -316,6 +316,205 @@
             border-color: #ccc;
         }
 
+        /* 图片上传区域样式 */
+        .image-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
+            background: #fafafa;
+        }
+
+        .image-upload-area:hover {
+            border-color: var(--primary-color);
+            background: #f0f8ff;
+        }
+
+        .image-upload-area.dragover {
+            border-color: var(--primary-color);
+            background: #e6f7ff;
+        }
+
+        .image-upload-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .image-upload-text {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .image-upload-hint {
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        /* 图片预览区域 */
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .image-preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--error-color);
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .image-preview-remove:hover {
+            background: #fff;
+            transform: scale(1.1);
+        }
+
+        /* 上传进度条 */
+        .upload-progress {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* 图片展示区域 */
+        .feedback-images {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .feedback-images-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .feedback-image-item {
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #eee;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .feedback-image-item:hover {
+            transform: scale(1.02);
+            border-color: var(--primary-color);
+        }
+
+        .feedback-image-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+        }
+
+        /* 图片模态框 */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-modal.active {
+            display: flex;
+        }
+
+        .image-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .image-modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
         /* 评论区域样式 */
         .comments-section {
             margin-top: 1.5rem;
@@ -561,6 +760,14 @@
                 width: 100%;
                 justify-content: flex-start;
             }
+            
+            .image-preview-container {
+                justify-content: center;
+            }
+            
+            .feedback-images-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
         }
         
         @media (max-width: 480px) {
@@ -579,6 +786,10 @@
             .feedback-header {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+            
+            .image-upload-area {
+                padding: 1rem;
             }
         }
     </style>
@@ -632,6 +843,28 @@
                     </div>
                 </div>
                 
+                <!-- 图片上传区域 -->
+                <div class="form-group">
+                    <label>上传图片（可选）</label>
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <div class="image-upload-icon">📷</div>
+                        <div class="image-upload-text">点击选择图片或拖拽到此处</div>
+                        <div class="image-upload-hint">支持 JPG, PNG, GIF 格式，每张图片最大 5MB</div>
+                        <input type="file" id="imageInput" accept="image/*" multiple>
+                    </div>
+                    
+                    <!-- 图片预览容器 -->
+                    <div class="image-preview-container" id="imagePreviewContainer"></div>
+                    
+                    <!-- 上传进度 -->
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">准备上传...</div>
+                    </div>
+                </div>
+                
                 <button type="submit" class="submit-btn" id="submitBtn">提交反馈</button>
             </form>
             
@@ -656,6 +889,14 @@
             </div>
         </div>
         
+        <!-- 图片查看模态框 -->
+        <div class="image-modal" id="imageModal">
+            <button class="image-modal-close" onclick="closeImageModal()">×</button>
+            <div class="image-modal-content">
+                <img id="modalImage" src="" alt="预览图片">
+            </div>
+        </div>
+        
         <a href="index.html" class="back-link">返回首页</a>
         <a href="admin-feedback.html" class="back-link" style="margin-top: 0.5rem;">管理员入口</a>
     </div>
@@ -667,6 +908,9 @@
             
             // 全局用户ID（用于点赞跟踪）
             let currentUserId = getOrCreateUserId();
+            
+            // 存储选择的图片文件
+            let selectedImages = [];
             
             // DOM 元素
             const feedbackForm = document.getElementById('feedbackForm');
@@ -680,6 +924,14 @@
             const feedbacksList = document.getElementById('feedbacksList');
             const errorMessage = document.getElementById('errorMessage');
             const serverStatus = document.getElementById('serverStatus');
+            const imageInput = document.getElementById('imageInput');
+            const imageUploadArea = document.getElementById('imageUploadArea');
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
             
             // 初始化
             initializePage();
@@ -762,6 +1014,192 @@
 
                 // 表单提交
                 feedbackForm.addEventListener('submit', handleFormSubmit);
+
+                // 图片上传区域点击事件
+                imageUploadArea.addEventListener('click', function() {
+                    imageInput.click();
+                });
+
+                // 图片选择事件
+                imageInput.addEventListener('change', handleImageSelect);
+
+                // 拖拽上传事件
+                setupDragAndDrop();
+            }
+
+            /**
+             * 设置拖拽上传功能
+             */
+            function setupDragAndDrop() {
+                // 阻止浏览器默认行为
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    imageUploadArea.addEventListener(eventName, preventDefaults, false);
+                    document.body.addEventListener(eventName, preventDefaults, false);
+                });
+
+                // 高亮显示拖拽区域
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    imageUploadArea.addEventListener(eventName, highlight, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    imageUploadArea.addEventListener(eventName, unhighlight, false);
+                });
+
+                // 处理文件放置
+                imageUploadArea.addEventListener('drop', handleDrop, false);
+
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                function highlight() {
+                    imageUploadArea.classList.add('dragover');
+                }
+
+                function unhighlight() {
+                    imageUploadArea.classList.remove('dragover');
+                }
+
+                function handleDrop(e) {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    
+                    handleImageFiles(files);
+                }
+            }
+
+            /**
+             * 处理图片选择
+             */
+            function handleImageSelect(e) {
+                const files = e.target.files;
+                handleImageFiles(files);
+            }
+
+            /**
+             * 处理图片文件
+             */
+            function handleImageFiles(files) {
+                if (!files || files.length === 0) return;
+                
+                // 限制最多5张图片
+                const maxImages = 5;
+                const remainingSlots = maxImages - selectedImages.length;
+                
+                if (files.length > remainingSlots) {
+                    showError(`最多只能上传 ${maxImages} 张图片，已选择 ${selectedImages.length} 张`);
+                    return;
+                }
+                
+                // 验证文件类型和大小
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    
+                    // 检查文件类型
+                    if (!file.type.startsWith('image/')) {
+                        showError(`文件 "${file.name}" 不是图片格式，已跳过`);
+                        continue;
+                    }
+                    
+                    // 检查文件大小（限制为5MB）
+                    if (file.size > 5 * 1024 * 1024) {
+                        showError(`图片 "${file.name}" 太大（超过5MB），已跳过`);
+                        continue;
+                    }
+                    
+                    // 添加到选中图片数组
+                    selectedImages.push(file);
+                    
+                    // 创建预览
+                    createImagePreview(file);
+                }
+                
+                // 重置文件输入
+                imageInput.value = '';
+                
+                console.log('已选择图片:', selectedImages);
+            }
+
+            /**
+             * 创建图片预览
+             */
+            function createImagePreview(file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'image-preview-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = file.name;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'image-preview-remove';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.title = '移除图片';
+                    
+                    // 点击移除按钮
+                    removeBtn.addEventListener('click', function() {
+                        removeImagePreview(file, previewItem);
+                    });
+                    
+                    // 点击图片查看大图
+                    img.addEventListener('click', function() {
+                        openImageModal(e.target.result);
+                    });
+                    
+                    previewItem.appendChild(img);
+                    previewItem.appendChild(removeBtn);
+                    imagePreviewContainer.appendChild(previewItem);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+
+            /**
+             * 移除图片预览
+             */
+            function removeImagePreview(file, previewElement) {
+                // 从数组中移除
+                selectedImages = selectedImages.filter(f => f !== file);
+                
+                // 从DOM中移除
+                previewElement.remove();
+                
+                console.log('已移除图片，剩余:', selectedImages);
+            }
+
+            /**
+             * 打开图片模态框
+             */
+            function openImageModal(imageSrc) {
+                modalImage.src = imageSrc;
+                imageModal.classList.add('active');
+                
+                // 点击模态框背景关闭
+                imageModal.addEventListener('click', function(e) {
+                    if (e.target === imageModal) {
+                        closeImageModal();
+                    }
+                });
+                
+                // ESC键关闭
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        closeImageModal();
+                    }
+                });
+            }
+
+            /**
+             * 关闭图片模态框
+             */
+            function closeImageModal() {
+                imageModal.classList.remove('active');
+                modalImage.src = '';
             }
 
             /**
@@ -872,13 +1310,22 @@
                         'other': 'type-other'
                     }[feedback.type] || 'type-other';
                     
-                    const typeText = feedback.typeText || feedback.type;
+                    const typeText = {
+                        'suggestion': '意见建议',
+                        'problem': '问题反馈',
+                        'complaint': '投诉举报',
+                        'other': '其他'
+                    }[feedback.type] || '其他';
+                    
                     const date = new Date(feedback.timestamp);
                     const timeString = date.toLocaleString('zh-CN');
                     
                     // 检查是否有评论
                     const hasComments = feedback.comments && feedback.comments.length > 0;
                     const commentCount = hasComments ? feedback.comments.length : 0;
+                    
+                    // 检查是否有图片
+                    const hasImages = feedback.images && feedback.images.length > 0;
                     
                     // 获取点赞数
                     const likesCount = feedback.likes ? feedback.likes.count : 0;
@@ -894,6 +1341,9 @@
                                 <div class="feedback-time">${timeString}</div>
                             </div>
                             <div class="feedback-content">${feedback.content}</div>
+                            
+                            <!-- 图片展示区域 -->
+                            ${hasImages ? renderFeedbackImages(feedback.images) : ''}
                             
                             <div class="feedback-stats">
                                 <div class="feedback-info">
@@ -957,6 +1407,34 @@
                 });
                 
                 feedbacksList.innerHTML = html;
+            }
+
+            /**
+             * 渲染反馈图片
+             */
+            function renderFeedbackImages(images) {
+                if (!images || images.length === 0) return '';
+                
+                let html = `
+                    <div class="feedback-images">
+                        <div class="feedback-images-title">📷 上传图片 (${images.length})</div>
+                        <div class="feedback-images-grid">
+                `;
+                
+                images.forEach((image, index) => {
+                    html += `
+                        <div class="feedback-image-item" onclick="openImageModal('${image.url}')">
+                            <img src="${image.thumbnail || image.url}" alt="反馈图片 ${index + 1}">
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+                
+                return html;
             }
 
             /**
@@ -1030,9 +1508,19 @@
                     return;
                 }
                 
+                // 检查图片数量
+                if (selectedImages.length > 5) {
+                    showError('最多只能上传5张图片');
+                    return;
+                }
+                
                 // 禁用提交按钮
                 submitBtn.disabled = true;
                 submitBtn.textContent = '提交中...';
+                
+                // 显示上传进度
+                uploadProgress.classList.add('active');
+                progressText.textContent = '准备上传...';
                 
                 try {
                     // 准备反馈数据
@@ -1040,6 +1528,7 @@
                         employeeName: document.getElementById('employeeName').value.trim(),
                         type: document.getElementById('feedbackType').value,
                         content: feedbackContent.value.trim(),
+                        imageFiles: selectedImages // 添加图片文件
                     };
                     
                     console.log('提交反馈数据:', feedbackData);
@@ -1051,20 +1540,29 @@
                     
                     if (result.success) {
                         console.log('✅ 反馈提交成功，ID:', result.id);
-                        showSuccess(result.id, '已提交');
                         
-                        // 重新加载反馈列表
+                        // 更新进度显示
+                        progressFill.style.width = '100%';
+                        progressText.textContent = '上传完成！';
+                        
+                        // 显示成功消息
                         setTimeout(() => {
-                            loadFeedbacks();
+                            showSuccess(result.id, '已提交');
+                            
+                            // 重新加载反馈列表
+                            setTimeout(() => {
+                                loadFeedbacks();
+                            }, 1000);
                         }, 1000);
                     } else {
-                        throw new Error(result.error || '保存失败');
+                        throw new Error(result.message || '保存失败');
                     }
                 } catch (error) {
                     console.error('❌ 提交失败:', error);
                     showError('提交失败: ' + error.message);
                     submitBtn.disabled = false;
                     submitBtn.textContent = '提交反馈';
+                    uploadProgress.classList.remove('active');
                 }
             }
 
@@ -1162,7 +1660,7 @@
                             }
                         }
                     } else {
-                        throw new Error(result.error || '添加评论失败');
+                        throw new Error(result.message || '添加评论失败');
                     }
                 } catch (error) {
                     console.error('❌ 添加评论失败:', error);
@@ -1270,6 +1768,28 @@
                 } finally {
                     button.disabled = false;
                 }
+            };
+
+            /**
+             * 打开图片模态框
+             */
+            window.openImageModal = function(imageSrc) {
+                modalImage.src = imageSrc;
+                imageModal.classList.add('active');
+                
+                // 点击模态框背景关闭
+                imageModal.addEventListener('click', function(e) {
+                    if (e.target === imageModal) {
+                        closeImageModal();
+                    }
+                });
+                
+                // ESC键关闭
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        closeImageModal();
+                    }
+                });
             };
         });
     </script>
