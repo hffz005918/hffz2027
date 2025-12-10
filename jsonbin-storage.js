@@ -12,8 +12,8 @@ class JsonBinStorage {
         console.log('🔄 JSONBin存储初始化，Bin ID:', this.binId);
         
         // 图片大小限制（字节）
-        this.maxImageSize = 3 * 1024 * 1024; // 3MB
-        this.maxImagesPerFeedback = 5;
+        this.maxImageSize = 5 * 1024 * 1024; // 5MB
+        this.maxImagesPerFeedback = 2;
     }
     
     /**
@@ -179,95 +179,100 @@ class JsonBinStorage {
     /**
      * 上传图片为Base64
      */
-    async uploadImageAsBase64(file) {
-        try {
-            console.log('📤 上传图片为Base64:', file.name);
-            
-            // 检查文件大小
-            if (file.size > this.maxImageSize) {
-                throw new Error(`图片太大（${(file.size / 1024 / 1024).toFixed(2)}MB），最大支持3MB`);
-            }
-            
-            // 转换为Base64
-            const originalBase64 = await this.fileToBase64(file);
-            
-            // 优化图片（压缩大小）
-            const optimizedBase64 = await this.optimizeBase64Image(originalBase64, 300 * 1024); // 压缩到300KB以内
-            
-            // 创建缩略图
-            const thumbnail = await this.createThumbnail(optimizedBase64, 200, 200);
-            
-            // 计算大小
-            const originalSize = file.size;
-            const optimizedSize = this.getBase64Size(optimizedBase64);
-            
-            console.log(`📊 图片优化: ${(originalSize / 1024).toFixed(1)}KB -> ${(optimizedSize / 1024).toFixed(1)}KB (${((1 - optimizedSize / originalSize) * 100).toFixed(0)}% 压缩)`);
-            
-            return {
-                success: true,
-                url: optimizedBase64,
-                thumbnail: thumbnail,
-                originalName: file.name,
-                originalSize: originalSize,
-                optimizedSize: Math.round(optimizedSize),
-                isBase64: true,
-                mimeType: file.type,
-                uploadTime: new Date().toISOString()
-            };
-        } catch (error) {
-            console.error('Base64上传失败:', error);
-            return {
-                success: false,
-                message: error.message
-            };
+   async uploadImageAsBase64(file) {
+    try {
+        console.log('📤 上传图片为Base64:', file.name, `(${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+        
+        // 检查文件大小 - 显示详细错误信息
+        if (file.size > this.maxImageSize) {
+            throw new Error(`图片太大（${(file.size / 1024 / 1024).toFixed(2)}MB），最大支持5MB`);
         }
+        
+        // 转换为Base64
+        const originalBase64 = await this.fileToBase64(file);
+        
+        // 优化图片（压缩大小）
+        const optimizedBase64 = await this.optimizeBase64Image(originalBase64, 500 * 1024); // 压缩到500KB以内
+        
+        // 创建缩略图
+        const thumbnail = await this.createThumbnail(optimizedBase64, 200, 200);
+        
+        // 计算大小
+        const originalSize = file.size;
+        const optimizedSize = this.getBase64Size(optimizedBase64);
+        
+        console.log(`📊 图片优化: ${(originalSize / 1024).toFixed(1)}KB -> ${(optimizedSize / 1024).toFixed(1)}KB (${((1 - optimizedSize / originalSize) * 100).toFixed(0)}% 压缩)`);
+        
+        return {
+            success: true,
+            url: optimizedBase64,
+            thumbnail: thumbnail,
+            originalName: file.name,
+            originalSize: originalSize,
+            optimizedSize: Math.round(optimizedSize),
+            isBase64: true,
+            mimeType: file.type,
+            uploadTime: new Date().toISOString()
+        };
+    } catch (error) {
+        console.error('Base64上传失败:', error);
+        return {
+            success: false,
+            message: error.message
+        };
+    }
+}
+
+// 更新 uploadImagesAsBase64 函数
+async uploadImagesAsBase64(files) {
+    if (!files || files.length === 0) {
+        return [];
     }
     
-    /**
-     * 批量上传图片为Base64
-     */
-    async uploadImagesAsBase64(files) {
-        if (!files || files.length === 0) {
-            return [];
-        }
-        
-        // 限制图片数量
-        const filesToUpload = files.slice(0, this.maxImagesPerFeedback);
-        if (files.length > this.maxImagesPerFeedback) {
-            console.warn(`最多上传${this.maxImagesPerFeedback}张图片，已限制数量`);
-        }
-        
-        const uploadResults = [];
-        const uploadPromises = [];
-        
-        // 为每个文件创建上传Promise
-        for (let i = 0; i < filesToUpload.length; i++) {
-            const file = filesToUpload[i];
-            
-            // 检查文件类型
-            if (!file.type.startsWith('image/')) {
-                console.warn('❌ 跳过非图片文件:', file.name);
-                continue;
-            }
-            
-            uploadPromises.push(
-                this.uploadImageAsBase64(file).then(result => {
-                    if (result.success) {
-                        uploadResults.push(result);
-                        console.log(`✅ 图片 ${file.name} 上传成功`);
-                    } else {
-                        console.warn(`❌ 图片 ${file.name} 上传失败:`, result.message);
-                    }
-                })
-            );
-        }
-        
-        // 等待所有图片上传完成
-        await Promise.all(uploadPromises);
-        
-        console.log(`✅ Base64图片上传完成，成功: ${uploadResults.length} 张`);
-        return uploadResults;
+    // 限制图片数量为2张
+    const filesToUpload = files.slice(0, this.maxImagesPerFeedback);
+    if (files.length > this.maxImagesPerFeedback) {
+        console.warn(`最多上传${this.maxImagesPerFeedback}张图片，已限制数量`);
+        // 可以在这里添加用户提示
     }
+    
+    const uploadResults = [];
+    const uploadPromises = [];
+    
+    // 为每个文件创建上传Promise
+    for (let i = 0; i < filesToUpload.length; i++) {
+        const file = filesToUpload[i];
+        
+        // 检查文件类型
+        if (!file.type.startsWith('image/')) {
+            console.warn('❌ 跳过非图片文件:', file.name);
+            continue;
+        }
+        
+        uploadPromises.push(
+            this.uploadImageAsBase64(file).then(result => {
+                if (result.success) {
+                    uploadResults.push(result);
+                    console.log(`✅ 图片 ${file.name} 上传成功 (${(result.originalSize / 1024).toFixed(0)}KB -> ${(result.optimizedSize / 1024).toFixed(0)}KB)`);
+                    
+                    // 更新进度
+                    if (window.updateImageUploadProgress) {
+                        const progress = Math.round(((i + 1) / filesToUpload.length) * 100);
+                        window.updateImageUploadProgress(progress, `正在上传第 ${i + 1}/${filesToUpload.length} 张图片`);
+                    }
+                } else {
+                    console.warn(`❌ 图片 ${file.name} 上传失败:`, result.message);
+                }
+            })
+        );
+    }
+    
+    // 等待所有图片上传完成
+    await Promise.all(uploadPromises);
+    
+    console.log(`✅ Base64图片上传完成，成功: ${uploadResults.length} 张`);
+    return uploadResults;
+}
     
     /**
      * 获取所有反馈
