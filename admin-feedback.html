@@ -703,60 +703,64 @@
         }
 
         // 更新统计信息
-        function updateStats(feedbacks) {
-            const total = feedbacks.length;
-            const pending = feedbacks.filter(f => {
-                const status = f.status || f.s || 'pending';
-                return status === 'pending';
-            }).length;
-            
-            const processed = feedbacks.filter(f => {
-                const status = f.status || f.s || 'pending';
-                return status === 'processed';
-            }).length;
-            
-            // 今日反馈
-            const today = new Date().toDateString();
-            const todayFeedbacks = feedbacks.filter(f => {
-                if (!f.timestamp && !f.ts) return false;
-                const feedbackDate = new Date(f.timestamp || f.ts).toDateString();
-                return feedbackDate === today;
-            }).length;
+function updateStats(feedbacks) {
+    const total = feedbacks.length;
+    const pending = feedbacks.filter(f => {
+        const status = f.status || f.s || 'pending';
+        return status === 'pending';
+    }).length;
+    
+    const processed = feedbacks.filter(f => {
+        const status = f.status || f.s || 'pending';
+        return status === 'processed';
+    }).length;
+    
+    // 今日反馈
+    const today = new Date().toDateString();
+    const todayFeedbacks = feedbacks.filter(f => {
+        if (!f.timestamp && !f.ts) return false;
+        const feedbackDate = new Date(f.timestamp || f.ts).toDateString();
+        return feedbackDate === today;
+    }).length;
 
-            // 计算总点赞数和总评论数
-            let totalLikes = 0;
-            let totalComments = 0;
+    // 计算总点赞数和总评论数
+    let totalLikes = 0;
+    let totalComments = 0;
+    
+    feedbacks.forEach(feedback => {
+        // 反馈点赞数 - 使用简化的字段名 'l.c'
+        const feedbackLikes = feedback.l || feedback.likes;
+        if (feedbackLikes) {
+            // 使用 'c' 字段获取点赞数
+            const likesCount = feedbackLikes.c || feedbackLikes.count || 0;
+            totalLikes += likesCount;
+        }
+        
+        // 评论数 - 使用简化的字段名 'cm'
+        const comments = feedback.cm || feedback.comments;
+        if (comments && Array.isArray(comments)) {
+            totalComments += comments.length;
             
-            feedbacks.forEach(feedback => {
-                // 反馈点赞数
-                const likes = feedback.likes || feedback.l;
-                if (likes && likes.count) {
-                    totalLikes += likes.count;
-                }
-                
-                // 评论数
-                const comments = feedback.comments || feedback.cm;
-                if (comments && Array.isArray(comments)) {
-                    totalComments += comments.length;
-                    
-                    // 评论点赞数
-                    comments.forEach(comment => {
-                        const commentLikes = comment.likes || comment.l;
-                        if (commentLikes && commentLikes.count) {
-                            totalLikes += commentLikes.count;
-                        }
-                    });
+            // 评论点赞数
+            comments.forEach(comment => {
+                const commentLikes = comment.l || comment.likes;
+                if (commentLikes) {
+                    // 使用 'c' 字段获取点赞数
+                    const commentLikesCount = commentLikes.c || commentLikes.count || 0;
+                    totalLikes += commentLikesCount;
                 }
             });
-
-            // 更新统计显示
-            document.getElementById('totalFeedbacks').textContent = total;
-            document.getElementById('pendingFeedbacks').textContent = pending;
-            document.getElementById('processedFeedbacks').textContent = processed;
-            document.getElementById('todayFeedbacks').textContent = todayFeedbacks;
-            document.getElementById('totalLikes').textContent = totalLikes;
-            document.getElementById('totalComments').textContent = totalComments;
         }
+    });
+
+    // 更新统计显示
+    document.getElementById('totalFeedbacks').textContent = total;
+    document.getElementById('pendingFeedbacks').textContent = pending;
+    document.getElementById('processedFeedbacks').textContent = processed;
+    document.getElementById('todayFeedbacks').textContent = todayFeedbacks;
+    document.getElementById('totalLikes').textContent = totalLikes;
+    document.getElementById('totalComments').textContent = totalComments;
+}
 
         // 显示反馈数据
         function displayFeedbacks(feedbacks) {
@@ -794,11 +798,11 @@
                 const images = feedback.i || feedback.images || [];
                 const hasImages = Array.isArray(images) && images.length > 0;
                 
-                // 计算互动数据
-                const likes = feedback.likes || feedback.l;
-                const comments = feedback.comments || feedback.cm;
-                const likesCount = likes ? (likes.count || 0) : 0;
-                const commentsCount = comments ? (Array.isArray(comments) ? comments.length : 0) : 0;
+               // 计算互动数据
+const likes = feedback.l || feedback.likes;
+const comments = feedback.cm || feedback.comments;
+const likesCount = likes ? (likes.c || likes.count || 0) : 0;
+const commentsCount = comments ? (Array.isArray(comments) ? comments.length : 0) : 0;
                 
                 // 生成图片HTML
                 let imagesHtml = '';
@@ -863,47 +867,48 @@
                     `;
                 }
                 
-                // 生成评论预览
-                let commentsPreview = '';
-                if (commentsCount > 0 && comments && Array.isArray(comments)) {
-                    const recentComments = comments.slice(0, 2);
-                    commentsPreview = recentComments.map(comment => {
-                        const commentAuthor = comment.author || comment.a || '匿名同事';
-                        const commentContent = comment.content || comment.c || '';
-                        const commentId = comment.id || generateCommentId(comment);
-                        const commentDate = new Date(comment.timestamp || comment.ts);
-                        const commentTime = commentDate.toLocaleString('zh-CN');
-                        const commentLikes = comment.likes || comment.l || { count: 0 };
-                        
-                        return `
-                            <div class="comment-item" id="comment-${commentId}">
-                                <div class="comment-header">
-                                    <span class="comment-author">${commentAuthor}</span>
-                                    <span class="comment-time">${commentTime}</span>
-                                </div>
-                                <div class="comment-content">${commentContent}</div>
-                                <div class="comment-stats">
-                                    <div class="comment-like-stat ${commentLikes.count > 0 ? 'liked' : ''}">
-                                        👍 ${commentLikes.count || 0}
-                                    </div>
-                                    <div class="comment-actions">
-                                        <button class="comment-delete-btn" onclick="deleteComment('${feedback.id}', '${commentId}')">
-                                            删除
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                    
-                    if (commentsCount > 2) {
-                        commentsPreview += `
-                            <div class="show-all-comments" onclick="toggleAllComments(this, '${feedback.id}')">
-                                查看全部 ${commentsCount} 条评论
-                            </div>
-                        `;
-                    }
-                }
+               // 生成评论预览
+let commentsPreview = '';
+if (commentsCount > 0 && comments && Array.isArray(comments)) {
+    const recentComments = comments.slice(0, 2);
+    commentsPreview = recentComments.map(comment => {
+        const commentAuthor = comment.author || comment.a || '匿名同事';
+        const commentContent = comment.content || comment.c || '';
+        const commentId = comment.id || generateCommentId(comment);
+        const commentDate = new Date(comment.timestamp || comment.ts);
+        const commentTime = commentDate.toLocaleString('zh-CN');
+        const commentLikes = comment.l || comment.likes || { count: 0 };
+        const commentLikesCount = commentLikes.c || commentLikes.count || 0;
+        
+        return `
+            <div class="comment-item" id="comment-${commentId}">
+                <div class="comment-header">
+                    <span class="comment-author">${commentAuthor}</span>
+                    <span class="comment-time">${commentTime}</span>
+                </div>
+                <div class="comment-content">${commentContent}</div>
+                <div class="comment-stats">
+                    <div class="comment-like-stat ${commentLikesCount > 0 ? 'liked' : ''}">
+                        👍 ${commentLikesCount}
+                    </div>
+                    <div class="comment-actions">
+                        <button class="comment-delete-btn" onclick="deleteComment('${feedback.id}', '${commentId}')">
+                            删除
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    if (commentsCount > 2) {
+        commentsPreview += `
+            <div class="show-all-comments" onclick="toggleAllComments(this, '${feedback.id}')">
+                查看全部 ${commentsCount} 条评论
+            </div>
+        `;
+    }
+}
                 
                 html += `
                     <div class="feedback-item" data-feedback-id="${feedback.id}">
@@ -1359,70 +1364,71 @@ async function processFeedback(feedbackId) {
             }
         }
 
-        // 显示所有评论
-        async function toggleAllComments(element, feedbackId) {
-            try {
-                const feedbacks = await storage.getFeedbacks();
-                const feedback = feedbacks.find(f => f.id === feedbackId);
-                
-                if (!feedback) return;
-                
-                const comments = feedback.comments || feedback.cm || [];
-                const commentsPreview = document.getElementById(`comments-preview-${feedbackId}`);
-                if (!commentsPreview) return;
-                
-                // 生成所有评论
-                const allComments = comments.map(comment => {
-                    const commentAuthor = comment.author || comment.a || '匿名同事';
-                    const commentContent = comment.content || comment.c || '';
-                    const commentId = comment.id || generateCommentId(comment);
-                    const commentDate = new Date(comment.timestamp || comment.ts);
-                    const commentTime = commentDate.toLocaleString('zh-CN');
-                    const commentLikes = comment.likes || comment.l || { count: 0 };
-                    
-                    return `
-                        <div class="comment-item" id="comment-${commentId}">
-                            <div class="comment-header">
-                                <span class="comment-author">${commentAuthor}</span>
-                                <span class="comment-time">${commentTime}</span>
-                            </div>
-                            <div class="comment-content">${commentContent}</div>
-                            <div class="comment-stats">
-                                <div class="comment-like-stat ${commentLikes.count > 0 ? 'liked' : ''}">
-                                    👍 ${commentLikes.count || 0}
-                                </div>
-                                <div class="comment-actions">
-                                    <button class="comment-delete-btn" onclick="deleteComment('${feedbackId}', '${commentId}')">
-                                        删除
-                                    </button>
-                                </div>
-                            </div>
+       // 显示所有评论
+async function toggleAllComments(element, feedbackId) {
+    try {
+        const feedbacks = await storage.getFeedbacks();
+        const feedback = feedbacks.find(f => f.id === feedbackId);
+        
+        if (!feedback) return;
+        
+        const comments = feedback.comments || feedback.cm || [];
+        const commentsPreview = document.getElementById(`comments-preview-${feedbackId}`);
+        if (!commentsPreview) return;
+        
+        // 生成所有评论
+        const allComments = comments.map(comment => {
+            const commentAuthor = comment.author || comment.a || '匿名同事';
+            const commentContent = comment.content || comment.c || '';
+            const commentId = comment.id || generateCommentId(comment);
+            const commentDate = new Date(comment.timestamp || comment.ts);
+            const commentTime = commentDate.toLocaleString('zh-CN');
+            const commentLikes = comment.l || comment.likes || {};
+            const commentLikesCount = commentLikes.c || commentLikes.count || 0;
+            
+            return `
+                <div class="comment-item" id="comment-${commentId}">
+                    <div class="comment-header">
+                        <span class="comment-author">${commentAuthor}</span>
+                        <span class="comment-time">${commentTime}</span>
+                    </div>
+                    <div class="comment-content">${commentContent}</div>
+                    <div class="comment-stats">
+                        <div class="comment-like-stat ${commentLikesCount > 0 ? 'liked' : ''}">
+                            👍 ${commentLikesCount}
                         </div>
-                    `;
-                }).join('');
-                
-                // 替换评论内容
-                const commentsList = commentsPreview.querySelector('.comment-item')?.parentNode;
-                if (commentsList) {
-                    commentsList.innerHTML = allComments;
-                }
-                
-                // 移除"查看全部"按钮
-                const showAllBtn = commentsPreview.querySelector('.show-all-comments');
-                if (showAllBtn) {
-                    showAllBtn.remove();
-                }
-                
-                // 更新标题
-                const header = commentsPreview.querySelector('.comments-header h4');
-                if (header) {
-                    header.textContent = `评论 (${comments.length})`;
-                }
-                
-            } catch (error) {
-                console.error('显示所有评论失败:', error);
-            }
+                        <div class="comment-actions">
+                            <button class="comment-delete-btn" onclick="deleteComment('${feedbackId}', '${commentId}')">
+                                删除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // 替换评论内容
+        const commentsList = commentsPreview.querySelector('.comment-item')?.parentNode;
+        if (commentsList) {
+            commentsList.innerHTML = allComments;
         }
+        
+        // 移除"查看全部"按钮
+        const showAllBtn = commentsPreview.querySelector('.show-all-comments');
+        if (showAllBtn) {
+            showAllBtn.remove();
+        }
+        
+        // 更新标题
+        const header = commentsPreview.querySelector('.comments-header h4');
+        if (header) {
+            header.textContent = `评论 (${comments.length})`;
+        }
+        
+    } catch (error) {
+        console.error('显示所有评论失败:', error);
+    }
+}
 
         // 登出功能
         function logout() {

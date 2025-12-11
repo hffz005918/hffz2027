@@ -333,7 +333,7 @@ class JsonBinStorage {
         return size;
     }
     
-   /**
+  /**
  * 获取所有反馈
  */
 async getFeedbacks() {
@@ -346,27 +346,46 @@ async getFeedbacks() {
         });
         
         if (!response.ok) {
-            console.warn('获取失败，返回空数组');
             return [];
         }
         
         const data = await response.json();
         const feedbacks = data.record?.feedbacks || [];
         
-        // 确保每个反馈都有必要的数组和正确的数据结构
+        // 确保用户ID存在
+        if (!window.currentUserId) {
+            window.currentUserId = 'anonymous';
+        }
+        
+        // 处理每个反馈
         feedbacks.forEach(feedback => {
             if (!feedback.id) feedback.id = 'fb_' + Date.now().toString(36);
-            if (!feedback.comments) feedback.comments = feedback.cm || [];
-            if (!feedback.likes) feedback.likes = feedback.l || { count: 0, users: [] };
-            if (!feedback.images) feedback.images = feedback.i || [];
             
-            // 处理评论点赞状态
-            if (feedback.comments && feedback.comments.length > 0) {
-                feedback.comments.forEach(comment => {
+            // 使用简化的字段名
+            if (!feedback.cm) feedback.cm = feedback.comments || [];
+            if (!feedback.l) feedback.l = { c: 0, u: [] };
+            if (!feedback.i) feedback.i = feedback.images || [];
+            
+            // 确保点赞数据结构正确
+            if (!feedback.l.u) feedback.l.u = [];
+            if (typeof feedback.l.c !== 'number') feedback.l.c = 0;
+            
+            // 检查用户是否点赞了该反馈
+            feedback.userLiked = Array.isArray(feedback.l.u) && feedback.l.u.includes(window.currentUserId);
+            
+            // 处理评论
+            if (feedback.cm && feedback.cm.length > 0) {
+                feedback.cm.forEach(comment => {
                     if (!comment.id) comment.id = 'cm_' + Date.now().toString(36);
-                    if (!comment.likes) comment.likes = comment.l || { count: 0, users: [] };
-                    // 确保有用户点赞信息
-                    if (!comment.likes.users) comment.likes.users = [];
+                    if (!comment.l) comment.l = { c: 0, u: [] };
+                    
+                    // 确保评论点赞数据结构正确
+                    if (!comment.l.u) comment.l.u = [];
+                    if (typeof comment.l.c !== 'number') comment.l.c = 0;
+                    
+                    // 检查用户是否点赞了该评论
+                    comment.userLiked = Array.isArray(comment.l.u) && comment.l.u.includes(window.currentUserId);
+                    comment.likesCount = comment.l.c; // 确保有 likesCount 字段
                 });
             }
         });
@@ -374,7 +393,6 @@ async getFeedbacks() {
         return feedbacks;
         
     } catch (error) {
-        console.error('获取反馈失败:', error);
         return [];
     }
 }
@@ -635,24 +653,58 @@ async addComment(feedbackId, commentData) {
         };
     }
 }
-  /**
+ /**
  * 点赞/取消点赞反馈
  */
 async toggleLike(feedbackId, userId = 'anonymous') {
     try {
+        console.log('🔄 开始点赞操作...');
+        console.log('反馈ID:', feedbackId);
+        console.log('用户ID:', userId);
+        
+        // 先获取当前记录
         const record = await this.getRecord();
+        console.log('获取到的完整记录:', JSON.stringify(record, null, 2));
+        
+        // 确保有feedbacks数组
+        if (!record.feedbacks) {
+            record.feedbacks = [];
+            console.log('创建空的feedbacks数组');
+        }
+        
         const feedbackIndex = record.feedbacks.findIndex(f => f.id === feedbackId);
+        console.log('反馈索引:', feedbackIndex);
         
         if (feedbackIndex === -1) {
             throw new Error('未找到对应的反馈');
         }
         
         const feedback = record.feedbacks[feedbackIndex];
+        console.log('找到的反馈数据:', JSON.stringify(feedback, null, 2));
         
-        // 确保点赞数据结构存在
+        // 确保点赞数据结构存在 - 使用简化的字段名 'l'
         if (!feedback.l) {
             feedback.l = { c: 0, u: [] };
+            console.log('创建新的点赞数据结构');
+        } else {
+            console.log('已有点赞数据:', feedback.l);
         }
+        
+        // 确保数组存在
+        if (!Array.isArray(feedback.l.u)) {
+            feedback.l.u = [];
+        }
+        
+        // 确保数字存在
+        if (typeof feedback.l.c !== 'number') {
+            feedback.l.c = 0;
+        }
+        
+        console.log('处理前的点赞数据:', {
+            count: feedback.l.c,
+            users: feedback.l.u,
+            userIndex: feedback.l.u.indexOf(userId)
+        });
         
         const userIndex = feedback.l.u.indexOf(userId);
         let action = '';
@@ -660,44 +712,59 @@ async toggleLike(feedbackId, userId = 'anonymous') {
         if (userIndex === -1) {
             // 点赞
             feedback.l.u.push(userId);
-            feedback.l.c = (feedback.l.c || 0) + 1;
+            feedback.l.c = feedback.l.c + 1;
             action = 'liked';
+            console.log('执行点赞，新点赞数:', feedback.l.c);
         } else {
             // 取消点赞
             feedback.l.u.splice(userIndex, 1);
-            feedback.l.c = Math.max(0, (feedback.l.c || 0) - 1);
+            feedback.l.c = Math.max(0, feedback.l.c - 1);
             action = 'unliked';
+            console.log('执行取消点赞，新点赞数:', feedback.l.c);
         }
         
-        // 更新系统时间
-        record.sys = { lu: Date.now(), v: '4.0' };
+        console.log('处理后的点赞数据:', {
+            count: feedback.l.c,
+            users: feedback.l.u,
+            action: action
+        });
         
-        await this.updateRecord(record);
+        // 更新系统信息
+        record.sys = {
+            lu: Date.now(),
+            v: '4.0'
+        };
+        
+        // 保存到云端
+        console.log('正在保存到云端...');
+        console.log('保存的数据:', JSON.stringify(record, null, 2));
+        
+        const saveResult = await this.updateRecord(record);
+        console.log('云端保存成功:', saveResult);
         
         return {
             success: true,
-            message: `已${action === 'liked' ? '点赞' : '取消点赞'}`,
+            message: '操作成功',
             action: action,
-            likesCount: feedback.l.c || 0,
+            likesCount: feedback.l.c,
             isLiked: action === 'liked',
             binId: this.binId
         };
         
     } catch (error) {
-        console.error('点赞操作失败:', error);
+        console.error('❌ 点赞操作失败:', error);
         return {
             success: false,
-            message: '点赞操作失败: ' + error.message
+            message: '操作失败: ' + error.message
         };
     }
-}  
-  /**
+}
+ /**
  * 点赞/取消点赞评论
  */
 async toggleCommentLike(feedbackId, commentId, userId = 'anonymous') {
     try {
-        console.log(`🔄 点赞/取消点赞评论: ${feedbackId}, ${commentId}, ${userId}`);
-        
+        // 先获取当前记录
         const record = await this.getRecord();
         const feedbackIndex = record.feedbacks.findIndex(f => f.id === feedbackId);
         
@@ -706,7 +773,9 @@ async toggleCommentLike(feedbackId, commentId, userId = 'anonymous') {
         }
         
         const feedback = record.feedbacks[feedbackIndex];
-        const comments = feedback.cm || feedback.comments || [];
+        
+        // 获取评论列表
+        const comments = feedback.cm || [];
         const commentIndex = comments.findIndex(c => c.id === commentId);
         
         if (commentIndex === -1) {
@@ -720,9 +789,12 @@ async toggleCommentLike(feedbackId, commentId, userId = 'anonymous') {
             comment.l = { c: 0, u: [] };
         }
         
-        // 确保数组存在
         if (!Array.isArray(comment.l.u)) {
             comment.l.u = [];
+        }
+        
+        if (typeof comment.l.c !== 'number') {
+            comment.l.c = 0;
         }
         
         const userIndex = comment.l.u.indexOf(userId);
@@ -731,39 +803,37 @@ async toggleCommentLike(feedbackId, commentId, userId = 'anonymous') {
         if (userIndex === -1) {
             // 点赞
             comment.l.u.push(userId);
-            comment.l.c = (comment.l.c || 0) + 1;
+            comment.l.c = comment.l.c + 1;
             action = 'liked';
-            console.log(`✅ 用户 ${userId} 点赞了评论 ${commentId}`);
         } else {
             // 取消点赞
             comment.l.u.splice(userIndex, 1);
-            comment.l.c = Math.max(0, (comment.l.c || 0) - 1);
+            comment.l.c = Math.max(0, comment.l.c - 1);
             action = 'unliked';
-            console.log(`❌ 用户 ${userId} 取消点赞评论 ${commentId}`);
         }
         
-        // 更新系统时间
-        record.sys = { lu: Date.now(), v: '4.0' };
+        // 更新系统信息
+        record.sys = {
+            lu: Date.now(),
+            v: '4.0'
+        };
         
         // 保存到云端
         await this.updateRecord(record);
         
-        console.log(`💾 评论点赞状态已保存到云端`);
-        
         return {
             success: true,
-            message: `已${action === 'liked' ? '点赞' : '取消点赞'}`,
+            message: '操作成功',
             action: action,
-            likesCount: comment.l.c || 0,
+            likesCount: comment.l.c,
             isLiked: action === 'liked',
             binId: this.binId
         };
         
     } catch (error) {
-        console.error('评论点赞操作失败:', error);
         return {
             success: false,
-            message: '评论点赞操作失败: ' + error.message
+            message: '操作失败: ' + error.message
         };
     }
 }

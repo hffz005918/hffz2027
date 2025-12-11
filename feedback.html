@@ -1276,40 +1276,36 @@
                 }, 1000);
             }
 
-            /**
+           /**
  * 加载反馈列表
  */
 async function loadFeedbacks() {
     try {
-        const feedbacks = await jsonBinStorage.getFeedbacks();
-        
         // 确保有用户ID
         if (!window.currentUserId) {
             window.currentUserId = getOrCreateUserId();
         }
         
-        console.log('加载反馈列表，用户ID:', window.currentUserId);
-        console.log('原始反馈数据:', feedbacks);
+        const feedbacks = await jsonBinStorage.getFeedbacks();
         
         // 处理点赞状态
         const processedFeedbacks = feedbacks.map(feedback => {
-            // 解析点赞数据 - 支持两种字段名
-            const likes = feedback.likes || feedback.l || { count: 0, users: [] };
+            // 确保点赞数据结构正确
+            const likes = feedback.l || { c: 0, u: [] };
             
             // 检查用户是否点赞了该反馈
-            feedback.userLiked = Array.isArray(likes.users) ? likes.users.includes(window.currentUserId) : false;
-            console.log(`反馈 ${feedback.id} 用户点赞状态: ${feedback.userLiked}`, likes);
+            feedback.userLiked = Array.isArray(likes.u) ? likes.u.includes(window.currentUserId) : false;
+            feedback.likesCount = likes.c || 0;
             
             // 处理评论的点赞状态
-            const comments = feedback.comments || feedback.cm || [];
+            const comments = feedback.cm || [];
             if (comments.length > 0) {
                 feedback.comments = comments.map(comment => {
-                    // 解析评论点赞数据
-                    const commentLikes = comment.likes || comment.l || { count: 0, users: [] };
+                    const commentLikes = comment.l || { c: 0, u: [] };
                     
                     // 检查用户是否点赞了该评论
-                    comment.userLiked = Array.isArray(commentLikes.users) ? commentLikes.users.includes(window.currentUserId) : false;
-                    console.log(`评论 ${comment.id} 用户点赞状态: ${comment.userLiked}`, commentLikes);
+                    comment.userLiked = Array.isArray(commentLikes.u) ? commentLikes.u.includes(window.currentUserId) : false;
+                    comment.likesCount = commentLikes.c || 0;
                     
                     return comment;
                 });
@@ -1320,7 +1316,6 @@ async function loadFeedbacks() {
         
         displayFeedbacks(processedFeedbacks);
     } catch (error) {
-        console.error('加载反馈列表失败:', error);
         feedbacksList.innerHTML = `
             <div style="text-align: center; padding: 2rem; color: var(--error-color);">
                 加载失败: ${error.message}<br>
@@ -1398,8 +1393,21 @@ function displayFeedbacks(feedbacks) {
         const hasImages = Array.isArray(images) && images.length > 0;
         
         // 获取点赞数
-        const likesCount = likes.count || 0;
-        const isLiked = feedback.userLiked || false;
+const likesCount = feedback.likesCount || feedback.l?.c || feedback.likes?.count || 0;
+const isLiked = feedback.userLiked || false;
+
+console.log(`显示反馈 ${feedbackId}: 点赞数=${likesCount}, 是否点赞=${isLiked}`);
+
+// 生成点赞按钮HTML
+const likeBtnHTML = `
+    <button class="like-btn ${isLiked ? 'liked' : ''}" 
+            onclick="toggleFeedbackLike('${feedbackId}', this)"
+            data-feedback-id="${feedbackId}"
+            title="${isLiked ? '取消点赞' : '点赞'}">
+        <span class="like-icon">${isLiked ? '❤️' : '🤍'}</span>
+        <span class="like-count">${likesCount}</span>
+    </button>
+`;
         
         // 生成图片HTML
         let imagesHtml = '';
@@ -1571,7 +1579,7 @@ function handleImageError(img) {
     img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f5f5f5"/><text x="50" y="50" font-family="Arial" font-size="12" fill="#999" text-anchor="middle" alignment-baseline="middle">图片加载失败</text></svg>';
 }
 
-           /**
+          /**
  * 渲染评论列表
  */
 function renderComments(comments, feedbackId) {
@@ -1593,14 +1601,14 @@ function renderComments(comments, feedbackId) {
         const commentContent = comment.content || comment.c || '';
         const commentId = comment.id || '未知';
         const commentTimestamp = comment.timestamp || comment.ts;
-        const commentLikes = comment.likes || comment.l || { count: 0, users: [] };
+        
+        // 获取评论点赞数据
+        const commentLikes = comment.l || { c: 0, u: [] };
+        const commentLikesCount = comment.likesCount || commentLikes.c || 0;
+        const isLiked = comment.userLiked || false;
         
         const date = new Date(commentTimestamp);
         const timeString = isNaN(date.getTime()) ? '时间未知' : date.toLocaleString('zh-CN');
-        const commentLikesCount = commentLikes.count || 0;
-        const isLiked = comment.userLiked || false;
-        
-        console.log(`渲染评论 ${commentId}: 点赞数=${commentLikesCount}, 用户点赞=${isLiked}`);
         
         html += `
             <div class="comment-item" data-comment-id="${commentId}">
@@ -1935,54 +1943,41 @@ window.toggleFeedbackLike = async function(feedbackId, button) {
     }
 };
 
-            /**
+           /**
  * 切换评论点赞状态
  */
 window.toggleCommentLike = async function(feedbackId, commentId, button) {
     if (!button) return;
     
-    // 防止重复点击
     if (button.disabled) return;
     button.disabled = true;
     
-    const likeIcon = button.querySelector('.comment-like-icon');
-    const likeCountSpan = button.querySelector('.comment-like-count');
-    
     try {
-        // 确保使用正确的用户ID
         const userId = currentUserId || getOrCreateUserId();
-        
-        // 调用评论点赞API
         const result = await jsonBinStorage.toggleCommentLike(feedbackId, commentId, userId);
-        
-        console.log('评论点赞结果:', result); // 调试信息
         
         if (result.success) {
             // 更新按钮状态
             if (result.action === 'liked') {
                 button.classList.add('liked');
-                likeIcon.textContent = '❤️';
             } else {
                 button.classList.remove('liked');
-                likeIcon.textContent = '🤍';
             }
             
-            // 更新点赞数
+            // 更新点赞数和图标
+            const likeIcon = button.querySelector('.comment-like-icon');
+            const likeCountSpan = button.querySelector('.comment-like-count');
+            
+            if (likeIcon) {
+                likeIcon.textContent = result.isLiked ? '❤️' : '🤍';
+            }
             if (likeCountSpan) {
                 likeCountSpan.textContent = result.likesCount;
             }
-            
-            // 添加动画效果
-            button.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                button.style.transform = 'scale(1)';
-            }, 100);
         } else {
-            console.error('评论点赞失败:', result.message);
             alert('操作失败: ' + result.message);
         }
     } catch (error) {
-        console.error('评论点赞操作失败:', error);
         alert('操作失败，请刷新页面重试');
     } finally {
         button.disabled = false;
