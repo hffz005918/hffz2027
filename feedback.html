@@ -448,7 +448,6 @@
             font-size: 0.9rem;
             color: var(--text-secondary);
             margin-bottom: 0.5rem;
-            font-weight: 500;
         }
 
         .feedback-images-grid {
@@ -474,7 +473,6 @@
             width: 100%;
             height: 100px;
             object-fit: cover;
-            display: block;
         }
 
         /* 图片模态框 */
@@ -504,7 +502,6 @@
             width: 100%;
             height: auto;
             border-radius: 8px;
-            display: block;
         }
 
         .image-modal-close {
@@ -516,7 +513,6 @@
             color: white;
             font-size: 2rem;
             cursor: pointer;
-            z-index: 1001;
         }
 
         /* 评论区域样式 */
@@ -717,20 +713,16 @@
         .server-status.connected {
             background: #f6ffed;
             border-left-color: var(--success-color);
-            color: var(--success-color);
-            font-weight: bold;
         }
 
         .server-status.error {
             background: #fff2f0;
             border-left-color: var(--error-color);
-            color: var(--error-color);
         }
 
         .server-status.warning {
             background: #fff7e6;
             border-left-color: var(--warning-color);
-            color: var(--warning-color);
         }
 
         /* 加载动画 */
@@ -747,34 +739,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        /* 本地存储提示 */
-        .local-storage-notice {
-            background: #fff7e6;
-            border-left: 4px solid var(--warning-color);
-            padding: 0.8rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            display: none;
-        }
-
-        .local-storage-notice .warning-icon {
-            color: var(--warning-color);
-            margin-right: 5px;
-        }
-
-        /* 图片加载失败样式 */
-        .image-error {
-            width: 100%;
-            height: 100px;
-            background: #f5f5f5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 0.8rem;
         }
 
         @media (max-width: 768px) {
@@ -840,12 +804,7 @@
         <div class="feedback-card">
             <!-- 服务器状态显示 -->
             <div class="server-status" id="serverStatus">
-                <span class="loading-spinner"></span> 正在连接服务器...
-            </div>
-
-            <!-- 本地存储提示 -->
-            <div class="local-storage-notice" id="localStorageNotice">
-                <span class="warning-icon">⚠️</span> 服务器连接失败，使用本地存储模式。反馈仅保存在当前浏览器中。
+                正在连接服务器...
             </div>
 
             <div class="anonymous-notice">
@@ -926,9 +885,7 @@
         <div class="feedback-card">
             <h2 style="margin-bottom: 1rem;">最新反馈</h2>
             <div id="feedbacksList">
-                <div class="loading">
-                    <span class="loading-spinner"></span> 正在加载最新反馈...
-                </div>
+                <div class="loading">正在加载最新反馈...</div>
             </div>
         </div>
         
@@ -944,14 +901,14 @@
         <a href="admin-feedback.html" class="back-link" style="margin-top: 0.5rem;">管理员入口</a>
     </div>
 
+    <script src="jsonbin-storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('员工反馈页面初始化 - 修复版（完整功能）');
+            console.log('员工反馈页面初始化');
             
-            // 全局存储实例
-            let storage = null;
-            // 当前用户ID
-            let currentUserId = null;
+            // 全局用户ID（用于点赞跟踪）
+            let currentUserId = getOrCreateUserId();
+            
             // 存储选择的图片文件
             let selectedImages = [];
             
@@ -967,7 +924,6 @@
             const feedbacksList = document.getElementById('feedbacksList');
             const errorMessage = document.getElementById('errorMessage');
             const serverStatus = document.getElementById('serverStatus');
-            const localStorageNotice = document.getElementById('localStorageNotice');
             const imageInput = document.getElementById('imageInput');
             const imageUploadArea = document.getElementById('imageUploadArea');
             const imagePreviewContainer = document.getElementById('imagePreviewContainer');
@@ -981,729 +937,6 @@
             initializePage();
 
             /**
-             * 页面初始化
-             */
-            async function initializePage() {
-                // 初始化存储系统
-                await initializeStorage();
-                
-                // 确保用户ID存在
-                currentUserId = getOrCreateUserId();
-                console.log('当前用户ID:', currentUserId);
-                
-                // 初始化事件监听
-                setupEventListeners();
-                
-                // 加载反馈列表
-                await loadFeedbacks();
-                
-                // 更新图片计数显示
-                updateImageCount();
-            }
-
-            /**
-             * 初始化存储系统
-             */
-            async function initializeStorage() {
-                try {
-                    // 先尝试连接JSONBin
-                    console.log('正在连接JSONBin服务器...');
-                    serverStatus.style.display = 'block';
-                    
-                    // 测试JSONBin连接
-                    const binId = '69304a8bd0ea881f401049f7';
-                    const readOnlyKey = '$2a$10$AOxCSd1PIW2XUkxQvRpVVeimltcnLXIoOlqvBvFJwlxCihUD2wope';
-                    const masterKey = '$2a$10$AOxCSd1PIW2XUkxQvRpVVeimltcnLXIoOlqvBvFJwlxCihUD2wope';
-                    
-                    const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Access-Key': readOnlyKey
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        const feedbackCount = data.record?.feedbacks?.length || 0;
-                        
-                        // JSONBin连接成功
-                        console.log('✅ JSONBin连接成功');
-                        serverStatus.innerHTML = `✅ 已连接到云端服务器 (${feedbackCount}条反馈)`;
-                        serverStatus.className = 'server-status connected';
-                        
-                        // 使用JSONBin存储
-                        storage = new JsonBinStorage(binId, readOnlyKey, masterKey);
-                    } else {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                } catch (error) {
-                    console.warn('❌ JSONBin连接失败，使用本地存储:', error.message);
-                    
-                    serverStatus.innerHTML = '⚠️ 服务器连接失败，使用本地存储';
-                    serverStatus.className = 'server-status warning';
-                    
-                    localStorageNotice.style.display = 'block';
-                    
-                    // 使用本地存储
-                    storage = new LocalStorage();
-                }
-            }
-
-            /**
-             * JSONBin存储类
-             */
-            class JsonBinStorage {
-                constructor(binId, readOnlyKey, masterKey) {
-                    this.binId = binId;
-                    this.readOnlyKey = readOnlyKey;
-                    this.masterKey = masterKey;
-                    this.baseUrl = 'https://api.jsonbin.io/v3/b';
-                    this.type = 'jsonbin';
-                }
-                
-                async getFeedbacks() {
-                    try {
-                        const response = await fetch(`${this.baseUrl}/${this.binId}`, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Access-Key': this.readOnlyKey
-                            }
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error('获取数据失败');
-                        }
-                        
-                        const data = await response.json();
-                        const feedbacks = data.record?.feedbacks || [];
-                        
-                        console.log('从JSONBin获取反馈:', feedbacks.length, '条');
-                        return feedbacks;
-                    } catch (error) {
-                        console.error('从JSONBin获取反馈失败:', error);
-                        return [];
-                    }
-                }
-                
-                async saveFeedback(feedbackData) {
-                    try {
-                        // 上传图片
-                        const uploadedImages = await this.uploadImages(feedbackData.imageFiles);
-                        
-                        // 创建新反馈
-                        const newFeedback = {
-                            id: 'fb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                            employeeName: feedbackData.employeeName || '匿名',
-                            type: feedbackData.type,
-                            content: feedbackData.content,
-                            status: 'pending',
-                            likes: { count: 0, users: [] },
-                            comments: [],
-                            images: uploadedImages.map(img => ({ url: img.url, name: img.originalName })),
-                            timestamp: Date.now()
-                        };
-                        
-                        // 获取现有数据
-                        const response = await fetch(`${this.baseUrl}/${this.binId}`, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Master-Key': this.masterKey
-                            }
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error('获取现有数据失败');
-                        }
-                        
-                        const data = await response.json();
-                        const record = data.record || { feedbacks: [] };
-                        
-                        // 添加新反馈
-                        if (!record.feedbacks) record.feedbacks = [];
-                        record.feedbacks.unshift(newFeedback);
-                        
-                        // 保存回JSONBin
-                        const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Master-Key': this.masterKey
-                            },
-                            body: JSON.stringify(record)
-                        });
-                        
-                        if (!saveResponse.ok) {
-                            throw new Error('保存数据失败');
-                        }
-                        
-                        return {
-                            success: true,
-                            id: newFeedback.id,
-                            message: '反馈已保存到云端',
-                            imagesCount: uploadedImages.length
-                        };
-                    } catch (error) {
-                        console.error('保存到JSONBin失败:', error);
-                        return {
-                            success: false,
-                            message: '保存到云端失败: ' + error.message
-                        };
-                    }
-                }
-                
-                async uploadImages(files) {
-                    if (!files || files.length === 0) {
-                        return [];
-                    }
-                    
-                    const maxImages = 5;
-                    const imagesToUpload = files.slice(0, maxImages);
-                    const uploadedImages = [];
-                    
-                    for (let i = 0; i < imagesToUpload.length; i++) {
-                        const file = imagesToUpload[i];
-                        
-                        // 更新进度
-                        const progress = Math.round((i / imagesToUpload.length) * 100);
-                        updateUploadProgress(progress, `正在处理第 ${i + 1}/${imagesToUpload.length} 张图片`);
-                        
-                        try {
-                            const compressedImage = await this.compressImage(file);
-                            uploadedImages.push({
-                                url: compressedImage,
-                                originalName: file.name,
-                                size: file.size,
-                                compressedSize: compressedImage.length
-                            });
-                        } catch (error) {
-                            console.error('图片处理失败:', file.name, error);
-                        }
-                    }
-                    
-                    return uploadedImages;
-                }
-                
-                async compressImage(file) {
-                    return new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        
-                        reader.onload = function(e) {
-                            const img = new Image();
-                            img.onload = function() {
-                                const canvas = document.createElement('canvas');
-                                const ctx = canvas.getContext('2d');
-                                
-                                // 设置最大尺寸
-                                let width = img.width;
-                                let height = img.height;
-                                const maxDimension = 800;
-                                
-                                if (width > height && width > maxDimension) {
-                                    height = Math.round((height * maxDimension) / width);
-                                    width = maxDimension;
-                                } else if (height > maxDimension) {
-                                    width = Math.round((width * maxDimension) / height);
-                                    height = maxDimension;
-                                }
-                                
-                                canvas.width = width;
-                                canvas.height = height;
-                                
-                                // 绘制图片
-                                ctx.drawImage(img, 0, 0, width, height);
-                                
-                                // 压缩质量
-                                const quality = 0.7;
-                                const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                                
-                                console.log(`图片压缩: ${file.name} ${img.width}x${img.height} -> ${width}x${height}, 质量: ${quality}`);
-                                
-                                resolve(compressedDataUrl);
-                            };
-                            
-                            img.onerror = reject;
-                            img.src = e.target.result;
-                        };
-                        
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                    });
-                }
-                
-                async addComment(feedbackId, commentData) {
-                    try {
-                        // 获取现有数据
-                        const response = await fetch(`${this.baseUrl}/${this.binId}`, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Master-Key': this.masterKey
-                            }
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error('获取数据失败');
-                        }
-                        
-                        const data = await response.json();
-                        const record = data.record || { feedbacks: [] };
-                        
-                        // 找到对应的反馈
-                        const feedbackIndex = record.feedbacks.findIndex(f => f.id === feedbackId);
-                        if (feedbackIndex === -1) throw new Error('未找到对应的反馈');
-                        
-                        // 创建新评论
-                        const newComment = {
-                            id: 'cm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                            author: commentData.author || '匿名同事',
-                            content: commentData.content,
-                            timestamp: Date.now(),
-                            likes: { count: 0, users: [] }
-                        };
-                        
-                        // 确保评论数组存在
-                        if (!record.feedbacks[feedbackIndex].comments) {
-                            record.feedbacks[feedbackIndex].comments = [];
-                        }
-                        
-                        // 添加评论
-                        record.feedbacks[feedbackIndex].comments.unshift(newComment);
-                        
-                        // 保存回JSONBin
-                        const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Master-Key': this.masterKey
-                            },
-                            body: JSON.stringify(record)
-                        });
-                        
-                        if (!saveResponse.ok) {
-                            throw new Error('保存评论失败');
-                        }
-                        
-                        return {
-                            success: true,
-                            comment: newComment,
-                            commentsCount: record.feedbacks[feedbackIndex].comments.length
-                        };
-                    } catch (error) {
-                        console.error('添加评论到JSONBin失败:', error);
-                        return { success: false, message: error.message };
-                    }
-                }
-                
-                async toggleLike(feedbackId, userId) {
-                    try {
-                        // 获取现有数据
-                        const response = await fetch(`${this.baseUrl}/${this.binId}`, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Master-Key': this.masterKey
-                            }
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error('获取数据失败');
-                        }
-                        
-                        const data = await response.json();
-                        const record = data.record || { feedbacks: [] };
-                        
-                        // 找到对应的反馈
-                        const feedbackIndex = record.feedbacks.findIndex(f => f.id === feedbackId);
-                        if (feedbackIndex === -1) throw new Error('未找到对应的反馈');
-                        
-                        const feedback = record.feedbacks[feedbackIndex];
-                        
-                        // 确保点赞数据结构存在
-                        if (!feedback.likes) feedback.likes = { count: 0, users: [] };
-                        if (!feedback.likes.users) feedback.likes.users = [];
-                        
-                        const userIndex = feedback.likes.users.indexOf(userId);
-                        let action = '';
-                        
-                        if (userIndex === -1) {
-                            // 点赞
-                            feedback.likes.users.push(userId);
-                            feedback.likes.count = (feedback.likes.count || 0) + 1;
-                            action = 'liked';
-                        } else {
-                            // 取消点赞
-                            feedback.likes.users.splice(userIndex, 1);
-                            feedback.likes.count = Math.max(0, (feedback.likes.count || 0) - 1);
-                            action = 'unliked';
-                        }
-                        
-                        // 保存回JSONBin
-                        const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Master-Key': this.masterKey
-                            },
-                            body: JSON.stringify(record)
-                        });
-                        
-                        if (!saveResponse.ok) {
-                            throw new Error('保存点赞状态失败');
-                        }
-                        
-                        return {
-                            success: true,
-                            action: action,
-                            likesCount: feedback.likes.count || 0
-                        };
-                    } catch (error) {
-                        console.error('JSONBin点赞操作失败:', error);
-                        return { success: false, message: error.message };
-                    }
-                }
-                
-                async toggleCommentLike(feedbackId, commentId, userId) {
-                    try {
-                        // 获取现有数据
-                        const response = await fetch(`${this.baseUrl}/${this.binId}`, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Master-Key': this.masterKey
-                            }
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error('获取数据失败');
-                        }
-                        
-                        const data = await response.json();
-                        const record = data.record || { feedbacks: [] };
-                        
-                        // 找到对应的反馈
-                        const feedbackIndex = record.feedbacks.findIndex(f => f.id === feedbackId);
-                        if (feedbackIndex === -1) throw new Error('未找到对应的反馈');
-                        
-                        const feedback = record.feedbacks[feedbackIndex];
-                        const comments = feedback.comments || [];
-                        const commentIndex = comments.findIndex(c => c.id === commentId);
-                        
-                        if (commentIndex === -1) throw new Error('未找到对应的评论');
-                        
-                        const comment = comments[commentIndex];
-                        
-                        // 确保点赞数据结构存在
-                        if (!comment.likes) comment.likes = { count: 0, users: [] };
-                        if (!comment.likes.users) comment.likes.users = [];
-                        
-                        const userIndex = comment.likes.users.indexOf(userId);
-                        let action = '';
-                        
-                        if (userIndex === -1) {
-                            // 点赞
-                            comment.likes.users.push(userId);
-                            comment.likes.count = (comment.likes.count || 0) + 1;
-                            action = 'liked';
-                        } else {
-                            // 取消点赞
-                            comment.likes.users.splice(userIndex, 1);
-                            comment.likes.count = Math.max(0, (comment.likes.count || 0) - 1);
-                            action = 'unliked';
-                        }
-                        
-                        // 保存回JSONBin
-                        const saveResponse = await fetch(`${this.baseUrl}/${this.binId}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Master-Key': this.masterKey
-                            },
-                            body: JSON.stringify(record)
-                        });
-                        
-                        if (!saveResponse.ok) {
-                            throw new Error('保存评论点赞状态失败');
-                        }
-                        
-                        return {
-                            success: true,
-                            action: action,
-                            likesCount: comment.likes.count || 0
-                        };
-                    } catch (error) {
-                        console.error('JSONBin评论点赞操作失败:', error);
-                        return { success: false, message: error.message };
-                    }
-                }
-            }
-
-            /**
-             * 本地存储类
-             */
-            class LocalStorage {
-                constructor() {
-                    this.type = 'local';
-                }
-                
-                getFeedbacks() {
-                    try {
-                        const feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || [];
-                        console.log('从本地存储获取到反馈:', feedbacks.length, '条');
-                        return feedbacks;
-                    } catch (error) {
-                        console.error('从本地存储获取反馈失败:', error);
-                        return [];
-                    }
-                }
-                
-                async saveFeedback(feedbackData) {
-                    try {
-                        // 上传图片
-                        const uploadedImages = await this.uploadImages(feedbackData.imageFiles);
-                        
-                        // 创建新反馈
-                        const newFeedback = {
-                            id: 'fb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                            employeeName: feedbackData.employeeName || '匿名',
-                            type: feedbackData.type,
-                            content: feedbackData.content,
-                            status: 'pending',
-                            likes: { count: 0, users: [] },
-                            comments: [],
-                            images: uploadedImages.map(img => ({ url: img.url, name: img.originalName })),
-                            timestamp: Date.now()
-                        };
-                        
-                        // 获取现有反馈
-                        const feedbacks = this.getFeedbacks();
-                        
-                        // 添加新反馈
-                        feedbacks.unshift(newFeedback);
-                        
-                        // 保存回本地存储
-                        localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
-                        
-                        return {
-                            success: true,
-                            id: newFeedback.id,
-                            message: '反馈已保存到本地存储',
-                            imagesCount: uploadedImages.length
-                        };
-                    } catch (error) {
-                        console.error('保存到本地存储失败:', error);
-                        return {
-                            success: false,
-                            message: '保存失败: ' + error.message
-                        };
-                    }
-                }
-                
-                async uploadImages(files) {
-                    if (!files || files.length === 0) {
-                        return [];
-                    }
-                    
-                    const maxImages = 5;
-                    const imagesToUpload = files.slice(0, maxImages);
-                    const uploadedImages = [];
-                    
-                    for (let i = 0; i < imagesToUpload.length; i++) {
-                        const file = imagesToUpload[i];
-                        
-                        // 更新进度
-                        const progress = Math.round((i / imagesToUpload.length) * 100);
-                        updateUploadProgress(progress, `正在处理第 ${i + 1}/${imagesToUpload.length} 张图片`);
-                        
-                        try {
-                            const compressedImage = await this.compressImage(file);
-                            uploadedImages.push({
-                                url: compressedImage,
-                                originalName: file.name,
-                                size: file.size,
-                                compressedSize: compressedImage.length
-                            });
-                        } catch (error) {
-                            console.error('图片处理失败:', file.name, error);
-                        }
-                    }
-                    
-                    return uploadedImages;
-                }
-                
-                async compressImage(file) {
-                    return new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        
-                        reader.onload = function(e) {
-                            const img = new Image();
-                            img.onload = function() {
-                                const canvas = document.createElement('canvas');
-                                const ctx = canvas.getContext('2d');
-                                
-                                // 设置最大尺寸
-                                let width = img.width;
-                                let height = img.height;
-                                const maxDimension = 800;
-                                
-                                if (width > height && width > maxDimension) {
-                                    height = Math.round((height * maxDimension) / width);
-                                    width = maxDimension;
-                                } else if (height > maxDimension) {
-                                    width = Math.round((width * maxDimension) / height);
-                                    height = maxDimension;
-                                }
-                                
-                                canvas.width = width;
-                                canvas.height = height;
-                                
-                                // 绘制图片
-                                ctx.drawImage(img, 0, 0, width, height);
-                                
-                                // 压缩质量
-                                const quality = 0.7;
-                                const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                                
-                                console.log(`图片压缩: ${file.name} ${img.width}x${img.height} -> ${width}x${height}, 质量: ${quality}`);
-                                
-                                resolve(compressedDataUrl);
-                            };
-                            
-                            img.onerror = reject;
-                            img.src = e.target.result;
-                        };
-                        
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                    });
-                }
-                
-                addComment(feedbackId, commentData) {
-                    try {
-                        const feedbacks = this.getFeedbacks();
-                        const feedbackIndex = feedbacks.findIndex(f => f.id === feedbackId);
-                        
-                        if (feedbackIndex === -1) throw new Error('未找到对应的反馈');
-                        
-                        // 创建新评论
-                        const newComment = {
-                            id: 'cm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                            author: commentData.author || '匿名同事',
-                            content: commentData.content,
-                            timestamp: Date.now(),
-                            likes: { count: 0, users: [] }
-                        };
-                        
-                        // 确保评论数组存在
-                        if (!feedbacks[feedbackIndex].comments) {
-                            feedbacks[feedbackIndex].comments = [];
-                        }
-                        
-                        // 添加评论
-                        feedbacks[feedbackIndex].comments.unshift(newComment);
-                        
-                        // 保存回本地存储
-                        localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
-                        
-                        return {
-                            success: true,
-                            comment: newComment,
-                            commentsCount: feedbacks[feedbackIndex].comments.length
-                        };
-                    } catch (error) {
-                        console.error('添加评论到本地存储失败:', error);
-                        return { success: false, message: error.message };
-                    }
-                }
-                
-                toggleLike(feedbackId, userId) {
-                    try {
-                        const feedbacks = this.getFeedbacks();
-                        const feedbackIndex = feedbacks.findIndex(f => f.id === feedbackId);
-                        
-                        if (feedbackIndex === -1) throw new Error('未找到对应的反馈');
-                        
-                        const feedback = feedbacks[feedbackIndex];
-                        
-                        // 确保点赞数据结构存在
-                        if (!feedback.likes) feedback.likes = { count: 0, users: [] };
-                        if (!feedback.likes.users) feedback.likes.users = [];
-                        
-                        const userIndex = feedback.likes.users.indexOf(userId);
-                        let action = '';
-                        
-                        if (userIndex === -1) {
-                            // 点赞
-                            feedback.likes.users.push(userId);
-                            feedback.likes.count = (feedback.likes.count || 0) + 1;
-                            action = 'liked';
-                        } else {
-                            // 取消点赞
-                            feedback.likes.users.splice(userIndex, 1);
-                            feedback.likes.count = Math.max(0, (feedback.likes.count || 0) - 1);
-                            action = 'unliked';
-                        }
-                        
-                        // 保存回本地存储
-                        localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
-                        
-                        return {
-                            success: true,
-                            action: action,
-                            likesCount: feedback.likes.count || 0
-                        };
-                    } catch (error) {
-                        console.error('本地存储点赞操作失败:', error);
-                        return { success: false, message: error.message };
-                    }
-                }
-                
-                toggleCommentLike(feedbackId, commentId, userId) {
-                    try {
-                        const feedbacks = this.getFeedbacks();
-                        const feedbackIndex = feedbacks.findIndex(f => f.id === feedbackId);
-                        
-                        if (feedbackIndex === -1) throw new Error('未找到对应的反馈');
-                        
-                        const feedback = feedbacks[feedbackIndex];
-                        const comments = feedback.comments || [];
-                        const commentIndex = comments.findIndex(c => c.id === commentId);
-                        
-                        if (commentIndex === -1) throw new Error('未找到对应的评论');
-                        
-                        const comment = comments[commentIndex];
-                        
-                        // 确保点赞数据结构存在
-                        if (!comment.likes) comment.likes = { count: 0, users: [] };
-                        if (!comment.likes.users) comment.likes.users = [];
-                        
-                        const userIndex = comment.likes.users.indexOf(userId);
-                        let action = '';
-                        
-                        if (userIndex === -1) {
-                            // 点赞
-                            comment.likes.users.push(userId);
-                            comment.likes.count = (comment.likes.count || 0) + 1;
-                            action = 'liked';
-                        } else {
-                            // 取消点赞
-                            comment.likes.users.splice(userIndex, 1);
-                            comment.likes.count = Math.max(0, (comment.likes.count || 0) - 1);
-                            action = 'unliked';
-                        }
-                        
-                        // 保存回本地存储
-                        localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
-                        
-                        return {
-                            success: true,
-                            action: action,
-                            likesCount: comment.likes.count || 0
-                        };
-                    } catch (error) {
-                        console.error('本地存储评论点赞操作失败:', error);
-                        return { success: false, message: error.message };
-                    }
-                }
-            }
-
-            /**
              * 获取或创建用户ID
              */
             function getOrCreateUserId() {
@@ -1713,6 +946,52 @@
                     localStorage.setItem('feedback_user_id', userId);
                 }
                 return userId;
+            }
+
+            /**
+             * 页面初始化
+             */
+            async function initializePage() {
+                // 确保用户ID存在
+   	       currentUserId = getOrCreateUserId();
+               console.log('当前用户ID:', currentUserId);
+                // 测试服务器连接
+                await testServerConnection();
+                
+                // 加载反馈列表
+                await loadFeedbacks();
+                
+                // 初始化事件监听
+                setupEventListeners();
+                
+                // 初始化图片计数显示
+                updateImageCount();
+            }
+
+            /**
+             * 测试服务器连接
+             */
+            async function testServerConnection() {
+                try {
+                    const result = await jsonBinStorage.testConnection();
+                    
+                    serverStatus.textContent = result.message;
+                    serverStatus.style.display = 'block';
+                    
+                    if (result.connected) {
+                        serverStatus.className = 'server-status connected';
+                        console.log('服务器连接状态:', result);
+                    } else if (result.usingFallback) {
+                        serverStatus.className = 'server-status warning';
+                    } else {
+                        serverStatus.className = 'server-status error';
+                    }
+                } catch (error) {
+                    console.error('连接测试失败:', error);
+                    serverStatus.textContent = '服务器连接异常，请稍后重试';
+                    serverStatus.className = 'server-status error';
+                    serverStatus.style.display = 'block';
+                }
             }
 
             /**
@@ -1865,11 +1144,6 @@
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.alt = file.name;
-                    img.onerror = function() {
-                        this.onerror = null;
-                        this.src = '';
-                        this.parentNode.innerHTML = `<div class="image-error">图片加载失败</div>`;
-                    };
                     
                     const removeBtn = document.createElement('button');
                     removeBtn.className = 'image-preview-remove';
@@ -1973,7 +1247,7 @@
             /**
              * 显示成功信息
              */
-            function showSuccess(feedbackId, status, imagesCount = 0) {
+            function showSuccess(feedbackId, status) {
                 // 隐藏表单，显示成功消息
                 feedbackForm.style.display = 'none';
                 successMessage.style.display = 'block';
@@ -1985,14 +1259,6 @@
                 
                 if (feedbackStatusElement) {
                     feedbackStatusElement.textContent = status || '已提交，待处理';
-                }
-                
-                // 如果有图片，显示图片数量
-                if (imagesCount > 0) {
-                    const successMessageDiv = document.getElementById('successMessage');
-                    const imageInfo = document.createElement('p');
-                    imageInfo.innerHTML = `<strong>📷 ${imagesCount} 张图片已上传</strong>`;
-                    successMessageDiv.insertBefore(imageInfo, successMessageDiv.querySelector('.countdown').parentNode);
                 }
                 
                 // 倒计时刷新
@@ -2011,259 +1277,353 @@
             }
 
             /**
-             * 更新上传进度
-             */
-            function updateUploadProgress(progress, message) {
-                if (progressFill && progressFill.style) {
-                    progressFill.style.width = progress + '%';
-                }
-                if (progressText) {
-                    progressText.textContent = message;
-                }
-            }
-
-            /**
-             * 加载反馈列表
-             */
-            async function loadFeedbacks() {
-                try {
-                    if (!storage) {
-                        throw new Error('存储系统未初始化');
-                    }
-                    
-                    const feedbacks = await storage.getFeedbacks();
-                    
-                    console.log('加载反馈列表:', feedbacks.length, '条，存储类型:', storage.type);
-                    
-                    displayFeedbacks(feedbacks);
-                } catch (error) {
-                    console.error('加载反馈列表失败:', error);
-                    feedbacksList.innerHTML = `
-                        <div style="text-align: center; padding: 2rem; color: var(--error-color);">
-                            加载失败: ${error.message}<br>
-                            <button onclick="location.reload()" style="margin-top: 1rem; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                重试加载
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-
-            /**
-             * 显示反馈列表
-             */
-            function displayFeedbacks(feedbacks) {
-                if (feedbacks.length === 0) {
-                    feedbacksList.innerHTML = `
-                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-                            暂无反馈，成为第一个发言的人吧！
-                        </div>
-                    `;
-                    return;
-                }
-
-                // 按时间倒序排序，只显示最新的5条
-                feedbacks.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                const recentFeedbacks = feedbacks.slice(0, 5);
-                
-                let html = '';
-                recentFeedbacks.forEach(feedback => {
-                    const employeeName = feedback.employeeName || feedback.n || '匿名同事';
-                    const feedbackType = feedback.type || feedback.t || 'other';
-                    const content = feedback.content || feedback.c || '';
-                    const status = feedback.status || feedback.s || 'pending';
-                    const timestamp = feedback.timestamp || feedback.ts;
-                    const feedbackId = feedback.id || '未知';
-                    const likes = feedback.likes || feedback.l || { count: 0, users: [] };
-                    const comments = feedback.comments || feedback.cm || [];
-                    const images = feedback.images || feedback.i || [];
-                    
-                    const typeClass = {
-                        'suggestion': 'type-suggestion',
-                        'problem': 'type-problem',
-                        'complaint': 'type-complaint',
-                        'other': 'type-other'
-                    }[feedbackType] || 'type-other';
-                    
-                    const typeText = {
-                        'suggestion': '意见建议',
-                        'problem': '问题反馈',
-                        'complaint': '投诉举报',
-                        'other': '其他'
-                    }[feedbackType] || '其他';
-                    
-                    const date = new Date(timestamp);
-                    const timeString = isNaN(date.getTime()) ? '时间未知' : date.toLocaleString('zh-CN');
-                    const commentCount = comments.length;
-                    const likesCount = likes.count || 0;
-                    
-                    // 检查用户是否点赞
-                    const isLiked = likes.users ? likes.users.includes(currentUserId) : false;
-                    
-                    // 生成图片HTML
-                    let imagesHtml = '';
-                    if (images && images.length > 0) {
-                        imagesHtml = `
-                            <div class="feedback-images">
-                                <div class="feedback-images-title">📷 上传图片 (${images.length})</div>
-                                <div class="feedback-images-grid">
-                        `;
-                        
-                        images.forEach((image, index) => {
-                            // 获取图片URL
-                            let imageUrl = '';
-                            if (typeof image === 'string') {
-                                imageUrl = image;
-                            } else if (image && typeof image === 'object') {
-                                imageUrl = image.url || image.u || '';
-                            }
-                            
-                            // 确保URL有效
-                            if (imageUrl) {
-                                imagesHtml += `
-                                    <div class="feedback-image-item" onclick="window.openImageModal('${imageUrl.replace(/'/g, "\\'")}')">
-                                        <img src="${imageUrl}" 
-                                             alt="反馈图片 ${index + 1}" 
-                                             onerror="this.onerror=null; this.src=''; this.parentNode.innerHTML='<div class=\\'image-error\\'>图片加载失败</div>'">
-                                    </div>
-                                `;
-                            }
-                        });
-                        
-                        imagesHtml += `
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    html += `
-                        <div class="feedback-item" data-feedback-id="${feedbackId}">
-                            <div class="feedback-header">
-                                <div>
-                                    <span class="feedback-type ${typeClass}">${typeText}</span>
-                                    <strong style="margin-left: 8px;">${employeeName}</strong>
-                                </div>
-                                <div class="feedback-time">${timeString}</div>
-                            </div>
-                            <div class="feedback-content">${content}</div>
-                            
-                            <!-- 图片展示区域 -->
-                            ${imagesHtml}
-                            
-                            <div class="feedback-stats">
-                                <div class="feedback-info">
-                                    <span>状态: ${status === 'processed' ? '✅ 已处理' : '⏳ 待处理'}</span>
-                                    <span>反馈ID: ${feedbackId}</span>
-                                </div>
-                                <div class="feedback-actions">
-                                    <button class="like-btn ${isLiked ? 'liked' : ''}" 
-                                            onclick="window.toggleFeedbackLike('${feedbackId}', this)"
-                                            data-feedback-id="${feedbackId}"
-                                            title="${isLiked ? '取消点赞' : '点赞'}">
-                                        <span class="like-icon">${isLiked ? '❤️' : '🤍'}</span>
-                                        <span class="like-count">${likesCount}</span>
-                                    </button>
-                                    <button class="comment-btn" 
-                                            onclick="window.toggleComments('${feedbackId}', this)"
-                                            data-feedback-id="${feedbackId}">
-                                        ${commentCount > 0 ? `💬 评论(${commentCount})` : '💬 发表评论'}
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- 评论区域 (初始隐藏) -->
-                            <div class="comments-section" id="comments-${feedbackId}" style="display: none;">
-                                <div class="comments-header">
-                                    <h3>评论</h3>
-                                    <span class="comment-count">${commentCount} 条评论</span>
-                                </div>
-                                
-                                <div class="comments-list" id="comments-list-${feedbackId}">
-                                    ${commentCount > 0 ? renderComments(comments, feedbackId) : `
-                                        <div class="no-comments">暂无评论，快来发表第一个评论吧！</div>
-                                    `}
-                                </div>
-                                
-                                <div class="add-comment-form">
-                                    <div class="comment-input-group">
-                                        <label for="comment-author-${feedbackId}">您的称呼（可选）</label>
-                                        <input type="text" id="comment-author-${feedbackId}" placeholder="姓名或昵称">
-                                    </div>
-                                    <div class="comment-input-group">
-                                        <label for="comment-content-${feedbackId}">评论内容</label>
-                                        <textarea 
-                                            id="comment-content-${feedbackId}" 
-                                            class="comment-input" 
-                                            placeholder="请输入您的评论..." 
-                                            maxlength="500"
-                                            required
-                                        ></textarea>
-                                    </div>
-                                    <button 
-                                        type="button" 
-                                        class="add-comment-btn" 
-                                        id="add-comment-btn-${feedbackId}"
-                                        onclick="window.addComment('${feedbackId}')"
-                                    >
-                                        发表评论
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                feedbacksList.innerHTML = html;
-            }
-
-            /**
-             * 渲染评论列表
-             */
-            function renderComments(comments, feedbackId) {
-                if (!comments || comments.length === 0) {
-                    return '<div class="no-comments">暂无评论</div>';
-                }
-                
-                // 按时间倒序排序
-                comments.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                
-                let html = '';
-                comments.forEach(comment => {
-                    const commentAuthor = comment.author || comment.a || '匿名同事';
-                    const commentContent = comment.content || comment.c || '';
-                    const commentId = comment.id || '未知';
-                    const commentTimestamp = comment.timestamp || comment.ts;
+ * 加载反馈列表
+ */
+async function loadFeedbacks() {
+    try {
+        const feedbacks = await jsonBinStorage.getFeedbacks();
+        
+        // 确保有用户ID
+        if (!window.currentUserId) {
+            window.currentUserId = getOrCreateUserId();
+        }
+        
+        console.log('加载反馈列表，用户ID:', window.currentUserId);
+        console.log('原始反馈数据:', feedbacks);
+        
+        // 处理点赞状态
+        const processedFeedbacks = feedbacks.map(feedback => {
+            // 解析点赞数据 - 支持两种字段名
+            const likes = feedback.likes || feedback.l || { count: 0, users: [] };
+            
+            // 检查用户是否点赞了该反馈
+            feedback.userLiked = Array.isArray(likes.users) ? likes.users.includes(window.currentUserId) : false;
+            console.log(`反馈 ${feedback.id} 用户点赞状态: ${feedback.userLiked}`, likes);
+            
+            // 处理评论的点赞状态
+            const comments = feedback.comments || feedback.cm || [];
+            if (comments.length > 0) {
+                feedback.comments = comments.map(comment => {
+                    // 解析评论点赞数据
                     const commentLikes = comment.likes || comment.l || { count: 0, users: [] };
                     
-                    const date = new Date(commentTimestamp);
-                    const timeString = isNaN(date.getTime()) ? '时间未知' : date.toLocaleString('zh-CN');
-                    const commentLikesCount = commentLikes.count || 0;
+                    // 检查用户是否点赞了该评论
+                    comment.userLiked = Array.isArray(commentLikes.users) ? commentLikes.users.includes(window.currentUserId) : false;
+                    console.log(`评论 ${comment.id} 用户点赞状态: ${comment.userLiked}`, commentLikes);
                     
-                    // 检查用户是否点赞
-                    const isLiked = commentLikes.users ? commentLikes.users.includes(currentUserId) : false;
+                    return comment;
+                });
+            }
+            
+            return feedback;
+        });
+        
+        displayFeedbacks(processedFeedbacks);
+    } catch (error) {
+        console.error('加载反馈列表失败:', error);
+        feedbacksList.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--error-color);">
+                加载失败: ${error.message}<br>
+                <button onclick="location.reload()" style="margin-top: 1rem; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    重试加载
+                </button>
+            </div>
+        `;
+    }
+}
+
+            /**
+ * 显示反馈列表
+ */
+function displayFeedbacks(feedbacks) {
+    if (feedbacks.length === 0) {
+        feedbacksList.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                暂无反馈，成为第一个发言的人吧！
+            </div>
+        `;
+        return;
+    }
+
+    // 按时间倒序排序，只显示最新的5条
+    feedbacks.sort((a, b) => {
+        const aTime = a.timestamp || a.ts || 0;
+        const bTime = b.timestamp || b.ts || 0;
+        return new Date(bTime) - new Date(aTime);
+    });
+    
+    const recentFeedbacks = feedbacks.slice(0, 5);
+    
+    let html = '';
+    recentFeedbacks.forEach(feedback => {
+        // 解析简化字段名
+        const employeeName = feedback.employeeName || feedback.n || '匿名同事';
+        const feedbackType = feedback.type || feedback.t || 'other';
+        const content = feedback.content || feedback.c || '';
+        const status = feedback.status || feedback.s || 'pending';
+        const timestamp = feedback.timestamp || feedback.ts;
+        const feedbackId = feedback.id || '未知';
+        
+        // 解析图片数据 - 注意：图片字段是 'i'
+        const images = feedback.i || feedback.images || [];
+        
+        // 解析评论数据
+        const comments = feedback.comments || feedback.cm || [];
+        
+        // 解析点赞数据
+        const likes = feedback.likes || feedback.l || { count: 0, users: [] };
+        
+        const typeClass = {
+            'suggestion': 'type-suggestion',
+            'problem': 'type-problem',
+            'complaint': 'type-complaint',
+            'other': 'type-other'
+        }[feedbackType] || 'type-other';
+        
+        const typeText = {
+            'suggestion': '意见建议',
+            'problem': '问题反馈',
+            'complaint': '投诉举报',
+            'other': '其他'
+        }[feedbackType] || '其他';
+        
+        const date = new Date(timestamp);
+        const timeString = isNaN(date.getTime()) ? '时间未知' : date.toLocaleString('zh-CN');
+        
+        // 检查是否有评论
+        const commentCount = comments.length;
+        const hasComments = commentCount > 0;
+        
+        // 检查是否有图片
+        const hasImages = Array.isArray(images) && images.length > 0;
+        
+        // 获取点赞数
+        const likesCount = likes.count || 0;
+        const isLiked = feedback.userLiked || false;
+        
+        // 生成图片HTML
+        let imagesHtml = '';
+        if (hasImages) {
+            console.log('反馈中的图片数据:', images); // 调试信息
+            
+            imagesHtml = `
+                <div class="feedback-images">
+                    <div class="feedback-images-title">📷 上传图片 (${images.length})</div>
+                    <div class="feedback-images-grid">
+            `;
+            
+            images.forEach((image, index) => {
+                // 解析图片数据 - 注意字段名是 'u' 和 't'
+                let imageUrl = '';
+                let thumbnailUrl = '';
+                
+                if (typeof image === 'string') {
+                    // 如果是字符串，直接使用
+                    imageUrl = image;
+                    thumbnailUrl = image;
+                } else if (image && typeof image === 'object') {
+                    // 使用正确的字段名：'u' 代表 url, 't' 代表 thumbnail
+                    imageUrl = image.u || image.url || '';
+                    thumbnailUrl = image.t || image.thumbnail || imageUrl;
+                }
+                
+                console.log(`图片 ${index + 1}:`, { imageUrl, thumbnailUrl }); // 调试信息
+                
+                // 如果有图片URL才显示
+                if (imageUrl) {
+                    // 确保URL格式正确（Base64格式）
+                    if (!imageUrl.startsWith('data:image')) {
+                        // 如果不是data URL格式，尝试添加前缀
+                        imageUrl = 'data:image/jpeg;base64,' + imageUrl;
+                    }
                     
-                    html += `
-                        <div class="comment-item" data-comment-id="${commentId}">
-                            <div class="comment-header">
-                                <span class="comment-author">${commentAuthor}</span>
-                                <span class="comment-time">${timeString}</span>
-                            </div>
-                            <div class="comment-content">${commentContent}</div>
-                            <div class="comment-actions">
-                                <button class="comment-like-btn ${isLiked ? 'liked' : ''}" 
-                                        onclick="window.toggleCommentLike('${feedbackId}', '${commentId}', this)"
-                                        data-comment-id="${commentId}"
-                                        title="${isLiked ? '取消点赞' : '点赞'}">
-                                    <span class="comment-like-icon">${isLiked ? '❤️' : '🤍'}</span>
-                                    <span class="comment-like-count">${commentLikesCount}</span>
-                                </button>
-                            </div>
+                    if (thumbnailUrl && !thumbnailUrl.startsWith('data:image')) {
+                        thumbnailUrl = 'data:image/jpeg;base64,' + thumbnailUrl;
+                    } else if (!thumbnailUrl) {
+                        thumbnailUrl = imageUrl; // 如果没有缩略图，使用原图
+                    }
+                    
+                    // 转义单引号，避免JS错误
+                    const safeImageUrl = imageUrl.replace(/'/g, "\\'");
+                    const safeThumbnailUrl = thumbnailUrl.replace(/'/g, "\\'");
+                    
+                    imagesHtml += `
+                        <div class="feedback-image-item" onclick="openImageModal('${safeImageUrl}')">
+                            <img src="${safeThumbnailUrl}" 
+                                 alt="反馈图片 ${index + 1}" 
+                                 onerror="handleImageError(this)">
                         </div>
                     `;
-                });
+                }
+            });
+            
+            imagesHtml += `
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += `
+            <div class="feedback-item" data-feedback-id="${feedbackId}">
+                <div class="feedback-header">
+                    <div>
+                        <span class="feedback-type ${typeClass}">${typeText}</span>
+                        <strong style="margin-left: 8px;">${employeeName}</strong>
+                    </div>
+                    <div class="feedback-time">${timeString}</div>
+                </div>
+                <div class="feedback-content">${content}</div>
                 
-                return html;
-            }
+                <!-- 图片展示区域 -->
+                ${imagesHtml}
+                
+                <div class="feedback-stats">
+                    <div class="feedback-info">
+                        <span>状态: ${status === 'processed' ? '✅ 已处理' : '⏳ 待处理'}</span>
+                        <span>反馈ID: ${feedbackId}</span>
+                    </div>
+                    <div class="feedback-actions">
+                        <button class="like-btn ${isLiked ? 'liked' : ''}" 
+                                onclick="toggleFeedbackLike('${feedbackId}', this)"
+                                data-feedback-id="${feedbackId}"
+                                title="${isLiked ? '取消点赞' : '点赞'}">
+                            <span class="like-icon">${isLiked ? '❤️' : '🤍'}</span>
+                            <span class="like-count">${likesCount}</span>
+                        </button>
+                       <button class="comment-btn" 
+        onclick="toggleComments('${feedbackId}', this)"
+        data-feedback-id="${feedbackId}">
+    ${commentCount > 0 ? `💬 评论(${commentCount})` : '💬 发表评论'}
+</button>
+                    </div>
+                </div>
+                
+                <!-- 评论区域 (初始隐藏) -->
+                <div class="comments-section" id="comments-${feedbackId}" style="display: none;">
+                    <div class="comments-header">
+                        <h3>评论</h3>
+                        <span class="comment-count">${commentCount} 条评论</span>
+                    </div>
+                    
+                    <div class="comments-list" id="comments-list-${feedbackId}">
+                        ${hasComments ? renderComments(comments, feedbackId) : `
+                            <div class="no-comments">暂无评论，快来发表第一个评论吧！</div>
+                        `}
+                    </div>
+                    
+                    <div class="add-comment-form">
+                        <div class="comment-input-group">
+                            <label for="comment-author-${feedbackId}">您的称呼（可选）</label>
+                            <input type="text" id="comment-author-${feedbackId}" placeholder="姓名或昵称">
+                        </div>
+                        <div class="comment-input-group">
+                            <label for="comment-content-${feedbackId}">评论内容</label>
+                            <textarea 
+                                id="comment-content-${feedbackId}" 
+                                class="comment-input" 
+                                placeholder="请输入您的评论..." 
+                                maxlength="500"
+                                required
+                            ></textarea>
+                        </div>
+                        <button 
+                            type="button" 
+                            class="add-comment-btn" 
+                            id="add-comment-btn-${feedbackId}"
+                            onclick="addComment('${feedbackId}')"
+                        >
+                            发表评论
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    feedbacksList.innerHTML = html;
+}
+// 检查是否需要展开某个反馈的评论区域
+if (window.shouldExpandCommentsFor) {
+    const feedbackId = window.shouldExpandCommentsFor;
+    const commentsSection = document.getElementById(`comments-${feedbackId}`);
+    const commentBtn = document.querySelector(`button[data-feedback-id="${feedbackId}"]`);
+    
+    if (commentsSection && commentBtn) {
+        // 展开评论区域
+        commentsSection.style.display = 'block';
+        
+        // 更新按钮文本
+        const commentItems = commentsSection.querySelectorAll('.comment-item');
+        const commentCount = commentItems.length;
+        commentBtn.textContent = commentCount > 0 ? `收起评论(${commentCount})` : '收起评论';
+    }
+    
+    // 清除标记
+    delete window.shouldExpandCommentsFor;
+}
+
+/**
+ * 图片加载失败处理函数
+ */
+function handleImageError(img) {
+    console.log('图片加载失败:', img.src);
+    img.onerror = null; // 防止无限循环
+    img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f5f5f5"/><text x="50" y="50" font-family="Arial" font-size="12" fill="#999" text-anchor="middle" alignment-baseline="middle">图片加载失败</text></svg>';
+}
+
+           /**
+ * 渲染评论列表
+ */
+function renderComments(comments, feedbackId) {
+    if (!comments || comments.length === 0) {
+        return '<div class="no-comments">暂无评论</div>';
+    }
+    
+    // 按时间倒序排序
+    comments.sort((a, b) => {
+        const aTime = a.timestamp || a.ts || 0;
+        const bTime = b.timestamp || b.ts || 0;
+        return new Date(bTime) - new Date(aTime);
+    });
+    
+    let html = '';
+    comments.forEach(comment => {
+        // 解析评论数据
+        const commentAuthor = comment.author || comment.a || '匿名同事';
+        const commentContent = comment.content || comment.c || '';
+        const commentId = comment.id || '未知';
+        const commentTimestamp = comment.timestamp || comment.ts;
+        const commentLikes = comment.likes || comment.l || { count: 0, users: [] };
+        
+        const date = new Date(commentTimestamp);
+        const timeString = isNaN(date.getTime()) ? '时间未知' : date.toLocaleString('zh-CN');
+        const commentLikesCount = commentLikes.count || 0;
+        const isLiked = comment.userLiked || false;
+        
+        console.log(`渲染评论 ${commentId}: 点赞数=${commentLikesCount}, 用户点赞=${isLiked}`);
+        
+        html += `
+            <div class="comment-item" data-comment-id="${commentId}">
+                <div class="comment-header">
+                    <span class="comment-author">${commentAuthor}</span>
+                    <span class="comment-time">${timeString}</span>
+                </div>
+                <div class="comment-content">${commentContent}</div>
+                <div class="comment-actions">
+                    <button class="comment-like-btn ${isLiked ? 'liked' : ''}" 
+                            onclick="toggleCommentLike('${feedbackId}', '${commentId}', this)"
+                            data-comment-id="${commentId}"
+                            title="${isLiked ? '取消点赞' : '点赞'}">
+                        <span class="comment-like-icon">${isLiked ? '❤️' : '🤍'}</span>
+                        <span class="comment-like-count">${commentLikesCount}</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
 
             /**
              * 处理表单提交
@@ -2308,7 +1668,6 @@
                 // 显示上传进度
                 uploadProgress.classList.add('active');
                 progressText.textContent = '准备上传...';
-                progressFill.style.width = '0%';
                 
                 try {
                     // 准备反馈数据
@@ -2316,16 +1675,13 @@
                         employeeName: document.getElementById('employeeName').value.trim(),
                         type: document.getElementById('feedbackType').value,
                         content: feedbackContent.value.trim(),
-                        imageFiles: selectedImages
+                        imageFiles: selectedImages // 添加图片文件
                     };
                     
                     console.log('提交反馈数据:', feedbackData);
                     
-                    // 保存反馈
-                    progressText.textContent = '正在上传图片...';
-                    progressFill.style.width = '30%';
-                    
-                    const result = await storage.saveFeedback(feedbackData);
+                    // 保存到云端
+                    const result = await jsonBinStorage.saveFeedback(feedbackData);
                     
                     console.log('保存结果:', result);
                     
@@ -2334,16 +1690,11 @@
                         
                         // 更新进度显示
                         progressFill.style.width = '100%';
-                        progressText.textContent = '保存完成！';
+                        progressText.textContent = '上传完成！';
                         
                         // 显示成功消息
                         setTimeout(() => {
-                            showSuccess(result.id, '已提交', result.imagesCount || 0);
-                            
-                            // 清除已选择的图片
-                            selectedImages = [];
-                            imagePreviewContainer.innerHTML = '';
-                            updateImageCount();
+                            showSuccess(result.id, '已提交');
                             
                             // 重新加载反馈列表
                             setTimeout(() => {
@@ -2362,271 +1713,281 @@
                 }
             }
 
-            /**
-             * 切换评论显示/隐藏
-             */
-            window.toggleComments = function(feedbackId, button) {
-                const commentsSection = document.getElementById(`comments-${feedbackId}`);
-                if (!commentsSection) return;
+         /**
+ * 切换评论显示/隐藏
+ */
+window.toggleComments = function(feedbackId, button) {
+    const commentsSection = document.getElementById(`comments-${feedbackId}`);
+    if (!commentsSection) return;
+    
+    // 找到正确的反馈项和评论按钮
+    const feedbackItem = document.querySelector(`.feedback-item[data-feedback-id="${feedbackId}"]`);
+    const commentBtn = feedbackItem ? feedbackItem.querySelector('.comment-btn') : button;
+    
+    if (commentsSection.style.display === 'none') {
+        commentsSection.style.display = 'block';
+        // 获取实际的评论数量
+        const commentItems = commentsSection.querySelectorAll('.comment-item');
+        const commentCount = commentItems.length;
+        if (commentBtn) {
+            commentBtn.textContent = commentCount > 0 ? `收起评论(${commentCount})` : '收起评论';
+        }
+    } else {
+        commentsSection.style.display = 'none';
+        if (commentBtn) {
+            // 获取实际的评论数量
+            const commentItems = commentsSection.querySelectorAll('.comment-item');
+            const commentCount = commentItems.length;
+            commentBtn.textContent = commentCount > 0 ? `💬 评论(${commentCount})` : '💬 发表评论';
+        }
+    }
+};
+
+         /**
+ * 添加评论
+ */
+window.addComment = async function(feedbackId) {
+    const authorInput = document.getElementById(`comment-author-${feedbackId}`);
+    const contentInput = document.getElementById(`comment-content-${feedbackId}`);
+    const addCommentBtn = document.getElementById(`add-comment-btn-${feedbackId}`);
+    const commentsList = document.getElementById(`comments-list-${feedbackId}`);
+    const commentCountSpan = document.querySelector(`#comments-${feedbackId} .comment-count`);
+    
+    // 注意：这里要选择正确的评论按钮
+    // 使用更精确的选择器：找到包含该反馈ID的 .feedback-item，然后找到其中的 .comment-btn
+    const feedbackItem = document.querySelector(`.feedback-item[data-feedback-id="${feedbackId}"]`);
+    const commentBtn = feedbackItem ? feedbackItem.querySelector('.comment-btn') : null;
+    
+    // 检查按钮是否存在
+    if (!addCommentBtn) {
+        console.error('评论按钮未找到:', `add-comment-btn-${feedbackId}`);
+        alert('评论功能出现错误，请刷新页面重试');
+        return;
+    }
+    
+    const author = authorInput ? authorInput.value.trim() : '';
+    const content = contentInput ? contentInput.value.trim() : '';
+    
+    // 验证
+    if (!content) {
+        alert('请输入评论内容');
+        if (contentInput) contentInput.focus();
+        return;
+    }
+    
+    if (content.length < 5) {
+        alert('评论内容至少需要5个字符');
+        if (contentInput) contentInput.focus();
+        return;
+    }
+    
+    try {
+        // 禁用提交按钮
+        addCommentBtn.disabled = true;
+        addCommentBtn.textContent = '提交中...';
+        
+        // 创建评论数据
+        const commentData = {
+            author: author || '匿名同事',
+            content: content
+        };
+        
+        console.log('添加评论:', commentData);
+        
+        // 保存评论到云端
+        const result = await jsonBinStorage.addComment(feedbackId, commentData);
+        
+        console.log('评论添加结果:', result); // 调试信息
+        
+        if (result.success && result.comment) {
+            console.log('✅ 评论添加成功:', result.comment);
+            
+            // 清空输入框
+            if (authorInput) authorInput.value = '';
+            if (contentInput) contentInput.value = '';
+            
+            // 显示成功反馈
+            addCommentBtn.textContent = '✓ 评论成功!';
+            addCommentBtn.style.background = 'var(--success-color)';
+            
+            // 直接更新评论列表，而不重新加载整个页面
+            if (commentsList) {
+                // 创建一个新的评论元素
+                const commentDate = new Date(result.comment.timestamp || Date.now());
+                const timeString = isNaN(commentDate.getTime()) ? '刚刚' : commentDate.toLocaleString('zh-CN');
                 
-                // 找到正确的反馈项和评论按钮
-                const feedbackItem = document.querySelector(`.feedback-item[data-feedback-id="${feedbackId}"]`);
-                const commentBtn = feedbackItem ? feedbackItem.querySelector('.comment-btn') : button;
+                const commentHtml = `
+                    <div class="comment-item" data-comment-id="${result.comment.id}">
+                        <div class="comment-header">
+                            <span class="comment-author">${result.comment.author || '匿名同事'}</span>
+                            <span class="comment-time">${timeString}</span>
+                        </div>
+                        <div class="comment-content">${result.comment.content}</div>
+                        <div class="comment-actions">
+                            <button class="comment-like-btn" 
+                                    onclick="toggleCommentLike('${feedbackId}', '${result.comment.id}', this)"
+                                    data-comment-id="${result.comment.id}"
+                                    title="点赞">
+                                <span class="comment-like-icon">🤍</span>
+                                <span class="comment-like-count">0</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
                 
-                if (commentsSection.style.display === 'none') {
-                    commentsSection.style.display = 'block';
-                    // 获取实际的评论数量
-                    const commentItems = commentsSection.querySelectorAll('.comment-item');
-                    const commentCount = commentItems.length;
-                    if (commentBtn) {
-                        commentBtn.textContent = commentCount > 0 ? `收起评论(${commentCount})` : '收起评论';
-                    }
-                } else {
-                    commentsSection.style.display = 'none';
-                    if (commentBtn) {
-                        // 获取实际的评论数量
-                        const commentItems = commentsSection.querySelectorAll('.comment-item');
-                        const commentCount = commentItems.length;
-                        commentBtn.textContent = commentCount > 0 ? `💬 评论(${commentCount})` : '💬 发表评论';
-                    }
+                // 检查是否有"暂无评论"提示，有则移除
+                const noCommentsDiv = commentsList.querySelector('.no-comments');
+                if (noCommentsDiv) {
+                    noCommentsDiv.remove();
                 }
-            };
+                
+                // 将新评论添加到评论列表的开头
+                commentsList.insertAdjacentHTML('afterbegin', commentHtml);
+            }
+            
+            // 更新评论数量显示
+            if (commentCountSpan && result.commentsCount !== undefined) {
+                commentCountSpan.textContent = result.commentsCount + ' 条评论';
+            }
+            
+            // 更新评论按钮文本 - 重要：这里使用正确的按钮
+            if (commentBtn && result.commentsCount !== undefined) {
+                const commentItems = commentsList ? commentsList.querySelectorAll('.comment-item') : [];
+                const actualCount = commentItems.length;
+                commentBtn.textContent = actualCount > 0 ? `💬 评论(${actualCount})` : '💬 发表评论';
+            }
+            
+            // 恢复按钮状态
+            setTimeout(() => {
+                if (addCommentBtn) {
+                    addCommentBtn.disabled = false;
+                    addCommentBtn.textContent = '发表评论';
+                    addCommentBtn.style.background = '';
+                }
+            }, 1000);
+            
+        } else {
+            throw new Error(result.message || '添加评论失败');
+        }
+    } catch (error) {
+        console.error('❌ 添加评论失败:', error);
+        alert('添加评论失败: ' + error.message);
+        
+        // 恢复提交按钮
+        if (addCommentBtn) {
+            addCommentBtn.disabled = false;
+            addCommentBtn.textContent = '发表评论';
+        }
+    }
+};
+
+           /**
+ * 切换反馈点赞状态
+ */
+window.toggleFeedbackLike = async function(feedbackId, button) {
+    if (!button) return;
+    
+    // 防止重复点击
+    if (button.disabled) return;
+    button.disabled = true;
+    
+    const likeIcon = button.querySelector('.like-icon');
+    const likeCountSpan = button.querySelector('.like-count');
+    
+    try {
+        // 确保使用正确的用户ID
+        const userId = currentUserId || getOrCreateUserId();
+        
+        // 调用点赞API
+        const result = await jsonBinStorage.toggleLike(feedbackId, userId);
+        
+        console.log('反馈点赞结果:', result); // 调试信息
+        
+        if (result.success) {
+            // 更新按钮状态
+            if (result.action === 'liked') {
+                button.classList.add('liked');
+                likeIcon.textContent = '❤️';
+            } else {
+                button.classList.remove('liked');
+                likeIcon.textContent = '🤍';
+            }
+            
+            // 更新点赞数
+            if (likeCountSpan) {
+                likeCountSpan.textContent = result.likesCount;
+            }
+            
+            // 添加动画效果
+            button.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 100);
+        } else {
+            console.error('反馈点赞失败:', result.message);
+            alert('操作失败: ' + result.message);
+        }
+    } catch (error) {
+        console.error('点赞操作失败:', error);
+        alert('操作失败，请刷新页面重试');
+    } finally {
+        button.disabled = false;
+    }
+};
 
             /**
-             * 添加评论
-             */
-            window.addComment = async function(feedbackId) {
-                const authorInput = document.getElementById(`comment-author-${feedbackId}`);
-                const contentInput = document.getElementById(`comment-content-${feedbackId}`);
-                const addCommentBtn = document.getElementById(`add-comment-btn-${feedbackId}`);
-                const commentsList = document.getElementById(`comments-list-${feedbackId}`);
-                
-                // 找到正确的反馈项和评论按钮
-                const feedbackItem = document.querySelector(`.feedback-item[data-feedback-id="${feedbackId}"]`);
-                const commentBtn = feedbackItem ? feedbackItem.querySelector('.comment-btn') : null;
-                
-                if (!addCommentBtn) {
-                    console.error('评论按钮未找到:', `add-comment-btn-${feedbackId}`);
-                    alert('评论功能出现错误，请刷新页面重试');
-                    return;
-                }
-                
-                const author = authorInput ? authorInput.value.trim() : '';
-                const content = contentInput ? contentInput.value.trim() : '';
-                
-                // 验证
-                if (!content) {
-                    alert('请输入评论内容');
-                    if (contentInput) contentInput.focus();
-                    return;
-                }
-                
-                if (content.length < 5) {
-                    alert('评论内容至少需要5个字符');
-                    if (contentInput) contentInput.focus();
-                    return;
-                }
-                
-                try {
-                    // 禁用提交按钮
-                    addCommentBtn.disabled = true;
-                    addCommentBtn.textContent = '提交中...';
-                    
-                    // 创建评论数据
-                    const commentData = {
-                        author: author || '匿名同事',
-                        content: content
-                    };
-                    
-                    console.log('添加评论:', commentData);
-                    
-                    // 保存评论
-                    const result = await storage.addComment(feedbackId, commentData);
-                    
-                    console.log('评论添加结果:', result);
-                    
-                    if (result.success && result.comment) {
-                        console.log('✅ 评论添加成功:', result.comment);
-                        
-                        // 清空输入框
-                        if (authorInput) authorInput.value = '';
-                        if (contentInput) contentInput.value = '';
-                        
-                        // 显示成功反馈
-                        addCommentBtn.textContent = '✓ 评论成功!';
-                        addCommentBtn.style.background = 'var(--success-color)';
-                        
-                        // 直接更新评论列表，而不重新加载整个页面
-                        if (commentsList) {
-                            // 创建一个新的评论元素
-                            const commentDate = new Date(result.comment.timestamp || Date.now());
-                            const timeString = isNaN(commentDate.getTime()) ? '刚刚' : commentDate.toLocaleString('zh-CN');
-                            
-                            const commentHtml = `
-                                <div class="comment-item" data-comment-id="${result.comment.id}">
-                                    <div class="comment-header">
-                                        <span class="comment-author">${result.comment.author || '匿名同事'}</span>
-                                        <span class="comment-time">${timeString}</span>
-                                    </div>
-                                    <div class="comment-content">${result.comment.content}</div>
-                                    <div class="comment-actions">
-                                        <button class="comment-like-btn" 
-                                                onclick="window.toggleCommentLike('${feedbackId}', '${result.comment.id}', this)"
-                                                data-comment-id="${result.comment.id}"
-                                                title="点赞">
-                                            <span class="comment-like-icon">🤍</span>
-                                            <span class="comment-like-count">0</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
-                            
-                            // 检查是否有"暂无评论"提示，有则移除
-                            const noCommentsDiv = commentsList.querySelector('.no-comments');
-                            if (noCommentsDiv) {
-                                noCommentsDiv.remove();
-                            }
-                            
-                            // 将新评论添加到评论列表的开头
-                            commentsList.insertAdjacentHTML('afterbegin', commentHtml);
-                        }
-                        
-                        // 更新评论数量显示
-                        const commentCountSpan = document.querySelector(`#comments-${feedbackId} .comment-count`);
-                        if (commentCountSpan && result.commentsCount !== undefined) {
-                            commentCountSpan.textContent = result.commentsCount + ' 条评论';
-                        }
-                        
-                        // 更新评论按钮文本
-                        if (commentBtn && result.commentsCount !== undefined) {
-                            const commentItems = commentsList ? commentsList.querySelectorAll('.comment-item') : [];
-                            const actualCount = commentItems.length;
-                            commentBtn.textContent = actualCount > 0 ? `💬 评论(${actualCount})` : '💬 发表评论';
-                        }
-                        
-                        // 恢复按钮状态
-                        setTimeout(() => {
-                            if (addCommentBtn) {
-                                addCommentBtn.disabled = false;
-                                addCommentBtn.textContent = '发表评论';
-                                addCommentBtn.style.background = '';
-                            }
-                        }, 1000);
-                        
-                    } else {
-                        throw new Error(result.message || '添加评论失败');
-                    }
-                } catch (error) {
-                    console.error('❌ 添加评论失败:', error);
-                    alert('添加评论失败: ' + error.message);
-                    
-                    // 恢复提交按钮
-                    if (addCommentBtn) {
-                        addCommentBtn.disabled = false;
-                        addCommentBtn.textContent = '发表评论';
-                    }
-                }
-            };
-
-            /**
-             * 切换反馈点赞状态
-             */
-            window.toggleFeedbackLike = async function(feedbackId, button) {
-                if (!button) return;
-                
-                // 防止重复点击
-                if (button.disabled) return;
-                button.disabled = true;
-                
-                const likeIcon = button.querySelector('.like-icon');
-                const likeCountSpan = button.querySelector('.like-count');
-                
-                try {
-                    const result = await storage.toggleLike(feedbackId, currentUserId);
-                    
-                    console.log('反馈点赞结果:', result);
-                    
-                    if (result.success) {
-                        // 更新按钮状态
-                        if (result.action === 'liked') {
-                            button.classList.add('liked');
-                            likeIcon.textContent = '❤️';
-                        } else {
-                            button.classList.remove('liked');
-                            likeIcon.textContent = '🤍';
-                        }
-                        
-                        // 更新点赞数
-                        if (likeCountSpan) {
-                            likeCountSpan.textContent = result.likesCount;
-                        }
-                        
-                        // 添加动画效果
-                        button.style.transform = 'scale(0.95)';
-                        setTimeout(() => {
-                            button.style.transform = 'scale(1)';
-                        }, 100);
-                    } else {
-                        console.error('反馈点赞失败:', result.message);
-                        alert('操作失败: ' + result.message);
-                    }
-                } catch (error) {
-                    console.error('点赞操作失败:', error);
-                    alert('操作失败，请刷新页面重试');
-                } finally {
-                    button.disabled = false;
-                }
-            };
-
-            /**
-             * 切换评论点赞状态
-             */
-            window.toggleCommentLike = async function(feedbackId, commentId, button) {
-                if (!button) return;
-                
-                // 防止重复点击
-                if (button.disabled) return;
-                button.disabled = true;
-                
-                const likeIcon = button.querySelector('.comment-like-icon');
-                const likeCountSpan = button.querySelector('.comment-like-count');
-                
-                try {
-                    const result = await storage.toggleCommentLike(feedbackId, commentId, currentUserId);
-                    
-                    console.log('评论点赞结果:', result);
-                    
-                    if (result.success) {
-                        // 更新按钮状态
-                        if (result.action === 'liked') {
-                            button.classList.add('liked');
-                            likeIcon.textContent = '❤️';
-                        } else {
-                            button.classList.remove('liked');
-                            likeIcon.textContent = '🤍';
-                        }
-                        
-                        // 更新点赞数
-                        if (likeCountSpan) {
-                            likeCountSpan.textContent = result.likesCount;
-                        }
-                        
-                        // 添加动画效果
-                        button.style.transform = 'scale(0.95)';
-                        setTimeout(() => {
-                            button.style.transform = 'scale(1)';
-                        }, 100);
-                    } else {
-                        console.error('评论点赞失败:', result.message);
-                        alert('操作失败: ' + result.message);
-                    }
-                } catch (error) {
-                    console.error('评论点赞操作失败:', error);
-                    alert('操作失败，请刷新页面重试');
-                } finally {
-                    button.disabled = false;
-                }
-            };
+ * 切换评论点赞状态
+ */
+window.toggleCommentLike = async function(feedbackId, commentId, button) {
+    if (!button) return;
+    
+    // 防止重复点击
+    if (button.disabled) return;
+    button.disabled = true;
+    
+    const likeIcon = button.querySelector('.comment-like-icon');
+    const likeCountSpan = button.querySelector('.comment-like-count');
+    
+    try {
+        // 确保使用正确的用户ID
+        const userId = currentUserId || getOrCreateUserId();
+        
+        // 调用评论点赞API
+        const result = await jsonBinStorage.toggleCommentLike(feedbackId, commentId, userId);
+        
+        console.log('评论点赞结果:', result); // 调试信息
+        
+        if (result.success) {
+            // 更新按钮状态
+            if (result.action === 'liked') {
+                button.classList.add('liked');
+                likeIcon.textContent = '❤️';
+            } else {
+                button.classList.remove('liked');
+                likeIcon.textContent = '🤍';
+            }
+            
+            // 更新点赞数
+            if (likeCountSpan) {
+                likeCountSpan.textContent = result.likesCount;
+            }
+            
+            // 添加动画效果
+            button.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 100);
+        } else {
+            console.error('评论点赞失败:', result.message);
+            alert('操作失败: ' + result.message);
+        }
+    } catch (error) {
+        console.error('评论点赞操作失败:', error);
+        alert('操作失败，请刷新页面重试');
+    } finally {
+        button.disabled = false;
+    }
+};
 
             /**
              * 打开图片模态框
@@ -2651,11 +2012,30 @@
             };
 
             /**
-             * 关闭图片模态框
+             * 全局更新图片上传进度 (供 jsonbin-storage.js 调用)
              */
-            window.closeImageModal = function() {
-                imageModal.classList.remove('active');
-                modalImage.src = '';
+            window.updateImageUploadProgress = function(progress, message) {
+                if (progressFill && progressFill.style) {
+                    progressFill.style.width = progress + '%';
+                }
+                if (progressText) {
+                    progressText.textContent = message;
+                }
+            };
+
+            /**
+             * 全局更新上传进度 (供 jsonbin-storage.js 调用)
+             */
+            window.updateUploadProgress = function(progress, message) {
+                if (uploadProgress) {
+                    uploadProgress.classList.add('active');
+                }
+                if (progressFill && progressFill.style) {
+                    progressFill.style.width = progress + '%';
+                }
+                if (progressText) {
+                    progressText.textContent = message;
+                }
             };
         });
     </script>
