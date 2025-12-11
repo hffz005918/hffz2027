@@ -363,122 +363,67 @@
             color: #1890ff;
         }
 
-        /* 新增：图片相关样式 */
-        .images-preview {
-            margin: 1rem 0;
-            display: none;
+        /* 新增：图片展示区域样式 */
+        .feedback-images {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
         }
 
-        .images-preview.show {
-            display: block;
-        }
-
-        .images-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .images-header h4 {
-            color: #333;
-            font-size: 0.95rem;
-        }
-
-        .toggle-images-btn {
-            background: none;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 2px 8px;
-            font-size: 0.8rem;
+        .feedback-images-title {
+            font-size: 0.9rem;
             color: #666;
-            cursor: pointer;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
         }
 
-        .toggle-images-btn:hover {
-            border-color: #1890ff;
-            color: #1890ff;
-        }
-
-        .images-grid {
+        .feedback-images-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             gap: 10px;
-            margin-top: 0.5rem;
         }
 
-        .image-item {
-            position: relative;
+        .feedback-image-item {
             border-radius: 6px;
             overflow: hidden;
-            border: 1px solid #ddd;
-            background: #f5f5f5;
+            border: 1px solid #eee;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
+            position: relative;
         }
 
-        .image-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        .feedback-image-item:hover {
+            transform: scale(1.02);
+            border-color: #1890ff;
         }
 
-        .image-item img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
+        .feedback-image-item:hover .image-delete-btn {
             display: block;
         }
 
-        .image-info {
-            padding: 6px;
-            background: rgba(255, 255, 255, 0.9);
-            font-size: 0.7rem;
-            color: #666;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .feedback-image-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
         }
 
-        .image-actions {
+        /* 新增：图片删除按钮样式 */
+        .image-delete-btn {
             position: absolute;
             top: 5px;
             right: 5px;
-            display: flex;
-            gap: 5px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .image-item:hover .image-actions {
-            opacity: 1;
-        }
-
-        .image-view-btn, .image-delete-btn {
-            width: 24px;
-            height: 24px;
+            background: #ff4d4f;
+            color: white;
             border: none;
             border-radius: 50%;
-            display: flex;
+            width: 24px;
+            height: 24px;
+            display: none;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-
-        .image-view-btn {
-            background: #1890ff;
-            color: white;
-        }
-
-        .image-view-btn:hover {
-            background: #1a73e8;
-            transform: scale(1.1);
-        }
-
-        .image-delete-btn {
-            background: #ff4d4f;
-            color: white;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            z-index: 10;
         }
 
         .image-delete-btn:hover {
@@ -486,24 +431,7 @@
             transform: scale(1.1);
         }
 
-        .image-stat {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 8px;
-            background: #f0f0f0;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            color: #666;
-            margin-right: 5px;
-        }
-
-        .image-stat.has-images {
-            background: #f6ffed;
-            color: #52c41a;
-        }
-
-        /* 图片模态框样式 */
+        /* 新增：图片模态框 */
         .image-modal {
             display: none;
             position: fixed;
@@ -524,107 +452,27 @@
         .image-modal-content {
             max-width: 90%;
             max-height: 90%;
-            position: relative;
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
         }
 
-       .image-modal-content img {
-    width: 100%;
-    height: auto;
-    max-height: 80vh;
-    object-fit: contain;
-    transition: opacity 0.3s;
-    opacity: 1;
-}
-
-/* 改善缩略图样式 */
-.image-item img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    display: block;
-    transition: opacity 0.3s;
-    opacity: 0;
-}
-
-/* 图片信息样式优化 */
-.image-modal-info {
-    padding: 15px;
-    background: white;
-    border-top: 1px solid #eee;
-    font-size: 14px;
-}
-
-.image-modal-info p {
-    margin: 5px 0;
-    color: #666;
-    line-height: 1.5;
-}
-
-.image-modal-info p:first-child {
-    color: #333;
-    font-weight: 500;
-}
+        .image-modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
 
         .image-modal-close {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
+            top: 20px;
+            right: 20px;
+            background: none;
             border: none;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            font-size: 20px;
+            color: white;
+            font-size: 2rem;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1001;
-        }
-
-        .image-modal-close:hover {
-            background: rgba(0, 0, 0, 0.9);
-        }
-
-        .image-modal-info {
-            padding: 10px;
-            background: white;
-            border-top: 1px solid #eee;
-        }
-
-        .image-modal-info p {
-            margin: 2px 0;
-            font-size: 0.8rem;
-            color: #666;
-        }
-
-        .stat-card.total-images {
-            border-top: 3px solid #52c41a;
-        }
-
-        .stat-card.total-images .stat-number {
-            color: #52c41a;
         }
     </style>
 </head>
 <body>
-    <!-- 图片查看模态框 -->
-    <div class="image-modal" id="imageModal">
-        <button class="image-modal-close" onclick="closeImageModal()">×</button>
-        <div class="image-modal-content">
-            <img id="modalImage" src="" alt="预览图片">
-            <div class="image-modal-info">
-                <p id="modalImageName">图片名称：加载中...</p>
-                <p id="modalImageSize">图片大小：加载中...</p>
-                <p id="modalImageType">图片类型：加载中...</p>
-            </div>
-        </div>
-    </div>
-
     <div class="container">
         <div class="header">
             <h1>宏方纺织 - 管理员后台</h1>
@@ -686,16 +534,10 @@
                     <div class="stat-number" id="totalComments">0</div>
                     <div class="stat-label">总评论数</div>
                 </div>
-                <!-- 新增：图片统计 -->
-                <div class="stat-card total-images">
-                    <div class="stat-number" id="totalImages">0</div>
-                    <div class="stat-label">总图片数</div>
-                </div>
             </div>
             
             <div style="margin: 1rem 0;">
                 <button onclick="loadFeedbacks()" style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">刷新数据</button>
-                <button onclick="clearAllImages()" style="padding: 8px 16px; background: #faad14; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;" title="清除所有反馈中的Base64图片数据">清理图片缓存</button>
             </div>
 
             <div class="error-message" id="errorMessage"></div>
@@ -712,10 +554,17 @@
         </div>
     </div>
 
-    <script src="super-storage.js"></script>
+    <!-- 图片查看模态框 -->
+    <div class="image-modal" id="imageModal">
+        <button class="image-modal-close" onclick="closeImageModal()">×</button>
+        <div class="image-modal-content">
+            <img id="modalImage" src="" alt="预览图片">
+        </div>
+    </div>
+
     <script src="jsonbin-storage.js"></script>
     <script>
-        // 使用jsonBinStorage（兼容点赞评论功能）
+        // 使用jsonBinStorage
         const storage = jsonBinStorage;
 
         // 页面加载完成后初始化
@@ -856,43 +705,47 @@
         // 更新统计信息
         function updateStats(feedbacks) {
             const total = feedbacks.length;
-            const pending = feedbacks.filter(f => f.status === 'pending').length;
-            const processed = feedbacks.filter(f => f.status === 'processed').length;
+            const pending = feedbacks.filter(f => {
+                const status = f.status || f.s || 'pending';
+                return status === 'pending';
+            }).length;
+            
+            const processed = feedbacks.filter(f => {
+                const status = f.status || f.s || 'pending';
+                return status === 'processed';
+            }).length;
             
             // 今日反馈
             const today = new Date().toDateString();
             const todayFeedbacks = feedbacks.filter(f => {
-                if (!f.timestamp) return false;
-                const feedbackDate = new Date(f.timestamp).toDateString();
+                if (!f.timestamp && !f.ts) return false;
+                const feedbackDate = new Date(f.timestamp || f.ts).toDateString();
                 return feedbackDate === today;
             }).length;
 
             // 计算总点赞数和总评论数
             let totalLikes = 0;
             let totalComments = 0;
-            let totalImages = 0;
             
             feedbacks.forEach(feedback => {
                 // 反馈点赞数
-                if (feedback.likes && feedback.likes.count) {
-                    totalLikes += feedback.likes.count;
+                const likes = feedback.likes || feedback.l;
+                if (likes && likes.count) {
+                    totalLikes += likes.count;
                 }
                 
                 // 评论数
-                if (feedback.comments) {
-                    totalComments += feedback.comments.length;
+                const comments = feedback.comments || feedback.cm;
+                if (comments && Array.isArray(comments)) {
+                    totalComments += comments.length;
                     
                     // 评论点赞数
-                    feedback.comments.forEach(comment => {
-                        if (comment.likes && comment.likes.count) {
-                            totalLikes += comment.likes.count;
+                    comments.forEach(comment => {
+                        const commentLikes = comment.likes || comment.l;
+                        if (commentLikes && commentLikes.count) {
+                            totalLikes += commentLikes.count;
                         }
                     });
-                }
-                
-                // 图片数
-                if (feedback.images) {
-                    totalImages += feedback.images.length;
                 }
             });
 
@@ -903,7 +756,6 @@
             document.getElementById('todayFeedbacks').textContent = todayFeedbacks;
             document.getElementById('totalLikes').textContent = totalLikes;
             document.getElementById('totalComments').textContent = totalComments;
-            document.getElementById('totalImages').textContent = totalImages;
         }
 
         // 显示反馈数据
@@ -921,67 +773,91 @@
             }
             
             // 按时间倒序排序
-            feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            feedbacks.sort((a, b) => {
+                const aTime = a.timestamp || a.ts || 0;
+                const bTime = b.timestamp || b.ts || 0;
+                return new Date(bTime) - new Date(aTime);
+            });
             
             let html = '';
             feedbacks.forEach(feedback => {
-                const date = new Date(feedback.timestamp);
+                const date = new Date(feedback.timestamp || feedback.ts);
                 const timeString = date.toLocaleString('zh-CN');
-                const typeText = getTypeText(feedback.type);
-                const typeColor = getTypeColor(feedback.type);
+                const type = feedback.type || feedback.t || 'other';
+                const typeText = getTypeText(type);
+                const typeColor = getTypeColor(type);
+                const status = feedback.status || feedback.s || 'pending';
+                const employeeName = feedback.employeeName || feedback.n || '匿名用户';
+                const content = feedback.content || feedback.c || '';
+                
+                // 解析图片数据
+                const images = feedback.i || feedback.images || [];
+                const hasImages = Array.isArray(images) && images.length > 0;
                 
                 // 计算互动数据
-                const likesCount = feedback.likes ? feedback.likes.count : 0;
-                const commentsCount = feedback.comments ? feedback.comments.length : 0;
-                const imagesCount = feedback.images ? feedback.images.length : 0;
+                const likes = feedback.likes || feedback.l;
+                const comments = feedback.comments || feedback.cm;
+                const likesCount = likes ? (likes.count || 0) : 0;
+                const commentsCount = comments ? (Array.isArray(comments) ? comments.length : 0) : 0;
                 
-                // 生成图片预览
-                let imagesPreview = '';
-                if (imagesCount > 0) {
-                    const imagesHtml = feedback.images.map((image, index) => {
-    const imageSize = image.originalSize || image.size || '未知';
-    const imageName = image.originalName || `图片${index + 1}`;
-    const imageType = image.mimeType || 'image/jpeg';
-    
-    // 确定缩略图源
-    let thumbnailSrc = image.thumbnail || image.url || '#';
-    
-    // 如果图片已被清理，使用占位符
-    if (image.url === '[已清理]' || !image.url) {
-        thumbnailSrc = getPlaceholderImage();
-    }
-    
-    return `
-        <div class="image-item" data-image-index="${index}">
-            <img src="${thumbnailSrc}" 
-                 alt="${imageName}"
-                 onload="this.style.opacity='1'"
-                 onerror="
-                    console.log('缩略图加载失败:', '${imageName}');
-                    this.onerror = null;
-                    this.src = '${getPlaceholderImage()}';
-                 ">
-            <div class="image-info">${imageName}</div>
-            <div class="image-actions">
-                <button class="image-view-btn" onclick="viewImage('${feedback.id}', ${index})" title="查看大图">
-                    👁️
-                </button>
-                <button class="image-delete-btn" onclick="deleteImage('${feedback.id}', ${index})" title="删除图片">
-                    ×
-                </button>
-            </div>
-        </div>
-    `;
-}).join('');
+                // 生成图片HTML
+                let imagesHtml = '';
+                if (hasImages) {
+                    imagesHtml = `
+                        <div class="feedback-images">
+                            <div class="feedback-images-title">📷 上传图片 (${images.length})</div>
+                            <div class="feedback-images-grid">
+                    `;
                     
-                    imagesPreview = `
-                        <div class="images-preview" id="images-preview-${feedback.id}">
-                            <div class="images-header">
-                                <h4>上传图片 (${imagesCount})</h4>
-                                <button class="toggle-images-btn" onclick="toggleImages(this, '${feedback.id}')">收起</button>
-                            </div>
-                            <div class="images-grid">
-                                ${imagesHtml}
+                    images.forEach((image, index) => {
+                        // 解析图片数据
+                        let imageUrl = '';
+                        let thumbnailUrl = '';
+                        let imageName = '';
+                        
+                        if (typeof image === 'string') {
+                            imageUrl = image;
+                            thumbnailUrl = image;
+                        } else if (image && typeof image === 'object') {
+                            imageUrl = image.u || image.url || '';
+                            thumbnailUrl = image.t || image.thumbnail || imageUrl;
+                            imageName = image.n || image.originalName || `图片${index + 1}`;
+                        }
+                        
+                        // 如果有图片URL才显示
+                        if (imageUrl) {
+                            // 确保URL格式正确
+                            if (!imageUrl.startsWith('data:image')) {
+                                imageUrl = 'data:image/jpeg;base64,' + imageUrl;
+                            }
+                            
+                            if (thumbnailUrl && !thumbnailUrl.startsWith('data:image')) {
+                                thumbnailUrl = 'data:image/jpeg;base64,' + thumbnailUrl;
+                            } else if (!thumbnailUrl) {
+                                thumbnailUrl = imageUrl;
+                            }
+                            
+                            // 转义单引号
+                            const safeImageUrl = imageUrl.replace(/'/g, "\\'");
+                            const safeThumbnailUrl = thumbnailUrl.replace(/'/g, "\\'");
+                            
+                            imagesHtml += `
+                                <div class="feedback-image-item">
+                                    <img src="${safeThumbnailUrl}" 
+                                         alt="${imageName}" 
+                                         onerror="handleImageError(this)"
+                                         onclick="openImageModal('${safeImageUrl}')">
+                                    <button class="image-delete-btn" 
+                                            onclick="deleteImage('${feedback.id}', ${index})"
+                                            title="删除图片">
+                                        ×
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    imagesHtml += `
                             </div>
                         </div>
                     `;
@@ -989,24 +865,26 @@
                 
                 // 生成评论预览
                 let commentsPreview = '';
-                if (commentsCount > 0) {
-                    const recentComments = feedback.comments.slice(0, 2);
+                if (commentsCount > 0 && comments && Array.isArray(comments)) {
+                    const recentComments = comments.slice(0, 2);
                     commentsPreview = recentComments.map(comment => {
-                        const commentDate = new Date(comment.timestamp);
+                        const commentAuthor = comment.author || comment.a || '匿名同事';
+                        const commentContent = comment.content || comment.c || '';
+                        const commentId = comment.id || generateCommentId(comment);
+                        const commentDate = new Date(comment.timestamp || comment.ts);
                         const commentTime = commentDate.toLocaleString('zh-CN');
-                        const commentLikes = comment.likes ? comment.likes.count : 0;
-                        const commentId = comment.id || generateCommentId();
+                        const commentLikes = comment.likes || comment.l || { count: 0 };
                         
                         return `
                             <div class="comment-item" id="comment-${commentId}">
                                 <div class="comment-header">
-                                    <span class="comment-author">${comment.author || '匿名同事'}</span>
+                                    <span class="comment-author">${commentAuthor}</span>
                                     <span class="comment-time">${commentTime}</span>
                                 </div>
-                                <div class="comment-content">${comment.content}</div>
+                                <div class="comment-content">${commentContent}</div>
                                 <div class="comment-stats">
-                                    <div class="comment-like-stat ${commentLikes > 0 ? 'liked' : ''}">
-                                        👍 ${commentLikes}
+                                    <div class="comment-like-stat ${commentLikes.count > 0 ? 'liked' : ''}">
+                                        👍 ${commentLikes.count || 0}
                                     </div>
                                     <div class="comment-actions">
                                         <button class="comment-delete-btn" onclick="deleteComment('${feedback.id}', '${commentId}')">
@@ -1034,16 +912,19 @@
                                 <span style="background: ${typeColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: white;">
                                     ${typeText}
                                 </span>
-                                <strong style="margin-left: 8px;">${feedback.employeeName || '匿名用户'}</strong>
+                                <strong style="margin-left: 8px;">${employeeName}</strong>
                             </div>
                             <span style="color: #666; font-size: 0.9rem;">${timeString}</span>
                         </div>
                         <div style="margin-bottom: 0.5rem;">
-                            <span style="background: ${feedback.status === 'pending' ? '#fff7e6' : '#f6ffed'}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: ${feedback.status === 'pending' ? '#faad14' : '#52c41a'};">
-                                ${feedback.status === 'pending' ? '待处理' : '已处理'}
+                            <span style="background: ${status === 'pending' ? '#fff7e6' : '#f6ffed'}; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: ${status === 'pending' ? '#faad14' : '#52c41a'};">
+                                ${status === 'pending' ? '待处理' : '已处理'}
                             </span>
                         </div>
-                        <div style="margin-bottom: 1rem; line-height: 1.6; white-space: pre-wrap;">${feedback.content}</div>
+                        <div style="margin-bottom: 1rem; line-height: 1.6; white-space: pre-wrap;">${content}</div>
+                        
+                        <!-- 图片展示区域 -->
+                        ${imagesHtml}
                         
                         <!-- 互动统计 -->
                         <div class="interaction-stats">
@@ -1057,17 +938,7 @@
                                 `<button class="toggle-comments-btn" onclick="toggleComments(this, '${feedback.id}')">查看评论</button>` : 
                                 ''
                             }
-                            <div class="image-stat ${imagesCount > 0 ? 'has-images' : ''}">
-                                📷 ${imagesCount}
-                            </div>
-                            ${imagesCount > 0 ? 
-                                `<button class="toggle-images-btn" onclick="toggleImages(this, '${feedback.id}')">查看图片</button>` : 
-                                ''
-                            }
                         </div>
-                        
-                        <!-- 图片预览区域 -->
-                        ${imagesPreview}
                         
                         <!-- 评论预览区域 -->
                         <div class="comments-preview" id="comments-preview-${feedback.id}">
@@ -1080,7 +951,7 @@
                         
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
                             <button onclick="processFeedback('${feedback.id}')" style="padding: 6px 12px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                ${feedback.status === 'pending' ? '标记处理' : '标记待处理'}
+                                ${status === 'pending' ? '标记处理' : '标记待处理'}
                             </button>
                             <button onclick="deleteFeedback('${feedback.id}')" style="padding: 6px 12px; background: #ff4d4f; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                 删除反馈
@@ -1093,9 +964,66 @@
             container.innerHTML = html;
         }
 
-        // 生成评论ID（如果评论没有ID）
-        function generateCommentId() {
+        // 图片加载错误处理
+        function handleImageError(img) {
+            console.log('图片加载失败:', img.src);
+            img.onerror = null;
+            img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f5f5f5"/><text x="50" y="50" font-family="Arial" font-size="12" fill="#999" text-anchor="middle" alignment-baseline="middle">图片加载失败</text></svg>';
+        }
+
+        // 打开图片模态框
+        function openImageModal(imageSrc) {
+            const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            
+            if (!imageModal || !modalImage) return;
+            
+            modalImage.src = imageSrc;
+            imageModal.classList.add('active');
+            
+            // 点击模态框背景关闭
+            imageModal.addEventListener('click', function(e) {
+                if (e.target === imageModal) {
+                    closeImageModal();
+                }
+            });
+            
+            // ESC键关闭
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeImageModal();
+                }
+            });
+        }
+
+        // 关闭图片模态框
+        function closeImageModal() {
+            const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            
+            if (!imageModal || !modalImage) return;
+            
+            imageModal.classList.remove('active');
+            modalImage.src = '';
+        }
+
+        // 生成评论ID
+        function generateCommentId(comment) {
+            if (comment.id) return comment.id;
+            if (comment.c && comment.a && comment.ts) {
+                return 'comment_' + comment.ts + '_' + hashString(comment.c.substring(0, 10) + comment.a);
+            }
             return 'comment_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // 简单字符串哈希
+        function hashString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
         }
 
         function getTypeText(type) {
@@ -1122,8 +1050,16 @@
         async function processFeedback(feedbackId) {
             console.log('处理反馈:', feedbackId);
             try {
-                const currentFeedback = await getFeedbackById(feedbackId);
-                const newStatus = currentFeedback && currentFeedback.status === 'processed' ? 'pending' : 'processed';
+                // 获取当前状态
+                const feedbacks = await storage.getFeedbacks();
+                const feedback = feedbacks.find(f => f.id === feedbackId);
+                
+                if (!feedback) {
+                    throw new Error('未找到该反馈');
+                }
+                
+                const currentStatus = feedback.status || feedback.s || 'pending';
+                const newStatus = currentStatus === 'processed' ? 'pending' : 'processed';
                 
                 const result = await storage.updateFeedbackStatus(feedbackId, newStatus);
                 
@@ -1139,33 +1075,113 @@
             }
         }
 
-        // 获取单个反馈
-        async function getFeedbackById(feedbackId) {
-            try {
-                const feedbacks = await storage.getFeedbacks();
-                return feedbacks.find(f => f.id === feedbackId);
-            } catch (error) {
-                console.error('获取反馈失败:', error);
-                return null;
-            }
-        }
-
         // 删除反馈
         async function deleteFeedback(feedbackId) {
             console.log('删除反馈:', feedbackId);
-            if (confirm('确定要删除这条反馈吗？\n此操作将同时删除该反馈的所有评论和点赞数据！\n此操作不可恢复！')) {
+            if (confirm('确定要删除这条反馈吗？\n此操作将同时删除该反馈的所有图片、评论和点赞数据！\n此操作不可恢复！')) {
                 try {
-                    const result = await storage.deleteFeedback(feedbackId);
+                    // 由于jsonbin-storage.js中没有deleteFeedback方法，我们需要手动处理
+                    const feedbacks = await storage.getFeedbacks();
+                    const filteredFeedbacks = feedbacks.filter(f => f.id !== feedbackId);
                     
-                    if (result.success) {
-                        showSuccess('反馈删除成功');
-                        loadFeedbacks();
-                    } else {
-                        throw new Error(result.error || result.message);
+                    // 获取当前记录
+                    const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${storage.binId}`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Access-Key': storage.readOnlyKey
+                        }
+                    });
+                    
+                    if (!getResponse.ok) {
+                        throw new Error('获取当前数据失败');
                     }
+                    
+                    const getData = await getResponse.json();
+                    const record = getData.record;
+                    
+                    // 更新反馈数组
+                    record.feedbacks = filteredFeedbacks;
+                    
+                    // 更新统计信息
+                    if (record.stats) {
+                        record.stats.total = filteredFeedbacks.length;
+                        record.stats.pending = filteredFeedbacks.filter(f => {
+                            const status = f.status || f.s || 'pending';
+                            return status === 'pending';
+                        }).length;
+                        record.stats.processed = filteredFeedbacks.filter(f => {
+                            const status = f.status || f.s || 'pending';
+                            return status === 'processed';
+                        }).length;
+                    }
+                    
+                    if (record.sys) {
+                        record.sys.lu = Date.now();
+                    }
+                    
+                    // 保存回云端
+                    const saveResponse = await fetch(`https://api.jsonbin.io/v3/b/${storage.binId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': storage.masterKey
+                        },
+                        body: JSON.stringify(record)
+                    });
+                    
+                    if (!saveResponse.ok) {
+                        throw new Error('保存失败: ' + saveResponse.status);
+                    }
+                    
+                    showSuccess('反馈删除成功');
+                    loadFeedbacks();
+                    
                 } catch (error) {
                     console.error('删除失败:', error);
                     showError('删除失败: ' + error.message);
+                }
+            }
+        }
+
+        // 删除评论
+        async function deleteComment(feedbackId, commentId) {
+            console.log('删除评论:', feedbackId, commentId);
+            
+            if (confirm('确定要删除这条评论吗？\n此操作将同时删除该评论的所有点赞数据！\n此操作不可恢复！')) {
+                try {
+                    const feedbacks = await storage.getFeedbacks();
+                    const feedbackIndex = feedbacks.findIndex(f => f.id === feedbackId);
+                    
+                    if (feedbackIndex === -1) {
+                        throw new Error('未找到该反馈');
+                    }
+                    
+                    const feedback = feedbacks[feedbackIndex];
+                    const comments = feedback.comments || feedback.cm || [];
+                    
+                    // 删除评论
+                    const updatedComments = comments.filter(comment => {
+                        // 比较评论ID
+                        const idToCompare = comment.id || generateCommentId(comment);
+                        return idToCompare !== commentId;
+                    });
+                    
+                    // 更新评论数组
+                    if (feedback.comments !== undefined) {
+                        feedback.comments = updatedComments;
+                    } else if (feedback.cm !== undefined) {
+                        feedback.cm = updatedComments;
+                    }
+                    
+                    // 保存更新
+                    await saveAllFeedbacks(feedbacks);
+                    
+                    showSuccess('评论删除成功');
+                    loadFeedbacks();
+                    
+                } catch (error) {
+                    console.error('删除评论失败:', error);
+                    showError('删除评论失败: ' + error.message);
                 }
             }
         }
@@ -1174,25 +1190,39 @@
         async function deleteImage(feedbackId, imageIndex) {
             console.log('删除图片:', feedbackId, imageIndex);
             
-            if (confirm('确定要删除这张图片吗？此操作不可恢复！')) {
+            if (confirm('确定要删除这张图片吗？\n此操作不可恢复！')) {
                 try {
-                    const feedback = await getFeedbackById(feedbackId);
-                    if (!feedback || !feedback.images) {
-                        throw new Error('未找到图片数据');
+                    const feedbacks = await storage.getFeedbacks();
+                    const feedbackIndex = feedbacks.findIndex(f => f.id === feedbackId);
+                    
+                    if (feedbackIndex === -1) {
+                        throw new Error('未找到该反馈');
                     }
                     
-                    if (imageIndex >= feedback.images.length) {
+                    const feedback = feedbacks[feedbackIndex];
+                    const images = feedback.i || feedback.images || [];
+                    
+                    // 检查索引是否有效
+                    if (imageIndex < 0 || imageIndex >= images.length) {
                         throw new Error('图片索引无效');
                     }
                     
-                    // 从数组中移除图片
-                    feedback.images.splice(imageIndex, 1);
+                    // 删除指定索引的图片
+                    images.splice(imageIndex, 1);
                     
-                    // 更新反馈数据
-                    await updateFeedbackImages(feedbackId, feedback.images);
+                    // 更新图片数组
+                    if (feedback.i !== undefined) {
+                        feedback.i = images;
+                    } else if (feedback.images !== undefined) {
+                        feedback.images = images;
+                    }
+                    
+                    // 保存更新
+                    await saveAllFeedbacks(feedbacks);
                     
                     showSuccess('图片删除成功');
                     loadFeedbacks();
+                    
                 } catch (error) {
                     console.error('删除图片失败:', error);
                     showError('删除图片失败: ' + error.message);
@@ -1200,240 +1230,69 @@
             }
         }
 
-        // 更新反馈的图片列表
-        async function updateFeedbackImages(feedbackId, images) {
+        // 保存所有反馈数据
+        async function saveAllFeedbacks(feedbacks) {
             try {
-                const feedbacks = await storage.getFeedbacks();
-                const feedbackIndex = feedbacks.findIndex(f => f.id === feedbackId);
+                // 1. 获取当前bin数据
+                const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${storage.binId}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Key': storage.readOnlyKey
+                    }
+                });
                 
-                if (feedbackIndex === -1) {
-                    throw new Error('未找到反馈');
+                if (!getResponse.ok) {
+                    throw new Error('获取当前数据失败');
                 }
                 
-                // 更新图片
-                feedbacks[feedbackIndex].images = images;
+                const getData = await getResponse.json();
+                const record = getData.record;
                 
-                // 保存到云端
-                const result = await saveAllFeedbacks(feedbacks);
+                // 2. 更新反馈数组
+                record.feedbacks = feedbacks;
+                
+                // 3. 更新统计信息
+                if (!record.stats) record.stats = {};
+                record.stats.total = feedbacks.length;
+                record.stats.pending = feedbacks.filter(f => {
+                    const status = f.status || f.s || 'pending';
+                    return status === 'pending';
+                }).length;
+                record.stats.processed = feedbacks.filter(f => {
+                    const status = f.status || f.s || 'pending';
+                    return status === 'processed';
+                }).length;
+                
+                // 4. 更新系统信息
+                if (!record.sys) record.sys = {};
+                record.sys.lu = Date.now();
+                record.sys.v = record.sys.v || '4.0';
+                
+                // 5. 保存回云端
+                const saveResponse = await fetch(`https://api.jsonbin.io/v3/b/${storage.binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': storage.masterKey
+                    },
+                    body: JSON.stringify(record)
+                });
+                
+                if (!saveResponse.ok) {
+                    const errorText = await saveResponse.text();
+                    throw new Error('保存失败: ' + saveResponse.status + ' - ' + errorText);
+                }
+                
+                console.log('✅ 反馈数据保存成功');
                 
                 return {
                     success: true,
-                    message: '图片更新成功'
+                    message: '数据已保存到云端'
                 };
+                
             } catch (error) {
-                console.error('更新图片失败:', error);
-                return {
-                    success: false,
-                    error: error.message
-                };
-            }
-        }
-
-        // 查看图片大图 - 修复版本
-// 修复后的查看图片函数
-async function viewImage(feedbackId, imageIndex) {
-    console.log('查看图片:', feedbackId, imageIndex);
-    
-    try {
-        const feedback = await getFeedbackById(feedbackId);
-        if (!feedback || !feedback.images) {
-            throw new Error('未找到图片数据');
-        }
-        
-        if (imageIndex >= feedback.images.length) {
-            throw new Error('图片索引无效');
-        }
-        
-        const image = feedback.images[imageIndex];
-        const modalImage = document.getElementById('modalImage');
-        
-        console.log('图片原始数据:', {
-            name: image.originalName,
-            urlExists: !!image.url,
-            isCleaned: image.cleaned || image.url === '[已清理]',
-            isBase64: image.isBase64,
-            thumbnailExists: !!image.thumbnail
-        });
-        
-        // 清空之前的图片
-        modalImage.src = '';
-        modalImage.style.display = 'none';
-        
-        // 设置图片信息
-        const imageName = image.originalName || '未命名图片';
-        document.getElementById('modalImageName').textContent = `图片名称：${imageName}`;
-        
-        let sizeText = '图片大小：';
-        if (image.originalSize) {
-            sizeText += `${(image.originalSize / 1024).toFixed(1)}KB`;
-            if (image.optimizedSize) {
-                sizeText += ` (优化后：${(image.optimizedSize / 1024).toFixed(1)}KB)`;
-            }
-        } else if (image.size) {
-            sizeText += `${(image.size / 1024).toFixed(1)}KB`;
-        } else {
-            sizeText += '未知';
-        }
-        document.getElementById('modalImageSize').textContent = sizeText;
-        
-        document.getElementById('modalImageType').textContent = 
-            `图片类型：${image.mimeType || '未知'}`;
-        
-        // 显示模态框
-        openImageModal();
-        
-        // 延迟加载图片
-        setTimeout(async () => {
-            try {
-                // 尝试获取有效的图片URL
-                const imageUrl = await getValidImageUrl(image);
-                
-                if (imageUrl) {
-                    // 预加载图片
-                    await preloadImage(imageUrl);
-                    
-                    // 设置图片源
-                    modalImage.src = imageUrl;
-                    modalImage.style.display = 'block';
-                    
-                    console.log('图片加载成功');
-                } else {
-                    // 显示占位符
-                    modalImage.src = getPlaceholderImage();
-                    modalImage.style.display = 'block';
-                    modalImage.alt = '图片数据不可用';
-                    
-                    document.getElementById('modalImageName').textContent += ' (数据不可用)';
-                    console.log('图片数据不可用，显示占位符');
-                }
-            } catch (loadError) {
-                console.error('图片加载失败:', loadError);
-                modalImage.src = getPlaceholderImage();
-                modalImage.style.display = 'block';
-                modalImage.alt = '图片加载失败';
-                
-                document.getElementById('modalImageName').textContent += ' (加载失败)';
-            }
-        }, 300);
-        
-    } catch (error) {
-        console.error('查看图片失败:', error);
-        showError('查看图片失败: ' + error.message);
-    }
-}
-
-// 获取有效的图片URL
-async function getValidImageUrl(image) {
-    // 检查图片是否已被清理
-    if (image.cleaned || image.url === '[已清理]') {
-        console.log('图片已被清理');
-        return null;
-    }
-    
-    // 检查是否有有效的URL
-    if (image.url && image.url.startsWith('data:image')) {
-        // 验证Base64数据是否完整
-        if (image.url.length > 100) {
-            return image.url;
-        }
-    }
-    
-    // 检查缩略图
-    if (image.thumbnail && image.thumbnail.startsWith('data:image')) {
-        console.log('使用缩略图');
-        return image.thumbnail;
-    }
-    
-    // 如果没有Base64数据，尝试从其他属性获取
-    if (image.display_url) {
-        return image.display_url;
-    }
-    
-    return null;
-}
-
-// 预加载图片
-function preloadImage(url) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('图片加载失败'));
-        img.src = url;
-        
-        // 设置超时
-        setTimeout(() => {
-            if (!img.complete) {
-                reject(new Error('图片加载超时'));
-            }
-        }, 5000);
-    });
-}
-
-// 改进的占位符图片
-function getPlaceholderImage() {
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(`
-        <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
-            <rect width="400" height="300" fill="#f5f5f5"/>
-            <path d="M80,120 L160,80 L240,120 L320,80" stroke="#ddd" fill="none"/>
-            <circle cx="200" cy="150" r="30" fill="#eee" stroke="#ddd"/>
-            <text x="200" y="220" font-family="Arial" font-size="14" fill="#999" text-anchor="middle">
-                图片加载失败或已被清理
-            </text>
-            <text x="200" y="240" font-family="Arial" font-size="12" fill="#ccc" text-anchor="middle">
-                云.jpg
-            </text>
-        </svg>
-    `);
-}
-        // 打开图片模态框
-function openImageModal() {
-    const modal = document.getElementById('imageModal');
-    
-    // 重置模态框状态
-    const modalImage = document.getElementById('modalImage');
-    modalImage.style.display = 'none';
-    modalImage.alt = '';
-    
-    // 显示模态框
-    modal.classList.add('active');
-    
-    // 点击背景关闭
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            closeImageModal();
-        }
-    });
-    
-    // ESC键关闭
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeImageModal();
-        }
-    });
-}
-
-        // 关闭图片模态框
-        function closeImageModal() {
-            const modal = document.getElementById('imageModal');
-            modal.classList.remove('active');
-            document.getElementById('modalImage').src = '';
-        }
-
-        // 切换图片显示/隐藏
-        function toggleImages(button, feedbackId) {
-            const imagesPreview = document.getElementById(`images-preview-${feedbackId}`);
-            if (!imagesPreview) return;
-            
-            if (imagesPreview.classList.contains('show')) {
-                imagesPreview.classList.remove('show');
-                if (button) {
-                    button.textContent = '查看图片';
-                }
-            } else {
-                imagesPreview.classList.add('show');
-                if (button) {
-                    button.textContent = '收起图片';
-                }
+                console.error('保存失败:', error);
+                throw error;
             }
         }
 
@@ -1455,171 +1314,72 @@ function openImageModal() {
             }
         }
 
-        // 删除评论
-        async function deleteComment(feedbackId, commentId) {
-            console.log('删除评论:', feedbackId, commentId);
-            
-            if (confirm('确定要删除这条评论吗？\n此操作将同时删除该评论的所有点赞数据！\n此操作不可恢复！')) {
-                try {
-                    const result = await jsonBinStorage.deleteComment(feedbackId, commentId);
-                    
-                    if (result.success) {
-                        showSuccess('评论删除成功');
-                        loadFeedbacks();
-                    } else {
-                        throw new Error(result.message || '删除失败');
-                    }
-                    
-                } catch (error) {
-                    console.error('删除评论失败:', error);
-                    showError('删除评论失败: ' + error.message);
-                }
-            }
-        }
-
-        // 保存所有反馈数据
-        async function saveAllFeedbacks(feedbacks) {
-            try {
-                const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${jsonBinStorage.binId}`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Access-Key': jsonBinStorage.readOnlyKey
-                    }
-                });
-                
-                if (!getResponse.ok) {
-                    throw new Error('获取当前数据失败');
-                }
-                
-                const getData = await getResponse.json();
-                const record = getData.record;
-                
-                record.feedbacks = feedbacks;
-                
-                // 更新统计信息
-                record.stats.total = feedbacks.length;
-                record.stats.pending = feedbacks.filter(f => f.status === 'pending').length;
-                record.system.lastUpdated = new Date().toISOString();
-                
-                // 保存回云端
-                const saveResponse = await fetch(`https://api.jsonbin.io/v3/b/${jsonBinStorage.binId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': jsonBinStorage.masterKey
-                    },
-                    body: JSON.stringify(record)
-                });
-                
-                if (!saveResponse.ok) {
-                    throw new Error('保存失败: ' + saveResponse.status);
-                }
-                
-                console.log('✅ 反馈数据保存成功');
-                
-                return {
-                    success: true,
-                    message: '数据已保存到云端'
-                };
-                
-            } catch (error) {
-                console.error('保存失败:', error);
-                throw error;
-            }
-        }
-
         // 显示所有评论
         async function toggleAllComments(element, feedbackId) {
-            const feedback = await getFeedbackById(feedbackId);
-            if (!feedback || !feedback.comments) return;
-            
-            const commentsPreview = document.getElementById(`comments-preview-${feedbackId}`);
-            if (!commentsPreview) return;
-            
-            // 生成所有评论
-            const allComments = feedback.comments.map(comment => {
-                const commentDate = new Date(comment.timestamp);
-                const commentTime = commentDate.toLocaleString('zh-CN');
-                const commentLikes = comment.likes ? comment.likes.count : 0;
-                const commentId = comment.id || 'comment_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                
-                return `
-                    <div class="comment-item" id="comment-${commentId}">
-                        <div class="comment-header">
-                            <span class="comment-author">${comment.author || '匿名同事'}</span>
-                            <span class="comment-time">${commentTime}</span>
-                        </div>
-                        <div class="comment-content">${comment.content}</div>
-                        <div class="comment-stats">
-                            <div class="comment-like-stat ${commentLikes > 0 ? 'liked' : ''}">
-                                👍 ${commentLikes}
-                            </div>
-                            <div class="comment-actions">
-                                <button class="comment-delete-btn" onclick="deleteComment('${feedback.id}', '${commentId}')">
-                                    删除
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            // 替换评论内容
-            const showAllBtn = commentsPreview.querySelector('.show-all-comments');
-            if (showAllBtn) {
-                showAllBtn.remove();
-            }
-            
-            const commentsList = commentsPreview.querySelector('.comment-item').parentNode;
-            commentsList.innerHTML = allComments;
-            
-            // 更新标题
-            const header = commentsPreview.querySelector('.comments-header h4');
-            if (header) {
-                header.textContent = `评论 (${feedback.comments.length})`;
-            }
-        }
-
-        // 清理所有图片缓存
-        async function clearAllImages() {
-            if (!confirm('确定要清理所有Base64图片缓存吗？\n此操作将移除所有图片的Base64数据，仅保留元信息。\n图片将无法再查看原图。\n此操作不可恢复！')) {
-                return;
-            }
-            
             try {
                 const feedbacks = await storage.getFeedbacks();
-                let cleanedCount = 0;
+                const feedback = feedbacks.find(f => f.id === feedbackId);
                 
-                feedbacks.forEach(feedback => {
-                    if (feedback.images && feedback.images.length > 0) {
-                        feedback.images.forEach(image => {
-                            if (image.isBase64 && image.url && image.url.startsWith('data:image')) {
-                                // 移除Base64数据，保留元信息
-                                image.url = '[已清理]';
-                                image.thumbnail = '[已清理]';
-                                image.cleaned = true;
-                                cleanedCount++;
-                            }
-                        });
-                    }
-                });
+                if (!feedback) return;
                 
-                // 保存清理后的数据
-                const result = await saveAllFeedbacks(feedbacks);
+                const comments = feedback.comments || feedback.cm || [];
+                const commentsPreview = document.getElementById(`comments-preview-${feedbackId}`);
+                if (!commentsPreview) return;
                 
-                if (result.success) {
-                    showSuccess(`已清理 ${cleanedCount} 张Base64图片的缓存数据`);
-                    loadFeedbacks();
-                } else {
-                    throw new Error(result.message || '清理失败');
+                // 生成所有评论
+                const allComments = comments.map(comment => {
+                    const commentAuthor = comment.author || comment.a || '匿名同事';
+                    const commentContent = comment.content || comment.c || '';
+                    const commentId = comment.id || generateCommentId(comment);
+                    const commentDate = new Date(comment.timestamp || comment.ts);
+                    const commentTime = commentDate.toLocaleString('zh-CN');
+                    const commentLikes = comment.likes || comment.l || { count: 0 };
+                    
+                    return `
+                        <div class="comment-item" id="comment-${commentId}">
+                            <div class="comment-header">
+                                <span class="comment-author">${commentAuthor}</span>
+                                <span class="comment-time">${commentTime}</span>
+                            </div>
+                            <div class="comment-content">${commentContent}</div>
+                            <div class="comment-stats">
+                                <div class="comment-like-stat ${commentLikes.count > 0 ? 'liked' : ''}">
+                                    👍 ${commentLikes.count || 0}
+                                </div>
+                                <div class="comment-actions">
+                                    <button class="comment-delete-btn" onclick="deleteComment('${feedbackId}', '${commentId}')">
+                                        删除
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // 替换评论内容
+                const commentsList = commentsPreview.querySelector('.comment-item')?.parentNode;
+                if (commentsList) {
+                    commentsList.innerHTML = allComments;
                 }
+                
+                // 移除"查看全部"按钮
+                const showAllBtn = commentsPreview.querySelector('.show-all-comments');
+                if (showAllBtn) {
+                    showAllBtn.remove();
+                }
+                
+                // 更新标题
+                const header = commentsPreview.querySelector('.comments-header h4');
+                if (header) {
+                    header.textContent = `评论 (${comments.length})`;
+                }
+                
             } catch (error) {
-                console.error('清理图片失败:', error);
-                showError('清理图片失败: ' + error.message);
+                console.error('显示所有评论失败:', error);
             }
         }
 
-        // 登出功能（可选添加）
+        // 登出功能
         function logout() {
             localStorage.removeItem('admin_logged_in');
             window.location.reload();
